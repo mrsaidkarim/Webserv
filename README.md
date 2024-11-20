@@ -20,4 +20,5 @@ sockets are a fundamental component for communication between the server and cli
 5. Communication: Data is exchanged between the client and the server using send, recv, read, or write.
 6. Closure: Once communication is complete, the socket is closed using the close() function.
 
-
+This diagram explains how sockets work:
+https://www.tldraw.com/r/GrwragUxW3rwoaPJdZbk-?d=v-776.-672.2460.2216.page
