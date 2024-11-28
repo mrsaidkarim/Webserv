@@ -60,6 +60,8 @@ Accept-Encoding: gzip, deflate, br
 Accept-Language: en-US,en;q=0.9
 ```
 
+This diagram explains how requests work: https://coggle.it/diagram/ZFjiviHgHRe8f6T2/t/request
+
 #### Response
 The response is very similar to the request, in which it starts with a response-line, which specifies (in order) the HTTP version, the status code and the status message.
 
