@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <iomanip>
 
 #define vector std::vector
 #define string std::string
@@ -13,6 +14,9 @@
 #define pair std::pair
 #define cout std::cout
 #define endl std::endl
+#define setw std::setw
+#define right std::right
+#define left std::left
 
 // Reset Color
 #define RESET "\033[0m"
@@ -46,7 +50,6 @@
 #define BG_MAGENTA "\033[45m"
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
-
 
 #define BUFFER_SIZE 1024
 

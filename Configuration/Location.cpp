@@ -96,47 +96,46 @@ bool Location::set_redirections(const pair<string, string> &redirections)
 
 
 void Location::print_lacation_info() const {
-    cout << BOLD_BLUE << "************* location info *************" << RESET << endl;
-    cout << BG_BLUE;
+    cout << BG_WHITE;
 
-    cout << BOLD_MAGENTA << "route: " << BOLD_WHITE << route << endl;
+    cout << BOLD_BLUE << "\t" << "route       : " << BOLD_BLACK << route << " \n";
 
-    cout << BOLD_MAGENTA << "index: " << BOLD_WHITE << "[";
+    cout << BOLD_BLUE << "\t" << "index       : " << BOLD_BLACK << "[";
     for (unsigned long i = 0; i < indexes.size(); i++) {
         if (i > 0)
             cout << ", ";
         cout << indexes[i];
     }
-    cout << "]" << endl;
+    cout << "] " << endl;
 
-    cout << BOLD_MAGENTA << "auto_index: " << BOLD_WHITE;
-    if (auto_index) cout << "on" << endl;
-    else cout << "off" << endl;
+    cout << BOLD_BLUE << "\t" << "auto_index  : " << BOLD_BLACK;
+    if (auto_index) cout << "on " << " \n";
+    else cout << "off " << " \n";
 
-    cout << BOLD_MAGENTA << "root: " << BOLD_WHITE << root << endl;
+    cout << BOLD_BLUE << "\t" << "root        : " << BOLD_BLACK << root << " \n";
 
-    cout << BOLD_MAGENTA <<  "methods:\n" << BOLD_WHITE;
-    cout << "       GET: ";
+    cout << BOLD_BLUE << "\t" <<  "methods     : \n" << BOLD_BLACK;
+    cout << "\t      GET   : ";
     auto it = methods.find("GET");
     if (it == methods.end() || it->second == false)
-        cout << "false\n";
+        cout << "false \n";
     else
-        cout << "true\n";
-    cout << "       POST: ";
+        cout << "true \n";
+    cout << "\t      POST  : ";
     it = methods.find("POST");
     if (it == methods.end() || it->second == false)
-        cout << "false\n";
+        cout << "false \n";
     else
-        cout << "true\n";
-    cout << "       DELETE: ";
+        cout << "true \n";
+    cout << "\t      DELETE: ";
     it = methods.find("DELETE");
     if (it == methods.end() || it->second == false)
-        cout << "false\n";
+        cout << "false \n";
     else
-        cout << "true\n:";
+        cout << "true \n";
 
-    cout << BOLD_MAGENTA <<  "redirection: " << BOLD_WHITE;
-    cout << "[" << redirections.first << "]" << " [" << redirections.second << "]\n";
+    cout << BOLD_BLUE << "\t" <<  "redirection : " << BOLD_BLACK;
+    cout << "[" << redirections.first << "]" << " [" << redirections.second << "] \n";
 
     cout << RESET;
 

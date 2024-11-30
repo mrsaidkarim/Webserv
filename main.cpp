@@ -29,12 +29,32 @@ int main(void)
 
     // Create a Location object
     Location loc1(route, indexes, auto_index, root, methods, redirections);
+    Location loc2(
+        "/home",
+        {"home.html"},
+        false,
+        "",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    Location loc3(
+        "/youtube",
+        {},
+        false,
+        "",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {"301", "www.youtube.com"}
+    );
     // Location.print_lacation_info();
 
     vector<int> ports = {8080, 443};
     vector<string> server_names = {"zechi.com", "www.nigro.com"};
     long long client_max_body_size = 10485760; // 10 MB
-    vector<Location> locations = {loc1};
+    vector<Location> locations = {loc1, loc2, loc3};
     string global_root = "/globalroot";
     pair<string, string> redirection = {"301", "www.ingtagram.com"};
     vector<string> indexes2 = {"indexserver.html", "homeserver.html"};
