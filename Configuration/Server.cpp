@@ -102,6 +102,8 @@ void Server::print_server_info(void) const {
     cout << BOLD_BLUE <<  "redirection: " << BOLD_WHITE;
     cout << "[" << redirection.first << "]" << " [" << redirection.second << "]\n";
 
-
+    cout << BOLD_BLUE << "auto_index: " << BOLD_WHITE;
+    if (autoindex) cout << "on" << endl;
+    else cout << "off" << endl;
 
 }

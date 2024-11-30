@@ -47,7 +47,6 @@
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
 
-
 #define BUFFER_SIZE 1024
 
 #endif
