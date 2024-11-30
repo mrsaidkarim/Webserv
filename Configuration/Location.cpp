@@ -61,31 +61,37 @@ const pair<string, string> &Location::get_redirections(void) const
 bool Location::set_route(const string &route)
 {
     this->route = route;
+    return (true);
 }
 
 bool Location::set_indexes(const vector<string> &indexes)
 {
     this->indexes = indexes;
+    return (true);
 }
 
 bool Location::set_auto_index(bool auto_index)
 {
     this->auto_index = auto_index;
+    return (true);
 }
 
 bool Location::set_root(const string &root)
 {
     this->root = root;
+    return (true);
 }
 
 bool Location::set_methods(const map<string, bool> &methods)
 {
     this->methods = methods;
+    return (true);
 }
 
 bool Location::set_redirections(const pair<string, string> &redirections)
 {
     this->redirections = redirections;
+    return (true);
 }
 
 
@@ -93,24 +99,44 @@ void Location::print_lacation_info() const {
     cout << BOLD_BLUE << "************* location info *************" << RESET << endl;
     cout << BG_BLUE;
 
-    cout << BG_YELLOW << "route: " << BG_WHITE << route << endl;
+    cout << BOLD_MAGENTA << "route: " << BOLD_WHITE << route << endl;
 
-    cout << BG_YELLOW << "index: " << BG_WHITE << "[";
-    for (int i = 0; i < indexes.size(); i++) {
+    cout << BOLD_MAGENTA << "index: " << BOLD_WHITE << "[";
+    for (unsigned long i = 0; i < indexes.size(); i++) {
         if (i > 0)
             cout << ", ";
         cout << indexes[i];
     }
-    cout << endl;
+    cout << "]" << endl;
 
-    cout << BG_YELLOW << "auto_index: " << BG_WHITE;
+    cout << BOLD_MAGENTA << "auto_index: " << BOLD_WHITE;
     if (auto_index) cout << "on" << endl;
     else cout << "off" << endl;
 
-    cout << BG_YELLOW << "root: " << BG_WHITE << root << endl;
+    cout << BOLD_MAGENTA << "root: " << BOLD_WHITE << root << endl;
 
-    cout << BG_YELLOW <<  "methods: " << BG_WHITE;
-    // cout << "GET: " << (methods["GET"] ? "true" : "false");
+    cout << BOLD_MAGENTA <<  "methods:\n" << BOLD_WHITE;
+    cout << "       GET: ";
+    auto it = methods.find("GET");
+    if (it == methods.end() || it->second == false)
+        cout << "false\n";
+    else
+        cout << "true\n";
+    cout << "       POST: ";
+    it = methods.find("POST");
+    if (it == methods.end() || it->second == false)
+        cout << "false\n";
+    else
+        cout << "true\n";
+    cout << "       DELETE: ";
+    it = methods.find("DELETE");
+    if (it == methods.end() || it->second == false)
+        cout << "false\n";
+    else
+        cout << "true\n:";
+
+    cout << BOLD_MAGENTA <<  "redirection: " << BOLD_WHITE;
+    cout << redirections.first << " " << redirections.second << "\n";
 
     cout << RESET;
 

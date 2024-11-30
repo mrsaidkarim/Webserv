@@ -1,24 +1,31 @@
-CMD = c++
-FLAGS = -Wall -Wextra -Werror -std=c++98
-SRC = Configuration/Location.cpp main.cpp
-HDR = Configuration/Location.hpp
-OBJ = ${SRC:.cpp=.o}
-NAME = zechiiii
+NAME = a.out
+
+CPP = c++
+
+FLAGS =  -std=c++11 #-Wall -Wextra -Werror
+
+RM = rm -f
+
+SRCS = Configuration/Location.cpp main.cpp
+
+HEADERS = Configuration/Location.hpp const.hpp
+
+OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
 
-%.o: %.cpp $(HDR)
-        $(CMD) $(FLAGS) -c $< -o $@
+%.o: %.cpp $(HEADERS)
+	$(CPP) $(FLAGS) -c $< -o $@
 
-$(NAME): $(OBJ)
-        $(CMD) $(OBJ) -o $@
+$(NAME): $(OBJS)
+	@$(CPP) $(FLAGS) $^ -o $@
 
 clean:
-        rm -rf $(OBJ)
+	$(RM) $(OBJS)
 
 fclean: clean
-        rm -rf $(NAME)
+	$(RM) $(NAME)
 
 re: fclean all
 
-.PHONY: clean
+.PHONY: clean fclean re

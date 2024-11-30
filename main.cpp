@@ -24,9 +24,9 @@ int main(void)
         {"POST", true},
         {"DELETE", false}
     };
-    pair<string, string> redirections = {"/old_path", "/new_path"};
+    pair<string, string> redirections = {"301", "www.youtube.com"};
 
     // Create a Location object
     Location Location(route, indexes, auto_index, root, methods, redirections);
-    
+    Location.print_lacation_info();
 }
