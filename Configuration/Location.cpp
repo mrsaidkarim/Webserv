@@ -136,7 +136,7 @@ void Location::print_lacation_info() const {
         cout << "true\n:";
 
     cout << BOLD_MAGENTA <<  "redirection: " << BOLD_WHITE;
-    cout << redirections.first << " " << redirections.second << "\n";
+    cout << "[" << redirections.first << "]" << " [" << redirections.second << "]\n";
 
     cout << RESET;
 

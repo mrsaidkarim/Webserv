@@ -66,3 +66,42 @@ const vector<string> &Server::get_error_pages(void) const
 {
     return (error_pages);
 }
+
+void Server::print_server_info(void) const {
+    cout << BOLD_YELLOW << "************* location info *************" << RESET << endl;
+    cout << BG_BLACK;
+
+    cout << BOLD_BLUE << "ports: " << BOLD_WHITE << "[";
+    for (int i = 0; i < ports.size(); i++) {
+        if (i > 0)
+            cout << ", ";
+        cout << ports[i];
+    }
+    cout << "]" << endl;
+
+    cout << BOLD_BLUE << "server names: " << BOLD_WHITE << "[";
+    for (int i = 0; i < server_names.size(); i++) {
+        if (i > 0)
+            cout << ", ";
+        cout << server_names[i];
+    }
+    cout << "]" << endl;
+
+    cout << BOLD_BLUE << "indexes: " << BOLD_WHITE << "[";
+    for (int i = 0; i < indexes.size(); i++) {
+        if (i > 0)
+            cout << ", ";
+        cout << indexes[i];
+    }
+    cout << "]" << endl;
+
+    cout << BOLD_BLUE << "client_max_body_size: " << BOLD_WHITE << client_max_body_size << " Byte\n";
+
+    cout << BOLD_BLUE << "global_root: " << BOLD_WHITE << global_root << "\n";
+
+    cout << BOLD_BLUE <<  "redirection: " << BOLD_WHITE;
+    cout << "[" << redirection.first << "]" << " [" << redirection.second << "]\n";
+
+
+
+}

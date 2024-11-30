@@ -6,9 +6,9 @@ FLAGS =  -std=c++11 #-Wall -Wextra -Werror
 
 RM = rm -f
 
-SRCS = Configuration/Location.cpp main.cpp
+SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp
 
-HEADERS = Configuration/Location.hpp const.hpp
+HEADERS = Configuration/Location.hpp Configuration/Server.hpp const.hpp
 
 OBJS = $(SRCS:.cpp=.o)
 

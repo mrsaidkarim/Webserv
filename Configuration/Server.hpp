@@ -28,6 +28,7 @@ class Server
         vector<string> indexes;
         bool autoindex;
         vector<string> error_pages;
+
     public:
         Server();
         Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
@@ -46,6 +47,10 @@ class Server
         const vector<string> &get_error_pages(void) const;
 
         // SETTERS
+
+
+        // to remove
+        void print_server_info(void) const;
         
 };
 

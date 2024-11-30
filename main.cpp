@@ -52,5 +52,6 @@ int main(void)
         autoindex2,
         error_pages
     );
-    
+
+    server.print_server_info();
 }
