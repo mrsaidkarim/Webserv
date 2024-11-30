@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/11/30 11:40:37 by skarim           ###   ########.fr       */
+/*   Updated: 2024/11/30 12:01:47 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,12 @@
 Location::Location()
 {
     
+}
+
+Location::Location(const string &route, const vector<string> &indexes, bool auto_index,
+                const string &root, const map<string, bool> &methods,
+                const pair<string, string> &redirections): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections)
+{
 }
         // Location(string file_path); here do your shit alparser nigro o zid setters;
 Location::~Location()

@@ -14,7 +14,9 @@ class Location
         pair<string, string> redirections;
     public:
         Location();
-        Location(const string &route, const vector<string> &indexes, bool auto_index, const string );
+        Location(const string &route, const vector<string> &indexes, bool auto_index,
+                const string &root, const map<string, bool> &methods,
+                const pair<string, string> &redirections);
         // Location(string file_path); here do your shit alparser nigro o 9ed setters;
         ~Location();
 
