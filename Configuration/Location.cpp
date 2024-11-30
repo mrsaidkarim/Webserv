@@ -81,3 +81,31 @@ bool Location::set_redirections(const pair<string, string> &redirections)
 {
     this->redirections = redirections;
 }
+
+
+void Location::print_lacation_info() const {
+    cout << BOLD_BLUE << "************* location info *************" << RESET << endl;
+    cout << BG_BLUE;
+
+    cout << BG_YELLOW << "route: " << BG_WHITE << route << endl;
+
+    cout << BG_YELLOW << "index: " << BG_WHITE << "[";
+    for (int i = 0; i < indexes.size(); i++) {
+        if (i > 0)
+            cout << ", ";
+        cout << indexes[i];
+    }
+    cout << endl;
+
+    cout << BG_YELLOW << "auto_index: " << BG_WHITE;
+    if (auto_index) cout << "on" << endl;
+    else cout << "off" << endl;
+
+    cout << BG_YELLOW << "root: " << BG_WHITE << root << endl;
+
+    cout << BG_YELLOW <<  "methods: " << BG_WHITE;
+    // cout << "GET: " << (methods["GET"] ? "true" : "false");
+
+    cout << RESET;
+
+}

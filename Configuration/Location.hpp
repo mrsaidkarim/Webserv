@@ -33,6 +33,9 @@ class Location
         bool set_root(const string &);
         bool set_methods(const map<string, bool> &);
         bool set_redirections(const pair<string, string> &);
+
+        // to remove
+        void print_lacation_info(void) const;
 };
 
 #endif
