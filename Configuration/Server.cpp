@@ -68,10 +68,10 @@ const vector<string> &Server::get_error_pages(void) const
 }
 
 void Server::print_server_info(void) const {
-    cout << BOLD_YELLOW << "************* location info *************" << RESET << endl;
+    cout << BOLD_YELLOW << "********************* server info *********************" << RESET << endl;
     cout << BG_BLACK;
 
-    cout << BOLD_BLUE << "ports: " << BOLD_WHITE << "[";
+    cout << BOLD_BLUE << left << setw(20) << "ports " << ": " << BOLD_WHITE << "[";
     for (int i = 0; i < ports.size(); i++) {
         if (i > 0)
             cout << ", ";
@@ -79,7 +79,7 @@ void Server::print_server_info(void) const {
     }
     cout << "]" << endl;
 
-    cout << BOLD_BLUE << "server names: " << BOLD_WHITE << "[";
+    cout << BOLD_BLUE << left << setw(20) << "server names " << ": " << BOLD_WHITE << "[";
     for (int i = 0; i < server_names.size(); i++) {
         if (i > 0)
             cout << ", ";
@@ -87,7 +87,7 @@ void Server::print_server_info(void) const {
     }
     cout << "]" << endl;
 
-    cout << BOLD_BLUE << "indexes: " << BOLD_WHITE << "[";
+    cout << BOLD_BLUE << left << setw(20) << "indexes " << ": " << BOLD_WHITE << "[";
     for (int i = 0; i < indexes.size(); i++) {
         if (i > 0)
             cout << ", ";
@@ -95,15 +95,27 @@ void Server::print_server_info(void) const {
     }
     cout << "]" << endl;
 
-    cout << BOLD_BLUE << "client_max_body_size: " << BOLD_WHITE << client_max_body_size << " Byte\n";
+    cout << BOLD_BLUE << left << setw(20) << "error_pages " << ": " << BOLD_WHITE << "[";
+    for (int i = 0; i < error_pages.size(); i++) {
+        if (i > 0)
+            cout << ", ";
+        cout << error_pages[i];
+    }
+    cout << "]" << endl;
 
-    cout << BOLD_BLUE << "global_root: " << BOLD_WHITE << global_root << "\n";
+    cout << BOLD_BLUE << left << setw(20) << "client_max_body_size" << ": " << BOLD_WHITE << client_max_body_size << " Byte\n";
 
-    cout << BOLD_BLUE <<  "redirection: " << BOLD_WHITE;
+    cout << BOLD_BLUE << left << setw(20) << "global_root " << ": " << BOLD_WHITE << global_root << "\n";
+
+    cout << BOLD_BLUE << left << setw(20) <<  "redirection " << ": " << BOLD_WHITE;
     cout << "[" << redirection.first << "]" << " [" << redirection.second << "]\n";
 
-    cout << BOLD_BLUE << "auto_index: " << BOLD_WHITE;
+    cout << BOLD_BLUE << left << setw(20) << "auto_index " << ": " << BOLD_WHITE;
     if (autoindex) cout << "on" << endl;
     else cout << "off" << endl;
 
+    for (int i = 0; i < locations.size(); i++) {
+        cout << BOLD_BLUE << left << setw(20) << "location "  << ": " << BOLD_WHITE << i + 1 << "\n";
+        locations[i].print_lacation_info();
+    }
 }
