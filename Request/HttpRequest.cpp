@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/01 14:21:28 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/01 15:31:15 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -197,7 +197,7 @@ string HttpRequest::trim_string(const string& str) {
 		start++;
 	while (end >= 0 && std::isspace(str[end]))
 		end--;
-	return (str.substr(start, end - start));
+	return (str.substr(start, end - start + 1));
 }
 
 

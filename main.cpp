@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:06:33 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/01 12:27:59 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/01 15:22:26 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,8 +79,8 @@ int main(int ac, char **av)
 	"GET / HTTP/1.1\r\n"
 	"Host: localhost\r\n"
 	"Content-Length: 13\r\n"
-	"tkharbir9a: sfdhaf\r\n"
-	"helloman: sdjanfd\r\n"
+	"transfer: code\r\n"
+	"test: HTTPHELLO\r\n"
 	"\r\n"
 	"Hello, World!";
 	HttpRequest test(http_request);
