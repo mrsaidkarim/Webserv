@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/01 12:29:59 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/01 14:21:28 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	}
 	header = _request.substr(0,index);
 	body = _request.substr(index + 4);
+	this->set_body(body);
 	index = header.find(CRLF);
 	if (index == string::npos) {
 		this->set_status_code("400");
@@ -229,6 +230,3 @@ void	HttpRequest::display_request() {
 
 	cout << BG_MAGENTA << "Body: " << get_body() << "\n" << RESET;
 }
-
-
-
