@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:06:33 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/01 15:22:26 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/01 15:32:22 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 
 int main(int ac, char **av)
 {
-    // string route = "/";
+    // vector<string> route = {"home", "repo1", "index.html"};
     // vector<string> indexes = {"index.html", "home.html"};
     // bool auto_index = true;
     // string root = "/var/www/example";
@@ -31,7 +31,7 @@ int main(int ac, char **av)
     // // Create a Location object
     // Location loc1(route, indexes, auto_index, root, methods, redirections);
     // Location loc2(
-    //     "/home",
+    //     {"home", "repo2", "index.html"},
     //     {"home.html"},
     //     false,
     //     "",
@@ -41,7 +41,7 @@ int main(int ac, char **av)
     //     {}
     // );
     // Location loc3(
-    //     "/youtube",
+    //     {"home", "repo3", "index.html"},
     //     {},
     //     false,
     //     "",
@@ -50,7 +50,7 @@ int main(int ac, char **av)
     //     {"DELETE", false}},
     //     {"301", "www.youtube.com"}
     // );
-    // // Location.print_lacation_info();
+    // Location.print_lacation_info();
 
     // vector<int> ports = {8080, 443};
     // vector<string> server_names = {"zechi.com", "www.nigro.com"};

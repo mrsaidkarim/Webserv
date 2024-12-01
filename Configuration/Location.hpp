@@ -6,7 +6,7 @@
 class Location
 {
     private:
-        string route;
+        vector<string> route;
         vector<string> indexes;
         bool auto_index;
         string root;
@@ -14,14 +14,14 @@ class Location
         pair<string, string> redirections;
     public:
         Location();
-        Location(const string &route, const vector<string> &indexes, bool auto_index,
+        Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
                 const string &root, const map<string, bool> &methods,
                 const pair<string, string> &redirections);
         // Location(string file_path); here do your shit alparser nigro o 9ed setters;
         ~Location();
 
         // GETTERS
-        const string &get_route(void) const;
+        const vector<string> &get_route(void) const;
         const vector<string> &get_indexes(void) const;
         bool get_auto_index(void) const;
         const string &get_root(void) const;
@@ -29,7 +29,7 @@ class Location
         const pair<string, string> &get_redirections(void) const;
 
         // SETTERS
-        bool set_route(const string &route);
+        bool set_route(const vector<string> &route);
         bool set_indexes(const vector<string> &);
         bool set_auto_index(bool);
         bool set_root(const string &);
