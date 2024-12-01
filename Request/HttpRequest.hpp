@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/11/30 18:13:42 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/01 12:26:18 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,30 +18,39 @@
 class HttpRequest
 {
 	private:
-		string method;
-		string url;
-		string version;
-		string body;
-		string statusCode;
+		string 				method;
+		string 				url;
+		string 				version;
+		string 				body;
+		string 				statusCode;
 		map<string, string> header;
-
+	
+	protected:
+		vector<string>	split(const string& str, char delimiter);
+		string			trim_string(const string& str);
+		bool			is_valid_characters(const string& str);
+		bool			is_start_with_space(const string& str);
+		bool			is_valid_header_request(const string& _header);
 	public:
 		HttpRequest(const string& _request);
 		~HttpRequest();
 
 		// SETTERS:
 		void set_status_code(const string& _status);
-		bool set_method(const string& method);
-		bool set_url(const string& url);
-		bool set_version(const string& version);
-		bool set_map(const string& key, const string& value);
+		void set_body(const string& _body);
+		bool set_method(const string& _method);
+		bool set_url(const string& _url);
+		bool set_version(const string& _version);
+		bool set_map(const string& _key, const string& _value);
 
 		// GETTERS:
-		string& get_status_code(void) const;
-		string& get_method(void) const;
-		string& get_url(void) const;
-		string& get_body(void);
-		map<string, string> get_header(void) const;
+		const string& get_status_code(void) const;
+		const string& get_method(void) const;
+		const string& get_url(void) const;
+		const string& get_version(void) const;
+		const string& get_body(void) const;
+		const map<string, string>& get_header(void) const;
+		void			display_request(); // TO REMOVE
 };
 
 #endif

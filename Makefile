@@ -2,11 +2,11 @@ NAME = a.out
 
 CPP = c++
 
-FLAGS =  -std=c++11 #-Wall -Wextra -Werror
+FLAGS =  -std=c++11 -fsanitize=address  #-Wall -Wextra -Werror
 
 RM = rm -f
 
-SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp
+SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp Request/HttpRequest.cpp
 
 HEADERS = Configuration/Location.hpp Configuration/Server.hpp const.hpp
 

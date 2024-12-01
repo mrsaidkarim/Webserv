@@ -7,16 +7,24 @@
 #include <string>
 #include <map>
 #include <iomanip>
+#include <sstream> 
 
 #define vector std::vector
 #define string std::string
 #define map std::map
 #define pair std::pair
 #define cout std::cout
+#define stringStream std::stringstream 
 #define endl std::endl
 #define setw std::setw
 #define right std::right
 #define left std::left
+
+// newline characters 
+#define CR "\r"
+#define LF "\n"
+#define CRLF "\r\n"
+#define	CRLF_2 "\r\n\r\n"
 
 // Reset Color
 #define RESET "\033[0m"
