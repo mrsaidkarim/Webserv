@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:06:33 by skarim            #+#    #+#             */
-/*   Updated: 2024/11/30 14:14:26 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/01 15:03:26 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 
 int main(void)
 {
-    string route = "/";
+    vector<string> route = {"home", "repo1", "index.html"};
     vector<string> indexes = {"index.html", "home.html"};
     bool auto_index = true;
     string root = "/var/www/example";
@@ -30,7 +30,7 @@ int main(void)
     // Create a Location object
     Location loc1(route, indexes, auto_index, root, methods, redirections);
     Location loc2(
-        "/home",
+        {"home", "repo2", "index.html"},
         {"home.html"},
         false,
         "",
@@ -40,7 +40,7 @@ int main(void)
         {}
     );
     Location loc3(
-        "/youtube",
+        {"home", "repo3", "index.html"},
         {},
         false,
         "",

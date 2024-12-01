@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/11/30 12:01:47 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/01 15:00:20 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ Location::Location()
     
 }
 
-Location::Location(const string &route, const vector<string> &indexes, bool auto_index,
+Location::Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
                 const string &root, const map<string, bool> &methods,
                 const pair<string, string> &redirections): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections)
 {
@@ -28,7 +28,7 @@ Location::~Location()
     
 }
 
-const string &Location::get_route(void) const
+const vector<string> &Location::get_route(void) const
 {
     return (route);
 }
@@ -58,7 +58,7 @@ const pair<string, string> &Location::get_redirections(void) const
     return (redirections);
 }
 
-bool Location::set_route(const string &route)
+bool Location::set_route(const vector<string> &route)
 {
     this->route = route;
     return (true);
@@ -98,7 +98,14 @@ bool Location::set_redirections(const pair<string, string> &redirections)
 void Location::print_lacation_info() const {
     cout << BG_WHITE;
 
-    cout << BOLD_BLUE << "\t" << "route       : " << BOLD_BLACK << route << " \n";
+    cout << BOLD_BLUE << "\t" << "route       : ";
+    for (unsigned long i = 0; i < route.size(); i++) {
+        cout << route[i];
+        if (i < route.size() - 1)
+            cout << "/";
+    }
+    // for(unsigned ) << BOLD_BLACK << route << " \n";
+    cout << "\n";
 
     cout << BOLD_BLUE << "\t" << "index       : " << BOLD_BLACK << "[";
     for (unsigned long i = 0; i < indexes.size(); i++) {
