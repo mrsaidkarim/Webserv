@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 15:11:14 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/02 15:22:11 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,12 +201,8 @@ const string& HttpRequest::get_version(void) const {
 	return (this->version);
 }
 
-const string HttpRequest::get_url(void) const {
-	string _url;
-	for (int i = 0; i < url.size(); i++) {
-		_url += "/" + url[i];
-	}
-	return (_url);
+const vector<string>& HttpRequest::get_url(void) const {
+	return (this->url);
 }
 
 const string& HttpRequest::get_body(void) const {
@@ -313,8 +309,13 @@ bool HttpRequest::check_header_elements() {
 
 // display the Request: info
 void HttpRequest::display_request() {
+	string _url;
+	for (int i = 0; i < this->url.size(); i++)
+	{
+		_url += "/" + url[i];
+	}
 	cout << GREEN << "Method using: " << get_method() << "\n" << RESET;
-	cout << BLUE << "URL: " << get_url() << "\n" << RESET;
+	cout << BLUE << "URL: " << _url << "\n" << RESET;
 	cout << BOLD_CYAN << "Query: " << get_query() << "\n" << RESET;
 	cout << BOLD_GREEN << "Fragment: " <<  get_fragment() << "\n" << RESET;
 	cout << YELLOW << "Version HTTP: " << get_version() << "\n" << RESET;
