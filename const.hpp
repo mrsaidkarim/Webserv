@@ -8,12 +8,18 @@
 #include <map>
 #include <iomanip>
 #include <sstream> 
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <unistd.h>
 
 #define vector std::vector
 #define string std::string
 #define map std::map
 #define pair std::pair
 #define cout std::cout
+#define cerr std::cerr
 #define stringStream std::stringstream 
 #define endl std::endl
 #define setw std::setw
