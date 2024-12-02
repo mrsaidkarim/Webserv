@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 12:10:37 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/02 15:09:49 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ class HttpRequest
 {
 	private:
 		string 				method;
-		string 				url;
+		vector<string> 		url;
 		string 				version;
 		string 				body;
 		string				query;
@@ -54,7 +54,7 @@ class HttpRequest
 		// GETTERS:
 		const string& get_status_code(void) const;
 		const string& get_method(void) const;
-		const string& get_url(void) const;
+		const string get_url(void) const;
 		const string& get_version(void) const;
 		const string& get_body(void) const;
 		const string& get_query(void) const;
