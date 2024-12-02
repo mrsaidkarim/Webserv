@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 12:15:06 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/02 15:11:14 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,10 +97,8 @@ bool HttpRequest::set_url(const string& _url) {
 	{
 		if (update_url[i] == '%') {
 			key = update_url.substr(i, 3);
-			if (encoding_symbols[key] == '\0') {
-				cout << "erro here!";
+			if (encoding_symbols[key] == '\0')
 				return (this->set_status_code("400"), false);
-			}
 			 update_url.replace(i, 3, 1,encoding_symbols[key]);
 		}
 	}
@@ -113,7 +111,7 @@ bool HttpRequest::set_url(const string& _url) {
 	if (fragment_pos != string::npos)
 		set_fragment(update_url.substr(fragment_pos + 1));
 	update_url = update_url.substr(0, path_end);
-	this->url = update_url;
+	this->url = split(update_url, '/');
 	return (true);
 }
 
@@ -203,8 +201,12 @@ const string& HttpRequest::get_version(void) const {
 	return (this->version);
 }
 
-const string& HttpRequest::get_url(void) const {
-	return (this->url);
+const string HttpRequest::get_url(void) const {
+	string _url;
+	for (int i = 0; i < url.size(); i++) {
+		_url += "/" + url[i];
+	}
+	return (_url);
 }
 
 const string& HttpRequest::get_body(void) const {
