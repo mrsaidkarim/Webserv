@@ -27,8 +27,6 @@
 #define left std::left
 
 // newline characters 
-#define CR "\r"
-#define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
 
