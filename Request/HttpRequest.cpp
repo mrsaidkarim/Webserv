@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 15:22:11 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/03 14:13:37 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,7 @@ bool HttpRequest::set_version(const string& _version) {
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
-	if (_key == "Host" && (_value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
+	if (_key == "Host" && ((header.find("Host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
 		return (this->set_status_code("400"), false);
 	this->header[_key] = _value;
 	return (true);
@@ -301,9 +301,26 @@ bool HttpRequest::check_url_characters(const string& _url) {
 	return (true);
 }
 
+bool HttpRequest::is_valid_value(const string& _value) {
+	stringStream	str(_value);
+	int 			value;
+	if (_value.empty())
+		return (this->set_status_code("400"), false);
+	str >> value;
+	if (str.fail())
+		return (this->set_status_code("413"), false);
+	if (!str.eof())
+		return (this->set_status_code("400"), false);
+	return (true);
+}
+
 bool HttpRequest::check_header_elements() {
 	if (this->header["Host"].empty())
 		return (this->set_status_code("400"),false);
+	if (header.find("Content-Length") != header.end() && !is_valid_value(this->header["Content-Length"]))
+		return (this->set_status_code("400"),false);
+	if (header.find("Transfer-Encoding") != header.end() && (header["Transfer-Encoding"] != "chunked"))
+		return (this->set_status_code("501"), false);
 	return (true);
 }
 
@@ -343,3 +360,9 @@ void HttpRequest::display_request() {
 //      obs-fold       = CRLF 1*( SP / HTAB )
 //                     ; obsolete line folding
 //                     ; see Section 3.2.4
+
+//  transfer-coding    = "chunked" ; Section 4.1
+//                         / "compress" ; Section 4.2.1
+//                         / "deflate" ; Section 4.2.2
+//                         / "gzip" ; Section 4.2.3
+//                         / transfer-extension
