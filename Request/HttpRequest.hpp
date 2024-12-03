@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 15:20:48 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/02 20:40:42 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ class HttpRequest
 		string			trim_string(const string& str);
 		bool			check_url_characters(const string& _url);
 		bool			is_valid_characters(const string& str);
+		bool			is_valid_value(const string& _value);
 		bool			is_start_with_space(const string& str);
 		bool			is_valid_header_request(const string& _header);
 		bool			check_header_elements();
