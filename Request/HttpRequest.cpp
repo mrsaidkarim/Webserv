@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/01 15:31:15 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/03 14:13:37 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	}
 	header = _request.substr(0,index);
 	body = _request.substr(index + 4);
+	this->set_encoding_symbols();
 	this->set_body(body);
 	index = header.find(CRLF);
 	if (index == string::npos) {
@@ -48,7 +49,7 @@ HttpRequest::HttpRequest(const string& _request) {
 		goto error;
 	
 	// start parse header
-	if (!is_valid_header_request(header))
+	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
 	// end parse header
 	// print the result
@@ -87,7 +88,30 @@ bool HttpRequest::set_method(const string& _method) {
 }
 
 bool HttpRequest::set_url(const string& _url) {
-	this->url = _url;
+	string	update_url = _url;
+	string	key;
+	size_t query_pos, fragment_pos, path_end;
+	if (_url[0] != '/' || !check_url_characters(update_url))
+		return (this->set_status_code("400"), false);
+	for (int i = 0; i < _url.length(); i++)
+	{
+		if (update_url[i] == '%') {
+			key = update_url.substr(i, 3);
+			if (encoding_symbols[key] == '\0')
+				return (this->set_status_code("400"), false);
+			 update_url.replace(i, 3, 1,encoding_symbols[key]);
+		}
+	}
+	query_pos =  update_url.find('?');
+	fragment_pos = update_url.find('#');
+	path_end = std::min(query_pos, fragment_pos);
+	if (path_end == string::npos) path_end = _url.length();
+	if (query_pos != string::npos && (fragment_pos == string::npos || query_pos < fragment_pos))
+		set_query(update_url.substr(query_pos + 1, fragment_pos - query_pos - 1));
+	if (fragment_pos != string::npos)
+		set_fragment(update_url.substr(fragment_pos + 1));
+	update_url = update_url.substr(0, path_end);
+	this->url = split(update_url, '/');
 	return (true);
 }
 
@@ -114,10 +138,54 @@ bool HttpRequest::set_version(const string& _version) {
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
-	if (_key == "Host" && (_value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
+	if (_key == "Host" && ((header.find("Host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
 		return (this->set_status_code("400"), false);
 	this->header[_key] = _value;
 	return (true);
+}
+
+void HttpRequest::set_fragment(const string& _fragment) {
+	this->fragment = _fragment;
+}
+
+void HttpRequest::set_encoding_symbols() {
+	this->encoding_symbols["%20"] = ' ';
+	this->encoding_symbols["%21"] = '!';
+	this->encoding_symbols["%22"] = '"';
+	this->encoding_symbols["%23"] = '#';
+	this->encoding_symbols["%24"] = '$';
+	this->encoding_symbols["%25"] = '%';
+	this->encoding_symbols["%26"] = '&';
+	this->encoding_symbols["%27"] = '\'';
+	this->encoding_symbols["%28"] = '(';
+	this->encoding_symbols["%29"] = ')';
+	this->encoding_symbols["%2A"] = '*';
+	this->encoding_symbols["%2B"] = '+';
+	this->encoding_symbols["%2C"] = ',';
+	this->encoding_symbols["%2D"] = '-';
+	this->encoding_symbols["%2E"] = '.';
+	this->encoding_symbols["%2F"] = '/';
+	this->encoding_symbols["%3A"] = ':';
+	this->encoding_symbols["%3B"] = ';';
+	this->encoding_symbols["%3C"] = '<';
+	this->encoding_symbols["%3D"] = '=';
+	this->encoding_symbols["%3E"] = '>';
+	this->encoding_symbols["%3F"] = '?';
+	this->encoding_symbols["%40"] = '@';
+	this->encoding_symbols["%5B"] = '[';
+	this->encoding_symbols["%5C"] = '\\';
+	this->encoding_symbols["%5D"] = ']';
+	this->encoding_symbols["%5E"] = '^';
+	this->encoding_symbols["%5F"] = '_';
+	this->encoding_symbols["%60"] = '`';
+	this->encoding_symbols["%7B"] = '{';
+	this->encoding_symbols["%7C"] = '|';
+	this->encoding_symbols["%7D"] = '}';
+	this->encoding_symbols["%7E"] = '~';
+}
+
+void HttpRequest::set_query(const string& _query) {
+	this->query = _query;
 }
 
 // GETTERS
@@ -133,7 +201,7 @@ const string& HttpRequest::get_version(void) const {
 	return (this->version);
 }
 
-const string& HttpRequest::get_url(void) const {
+const vector<string>& HttpRequest::get_url(void) const {
 	return (this->url);
 }
 
@@ -143,6 +211,14 @@ const string& HttpRequest::get_body(void) const {
 
 const map<string, string>& HttpRequest::get_header(void) const {
 	return (this->header);
+}
+
+const string& HttpRequest::get_query(void) const {
+	return (this->query);
+}
+
+const string& HttpRequest::get_fragment(void) const {
+	return (this->fragment);
 }
 
 // utils :
@@ -200,14 +276,13 @@ string HttpRequest::trim_string(const string& str) {
 	return (str.substr(start, end - start + 1));
 }
 
-
-bool	HttpRequest::is_start_with_space(const string& str) {
+bool HttpRequest::is_start_with_space(const string& str) {
 	if (str[0] == ' ')
 		return (true);
 	return (false);
 }
 
-bool	HttpRequest::is_valid_characters(const string& str) {
+bool HttpRequest::is_valid_characters(const string& str) {
 	for (int i = 0; i < str.length(); i++)
 	{
 		if (str[i] == '\t')
@@ -216,10 +291,50 @@ bool	HttpRequest::is_valid_characters(const string& str) {
 	return (true);
 }
 
+bool HttpRequest::check_url_characters(const string& _url) {
+	string valid_characters = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~";
+	for (int i = 0; i < _url.length(); i++)
+	{
+		if ((valid_characters.find(_url[i]) == string::npos) && !isalnum(_url[i]))
+			return (false);
+	}
+	return (true);
+}
+
+bool HttpRequest::is_valid_value(const string& _value) {
+	stringStream	str(_value);
+	int 			value;
+	if (_value.empty())
+		return (this->set_status_code("400"), false);
+	str >> value;
+	if (str.fail())
+		return (this->set_status_code("413"), false);
+	if (!str.eof())
+		return (this->set_status_code("400"), false);
+	return (true);
+}
+
+bool HttpRequest::check_header_elements() {
+	if (this->header["Host"].empty())
+		return (this->set_status_code("400"),false);
+	if (header.find("Content-Length") != header.end() && !is_valid_value(this->header["Content-Length"]))
+		return (this->set_status_code("400"),false);
+	if (header.find("Transfer-Encoding") != header.end() && (header["Transfer-Encoding"] != "chunked"))
+		return (this->set_status_code("501"), false);
+	return (true);
+}
+
 // display the Request: info
-void	HttpRequest::display_request() {
+void HttpRequest::display_request() {
+	string _url;
+	for (int i = 0; i < this->url.size(); i++)
+	{
+		_url += "/" + url[i];
+	}
 	cout << GREEN << "Method using: " << get_method() << "\n" << RESET;
-	cout << BLUE << "URL: " << get_url() << "\n" << RESET;
+	cout << BLUE << "URL: " << _url << "\n" << RESET;
+	cout << BOLD_CYAN << "Query: " << get_query() << "\n" << RESET;
+	cout << BOLD_GREEN << "Fragment: " <<  get_fragment() << "\n" << RESET;
 	cout << YELLOW << "Version HTTP: " << get_version() << "\n" << RESET;
 
 	for (map<string, string>::iterator it = header.begin(); it != header.end(); it++)
@@ -230,3 +345,24 @@ void	HttpRequest::display_request() {
 
 	cout << BG_MAGENTA << "Body: " << get_body() << "\n" << RESET;
 }
+
+//  if (it->second.find_first_not_of("!#$&'()*+,/:;=?@[]-_.~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != std::string::npos)
+// request-target longer than any URI it wishes to parse MUST respond
+//    with a 414 (URI Too Long)
+
+//  header-field   = field-name ":" OWS field-value OWS
+
+//      field-name     = token
+//      field-value    = *( field-content / obs-fold )
+//      field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
+//      field-vchar    = VCHAR / obs-text
+
+//      obs-fold       = CRLF 1*( SP / HTAB )
+//                     ; obsolete line folding
+//                     ; see Section 3.2.4
+
+//  transfer-coding    = "chunked" ; Section 4.1
+//                         / "compress" ; Section 4.2.1
+//                         / "deflate" ; Section 4.2.2
+//                         / "gzip" ; Section 4.2.3
+//                         / transfer-extension
