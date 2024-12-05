@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/01 22:24:20 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/04 15:35:32 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,13 +75,10 @@ void    WebServ::handle_client(int client_socket, const string &global_root)
         else if (bytes_received = 0)
             break;
         full_request.append(buffer, bytes_received);
-        if (full_request.find("\r\n\r\n") != string::npos)
-            break;
     }
     // Display the full request
     cout << "Received request: \n" << full_request << "\n";
     HttpRequest http_request(full_request);
-    
 }
 
 // This version in case of one server listen on one port
