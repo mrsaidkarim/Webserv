@@ -89,38 +89,3 @@ Content-Length: 2462
 ...
 </html>
 ```
-
-
-### kevent && kqueue
-The *kevent* function is the core mechanism of the *kqueue* event notification interface, which is used for scalable, efficient event-driven programming in modern operating systems.
-
-#### How kevent Works
-1. Register Events (Setup)
-
-Use the changelist to specify which events to monitor.
-```
-    EV_SET(&change_list[0], server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-    kevent(kq, change_list, change_count, nullptr, 0, nullptr);
-```
-
-2. Monitor Events
-
-Call kevent() to wait for events.
-```
-    struct kevent event_list[128];
-    int event_count = kevent(kq, change_list, 0, event_list, 128, nullptr);
-```
-The returned event_list will contain details about events that are ready.
-
-3. Process Ready Events
-
-Iterate through event_list to handle each ready event.
-
-#### Comparison(kqueue, poll / select)
-
-|            Feature           |            kqueue            |           poll / select           |
-|------------------------------|------------------------------|-----------------------------------|
-| Event Registration           | Done once and stored persistently  | Must re-specify in every iteration  |
-| Kernel Overhead              | Minimal (no repeated registrations) | High (repeated copying and processing) |
-| Performance                  | Scales efficiently with FDs  | Poor scalability for large numbers of FDs  |
-| Flexibility	               | Monitors various types of events  | Limited to read, write, and error  |

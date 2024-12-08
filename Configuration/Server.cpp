@@ -22,6 +22,10 @@ Server::Server(const vector<int> &ports, const vector<string> &server_names, con
     
 }
 
+Server::Server() {
+    
+}
+
 const vector<int> &Server::get_ports(void) const
 {
     return (ports);
@@ -69,7 +73,6 @@ const vector<string> &Server::get_error_pages(void) const
 
 void Server::print_server_info(void) const {
     cout << BOLD_YELLOW << "********************* server info *********************" << RESET << endl;
-    cout << BG_BLACK;
 
     cout << BOLD_BLUE << left << setw(20) << "ports " << ": " << BOLD_WHITE << "[";
     for (int i = 0; i < ports.size(); i++) {

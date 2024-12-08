@@ -13,6 +13,11 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <fstream>
+#include <dirent.h>
+#include <ctime>
 
 #define vector std::vector
 #define string std::string
@@ -25,8 +30,18 @@
 #define setw std::setw
 #define right std::right
 #define left std::left
+#define make_pair std::make_pair
+#define fstream std::fstream
+#define ios std::ios
+#define getline std::getline
+#define to_string std::to_string
+#define filesystem std::filesystem
+#define ostringstream std::ostringstream
+#define hex std::hex
 
 // newline characters 
+#define CR "\r"
+#define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
 
@@ -63,6 +78,6 @@
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 200
 
 #endif

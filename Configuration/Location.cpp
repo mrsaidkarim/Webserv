@@ -96,18 +96,15 @@ bool Location::set_redirections(const pair<string, string> &redirections)
 
 
 void Location::print_lacation_info() const {
-    cout << BG_WHITE;
-
-    cout << BOLD_BLUE << "\t" << "route       : ";
+    cout << BOLD_YELLOW << "\t" << "route       : " << BOLD_BLACK;
     for (unsigned long i = 0; i < route.size(); i++) {
+        cout << "/";
         cout << route[i];
-        if (i < route.size() - 1)
-            cout << "/";
     }
     // for(unsigned ) << BOLD_BLACK << route << " \n";
     cout << "\n";
 
-    cout << BOLD_BLUE << "\t" << "index       : " << BOLD_BLACK << "[";
+    cout << BOLD_YELLOW << "\t" << "index       : " << BOLD_BLACK << "[";
     for (unsigned long i = 0; i < indexes.size(); i++) {
         if (i > 0)
             cout << ", ";
@@ -115,13 +112,13 @@ void Location::print_lacation_info() const {
     }
     cout << "] " << endl;
 
-    cout << BOLD_BLUE << "\t" << "auto_index  : " << BOLD_BLACK;
+    cout << BOLD_YELLOW << "\t" << "auto_index  : " << BOLD_BLACK;
     if (auto_index) cout << "on " << " \n";
     else cout << "off " << " \n";
 
-    cout << BOLD_BLUE << "\t" << "root        : " << BOLD_BLACK << root << " \n";
+    cout << BOLD_YELLOW << "\t" << "root        : " << BOLD_BLACK << root << " \n";
 
-    cout << BOLD_BLUE << "\t" <<  "methods     : \n" << BOLD_BLACK;
+    cout << BOLD_YELLOW << "\t" <<  "methods     : \n" << BOLD_BLACK;
     cout << "\t      GET   : ";
     auto it = methods.find("GET");
     if (it == methods.end() || it->second == false)
@@ -141,7 +138,7 @@ void Location::print_lacation_info() const {
     else
         cout << "true \n";
 
-    cout << BOLD_BLUE << "\t" <<  "redirection : " << BOLD_BLACK;
+    cout << BOLD_YELLOW << "\t" <<  "redirection : " << BOLD_BLACK;
     cout << "[" << redirections.first << "]" << " [" << redirections.second << "] \n";
 
     cout << RESET;

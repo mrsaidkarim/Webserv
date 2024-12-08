@@ -8,28 +8,37 @@
 class HttpResponse {
     private:
         HttpRequest request;
-        vector<Server> servers;
+        Server  server;
+        int fd;
 
     public:
-        HttpResponse();
-        HttpResponse(const HttpRequest& request, const vector<Server> &servers);
+        HttpResponse(const HttpRequest& request, const Server&, const int);
         ~HttpResponse();
 
-        void get_method() const;
-        void post_method() const;
-        void delete_method() const;
+        void get_method();
+        void post_method();
+        void delete_method();
 
         void    serv();
+        void    serv_404();
+        void    serv_redirection();
+
+        
+        pair<int, int>    longest_common_location();
+        vector<string>    split_url(const string &); // zelabbas radi tmsah mn ba3d
 
 
         // get method help functions
-        void    get_response_html();
+        void    get_response_autoindex(string &);
+        void    get_response_html(string &);
         void    get_response_txt();
         void    get_response_png();
         void    get_response_mp4();
         void    get_response_mp3();
         void    get_response_pdf();
 
+        void   send_response(string &);
+        void   send_chunked_response(string &);
         // post method help functions
 
 
