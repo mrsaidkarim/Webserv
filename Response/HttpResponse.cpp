@@ -1,7 +1,9 @@
 #include "HttpResponse.hpp"
 #include <sys/stat.h>
 #include <unistd.h>
+#include "../WebServ.hpp"
 
+class WebServ;
 
 HttpResponse::HttpResponse(HttpRequest *_request) {
     this->request = _request;
@@ -115,6 +117,66 @@ string to_hex(int number) {
     return oss.str();
 }
 
+string HttpResponse::get_content_type(const string &path) {
+    unordered_map<string, string> extensions;
+
+    extensions.insert(make_pair("html", "text/html"));
+    extensions.insert(make_pair("css", "text/css"));
+    extensions.insert(make_pair("js", "text/javascript"));
+    extensions.insert(make_pair("jpg", "image/jpeg"));
+    extensions.insert(make_pair("jpeg", "image/jpeg"));
+    extensions.insert(make_pair("png", "image/png"));
+    extensions.insert(make_pair("gif", "image/gif"));
+    extensions.insert(make_pair("bmp", "image/bmp"));
+    extensions.insert(make_pair("ico", "image/x-icon"));
+    extensions.insert(make_pair("svg", "image/svg+xml"));
+    extensions.insert(make_pair("mp4", "video/mp4"));
+    extensions.insert(make_pair("webm", "video/webm"));
+    extensions.insert(make_pair("ogg", "video/ogg"));
+    extensions.insert(make_pair("mp3", "audio/mpeg"));
+    extensions.insert(make_pair("wav", "audio/wav"));
+    extensions.insert(make_pair("pdf", "application/pdf"));
+    extensions.insert(make_pair("zip", "application/zip"));
+    extensions.insert(make_pair("tar", "application/x-tar"));
+    extensions.insert(make_pair("gz", "application/gzip"));
+    extensions.insert(make_pair("bz2", "application/x-bzip2"));
+    extensions.insert(make_pair("7z", "application/x-7z-compressed"));
+    extensions.insert(make_pair("txt", "text/plain"));
+    extensions.insert(make_pair("rtf", "application/rtf"));
+    extensions.insert(make_pair("doc", "application/msword"));
+    extensions.insert(make_pair("docx", "application/vnd.openxmlformats-officedocument.wordprocessingml.document"));
+    extensions.insert(make_pair("xls", "application/vnd.ms-excel"));
+    extensions.insert(make_pair("xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    extensions.insert(make_pair("ppt", "application/vnd.ms-powerpoint"));
+    extensions.insert(make_pair("pptx", "application/vnd.openxmlformats-officedocument.presentationml.presentation"));
+    extensions.insert(make_pair("csv", "text/csv"));
+    extensions.insert(make_pair("xml", "application/xml"));
+    extensions.insert(make_pair("json", "application/json"));
+    extensions.insert(make_pair("py", "text/x-python"));
+    extensions.insert(make_pair("c", "text/x-csrc"));
+    extensions.insert(make_pair("cpp", "text/x-c++src"));
+    extensions.insert(make_pair("h", "text/x-chdr"));
+    extensions.insert(make_pair("hpp", "text/x-c++hdr"));
+    extensions.insert(make_pair("java", "text/x-java"));
+    extensions.insert(make_pair("sh", "application/x-sh"));
+    extensions.insert(make_pair("bat", "application/x-bat"));
+    extensions.insert(make_pair("exe", "application/x-msdownload"));
+    extensions.insert(make_pair("bin", "application/octet-stream"));
+    extensions.insert(make_pair("deb", "application/x-deb"));
+    extensions.insert(make_pair("rpm", "application/x-rpm"));
+
+
+    size_t pos = path.rfind('.');
+    if (pos != string::npos) {
+        string extension = path.substr(pos + 1);
+        if (extensions.find(extension) != extensions.end()) {
+            return (extensions[extension]);
+        }
+    }
+    return ("text/plain");
+}
+
+
 void HttpResponse::get_response_html(string &path) {
     fstream file(path.c_str(), ios::in);
     if (!file) {
@@ -122,11 +184,14 @@ void HttpResponse::get_response_html(string &path) {
         return;
     }
 
+    string content_type = get_content_type(path);
+    // cout << BOLD_MAGENTA << content_type << "\n";
+
     // Update Content-Type to match your HTML content
     if (request->get_file_offset() == 0) {
         string http_response_header =
             "HTTP/1.1 200 OK\r\n"
-            "Content-Type: video/mp4\r\n"
+            "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
             "\r\n";
         write(request->get_serv_socket_communication_fd(), http_response_header.c_str(), http_response_header.size());
@@ -158,6 +223,8 @@ void HttpResponse::get_response_html(string &path) {
         write(request->get_serv_socket_communication_fd(), "0\r\n\r\n", 5);  // Ends the chunked response
         request->set_is_complete(true);
     }
+    
+    file.close();
 }
 
 
@@ -195,9 +262,17 @@ string generateAutoindexHTML(const string& dirPath, const string& basePath) {
     string html = R"(<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
+       <title>404 Not Found</title>
+       <style>
+           body {
+               background-color: black;
+           }
+           h1 {
+               color: white;
+               text-align: center;
+           }
+       </style>
+   </head>
 <body>
     <h1><a href="../" class="back-link">..</a></h1>
     )";
@@ -325,16 +400,30 @@ void HttpResponse::get_method() {
         }
     }
 
-    if (request->get_url().size() > 2) {
+    if (split_url(request->get_url()).size() > 2) {
         // cout << "no location found\n";
         serv_404();
         return ;
     }
-    
-    //priority: 3 (index)
+
+
     struct stat path_status;
     string path = request->get_server().get_global_root();
     string index_path;
+    if (request->get_url() != "/") {
+        index_path = path + request->get_url();
+        if (stat(index_path.c_str(), &path_status) == 0) {
+            get_response_html(index_path);
+            return ;
+        } else {
+            serv_404();
+            return ;
+        }
+    }   
+
+
+    //priority: 3 (index)
+    path = request->get_server().get_global_root();;
     for (int i = 0; i < request->get_server().get_indexes().size(); i++) {
         // cout << "hna\n";
         string index = request->get_server().get_indexes()[i];
@@ -345,8 +434,7 @@ void HttpResponse::get_method() {
         }        
     }
 
-    index_path = path + "/video1.mp4";
-    // cout << index_path << "\n";
+    index_path = path + "/index.html";
     if (stat(index_path.c_str(), &path_status) == 0) {
         get_response_html(index_path);
         return ;

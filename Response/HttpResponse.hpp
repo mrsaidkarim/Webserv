@@ -38,6 +38,9 @@ class HttpResponse {
 
         void   send_response(string &);
         void   send_chunked_response(string &);
+
+
+        string  get_content_type(const string &);
         // post method help functions
 
 

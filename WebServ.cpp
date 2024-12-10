@@ -3,7 +3,9 @@
 #include "Request/HttpRequest.hpp"
 #include "Response/HttpResponse.hpp"
 #include "const.hpp"
+#include <cstddef>
 #include <unistd.h>
+
 
 WebServ::WebServ() {
     cout << "WebServ Constructor Called\n";
@@ -13,8 +15,6 @@ WebServ::WebServ() {
 WebServ::~WebServ() {
     cout << "WebServ Destructor Called\n";
 }
-
-
 
 void WebServ::create_sockets(Server &server) {
     serv_fd = socket(PF_INET, SOCK_STREAM, 0);
@@ -258,6 +258,7 @@ void WebServ::run() {
                     response->serv();
                     client_responses[fd] = response;
 
+                    cout << BOLD_GREEN << "Request buffer: " << serv_request_buffer << "\n" << RESET;
                     // Add client socket to kqueue for write events
                     EV_SET(&changes[0], fd, EVFILT_WRITE, EV_ADD, 0, 0, nullptr);
                     kevent(kq, changes, 1, nullptr, 0, nullptr);
