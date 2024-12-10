@@ -69,7 +69,6 @@ HttpRequest::HttpRequest(const string& _request, int _serv_socket_communication_
 
 HttpRequest::~HttpRequest() {
 	close(serv_socket_communication_fd);
-	close(file_fd);
 	cout << "HttpRequest destructer\n";
 }
 
@@ -266,4 +265,22 @@ streampos	HttpRequest::get_file_offset() const {
 
 void HttpRequest::set_file_offset(streampos _file_offset) {
 	this->file_offset = _file_offset;
+}
+
+
+void HttpRequest::set_file_path(string _file_path) {
+	this->file_path = _file_path;
+}
+
+void HttpRequest::set_is_chunked(bool _is_chunked) {
+	this->is_chunked = _is_chunked;
+}
+
+
+const string &HttpRequest::get_file_path() const {
+	return (this->file_path);
+}
+
+bool HttpRequest::get_is_chunked() const {
+	return (this->is_chunked);
 }

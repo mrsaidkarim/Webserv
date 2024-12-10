@@ -25,7 +25,6 @@ class HttpRequest
 		string 				body;
 		string 				statusCode;
 		int                 serv_socket_communication_fd;
-		int 			    file_fd;
 		string			    file_path;
 		streampos 			file_offset;
 		map<string, string> header;
@@ -53,6 +52,8 @@ class HttpRequest
 		void set_server(Server _server);
 		void set_is_complete(bool _is_complete);
 		void set_file_offset(streampos _file_offset);
+		void set_file_path(string _file_path);
+		void set_is_chunked(bool _is_chunked);
 
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -66,6 +67,8 @@ class HttpRequest
 		bool  get_is_complete() const;
 		int get_serv_socket_communication_fd() const;
 		streampos get_file_offset() const;
+		const string &get_file_path() const;
+		bool get_is_chunked() const;
 };
 
 #endif

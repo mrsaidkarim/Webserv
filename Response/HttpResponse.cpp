@@ -177,7 +177,8 @@ string HttpResponse::get_content_type(const string &path) {
 }
 
 
-void HttpResponse::get_response_html(string &path) {
+void HttpResponse::send_response() {
+    string path = request->get_file_path();
     fstream file(path.c_str(), ios::in);
     if (!file) {
         serv_404();
@@ -195,6 +196,7 @@ void HttpResponse::get_response_html(string &path) {
             "Transfer-Encoding: chunked\r\n"
             "\r\n";
         write(request->get_serv_socket_communication_fd(), http_response_header.c_str(), http_response_header.size());
+        request->set_is_chunked(true);
     }
 
     file.seekg(request->get_file_offset());
@@ -327,6 +329,11 @@ void    HttpResponse::get_response_autoindex(string &html_body) {
 }
 
 void HttpResponse::get_method() {
+    if (request->get_is_chunked()) {
+        send_response();
+        return ;
+    }
+    
     //priority: 1 (redirection)
     if (!request->get_server().get_redirection().first.empty()) {
         serv_redirection();
@@ -371,14 +378,16 @@ void HttpResponse::get_method() {
                 string index = request->get_server().get_locations()[x].get_indexes()[i];
                 index_path = path + "/" + index;
                 if (stat(index_path.c_str(), &path_status) == 0) {
-                    get_response_html(index_path);
+                    request->set_file_path(index_path);
+                    send_response();
                     return ;
                 }
             }
 
             index_path = path + "/index.html";
             if (stat(index_path.c_str(), &path_status) == 0) {
-                get_response_html(index_path);
+                request->set_file_path(index_path);
+                send_response();
                 return ;
             }
 
@@ -390,9 +399,8 @@ void HttpResponse::get_method() {
             serv_404();
             // here we should check for index
         } else if (S_ISREG(path_status.st_mode)) {
-            // here we should check for file type
-            // for now I will just response to html files
-            get_response_html(path);
+            request->set_file_path(path);
+            send_response();
             return ;
         } else {
             serv_404();
@@ -413,7 +421,8 @@ void HttpResponse::get_method() {
     if (request->get_url() != "/") {
         index_path = path + request->get_url();
         if (stat(index_path.c_str(), &path_status) == 0) {
-            get_response_html(index_path);
+            request->set_file_path(index_path);
+            send_response();
             return ;
         } else {
             serv_404();
@@ -429,14 +438,16 @@ void HttpResponse::get_method() {
         string index = request->get_server().get_indexes()[i];
         index = path + "/" + index;
         if (stat(index_path.c_str(), &path_status) == 0) {
-            get_response_html(index_path);
+            request->set_file_path(index);
+            send_response();
             return ;
         }        
     }
 
     index_path = path + "/index.html";
     if (stat(index_path.c_str(), &path_status) == 0) {
-        get_response_html(index_path);
+        request->set_file_path(index_path);
+        send_response();
         return ;
     }
     

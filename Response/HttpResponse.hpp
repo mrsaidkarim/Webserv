@@ -29,17 +29,8 @@ class HttpResponse {
 
         // get method help functions
         void    get_response_autoindex(string &);
-        void    get_response_html(string &);
-        void    get_response_txt();
-        void    get_response_png();
-        void    get_response_mp4();
-        void    get_response_mp3();
-        void    get_response_pdf();
-
-        void   send_response(string &);
-        void   send_chunked_response(string &);
-
-
+        void    send_response();
+        
         string  get_content_type(const string &);
         // post method help functions
 
