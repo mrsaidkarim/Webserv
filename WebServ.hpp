@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 15:23:39 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/01 22:24:26 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/10 18:17:42 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,20 +15,19 @@
 
 #include "const.hpp"
 #include "Configuration/Server.hpp"
-#include "HttpRequest.hpp"
+#include "Request/HttpRequest.hpp"
 
 class WebServ
 {
     private:
         vector<Server> servers;
+        map<int, vector<Server>> socket_servers;
     public:
-    WebServ();
-    ~WebServ();
-    bool run_one_server(const Server &server);
-    void handle_client(int client_socket, const string &global_root);
-    void run(); // Run All Servers
-    // void listen();
-    // void close_sockets();
+        WebServ();
+        WebServ(const vector<Server> &servers);
+        ~WebServ();
+        void run_servers(); // Run All Servers
+        void close_sockets();
 };
 
 #endif
