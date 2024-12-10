@@ -6,9 +6,9 @@ FLAGS =  -std=c++11 -fsanitize=address  #-Wall -Wextra -Werror
 
 RM = rm -f
 
-SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp Request/HttpRequest.cpp
+SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp Request/HttpRequest.cpp WebServ.cpp
 
-HEADERS = Configuration/Location.hpp Configuration/Server.hpp const.hpp
+HEADERS = Configuration/Location.hpp Configuration/Server.hpp Request/HttpRequest.hpp const.hpp WebServ.hpp
 
 OBJS = $(SRCS:.cpp=.o)
 
