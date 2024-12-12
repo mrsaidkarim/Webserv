@@ -19,7 +19,13 @@ HttpRequest::HttpRequest(const string& _request) {
 	vector<string>	start_line;
 	size_t			index;
 
-	cout << "HttpRequest constructer\n";
+
+	file_offset = 0;
+	is_chunked = false;
+	is_complete = false;
+	file_stream = NULL;
+
+	cout << BOLD_YELLOW << "HttpRequest constructor" << RESET << endl;
 	index = _request.find(CRLF_2);
 	if (index == string::npos) {
 		this->set_status_code("400");
@@ -63,7 +69,11 @@ HttpRequest::HttpRequest(const string& _request) {
 }
 
 HttpRequest::~HttpRequest() {
-	cout << "HttpRequest destructer\n";
+	if (file_stream) {
+		file_stream->close();
+		delete file_stream;
+	}
+	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
 // SETTERS:
@@ -99,7 +109,7 @@ bool HttpRequest::set_url(const string& _url) {
 			key = update_url.substr(i, 3);
 			if (encoding_symbols[key] == '\0')
 				return (this->set_status_code("400"), false);
-			 update_url.replace(i, 3, 1,encoding_symbols[key]);
+			update_url.replace(i, 3, 1,encoding_symbols[key]);
 		}
 	}
 	query_pos =  update_url.find('?');
@@ -227,7 +237,7 @@ bool HttpRequest::is_valid_header_request(const string& _header) {
 	string			line;
 	string			key, value;
 	size_t			index;
-	while (std::getline(str, line))
+	while (getline(str, line))
 	{
 		if (!line.empty() && line.back() == '\r')
 			line.pop_back();
@@ -366,3 +376,61 @@ void HttpRequest::display_request() {
 //                         / "deflate" ; Section 4.2.2
 //                         / "gzip" ; Section 4.2.3
 //                         / transfer-extension
+
+
+
+void HttpRequest::set_client_socket(int _client_socket) {
+	this->client_socket = _client_socket;
+}
+
+int HttpRequest::get_client_socket(void) const {
+	return (this->client_socket);
+}
+
+void HttpRequest::set_server(const Server& _server) {
+	this->server = _server;
+}
+
+const Server& HttpRequest::get_server(void) const {
+	return (this->server);
+}
+
+void HttpRequest::set_is_complete(bool _is_complete) {
+	this->is_complete = _is_complete;
+}
+
+bool HttpRequest::get_is_complete(void) const {
+	return (this->is_complete);
+}
+
+void HttpRequest::set_is_chunked(bool _is_chunked) {
+	this->is_chunked = _is_chunked;
+}
+
+bool HttpRequest::get_is_chunked(void) const {
+	return (this->is_chunked);
+}
+
+void HttpRequest::set_file_path(const string& _file_path) {
+	this->file_path = _file_path;
+}
+
+const string& HttpRequest::get_file_path(void) const {
+	return (this->file_path);
+}
+
+void HttpRequest::set_file_stream(fstream* _file_stream) {
+	this->file_stream = _file_stream;
+}
+
+fstream* HttpRequest::get_file_stream(void) const {
+	return (this->file_stream);
+}
+
+void HttpRequest::set_file_offset(streampos _file_offset) {
+	this->file_offset = _file_offset;
+}
+
+streampos HttpRequest::get_file_offset(void) const {
+	return (this->file_offset);
+}

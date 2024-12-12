@@ -7,12 +7,11 @@
 
 class HttpResponse {
     private:
-        HttpRequest request;
+        HttpRequest *request;
         vector<Server> servers;
 
     public:
-        HttpResponse();
-        HttpResponse(const HttpRequest& request, const vector<Server> &servers);
+        HttpResponse(HttpRequest *);
         ~HttpResponse();
 
         void get_method() const;
@@ -22,14 +21,17 @@ class HttpResponse {
         void    serv();
 
 
-        // get method help functions
-        void    get_response_html();
-        void    get_response_txt();
-        void    get_response_png();
-        void    get_response_mp4();
-        void    get_response_mp3();
-        void    get_response_pdf();
 
+        void serv_404() const;
+
+        string get_content_type(const string &) const;
+        void send_response() const;
+        void serv_redirection() const;
+        void serv_autoindex(const string&) const;
+
+        // get method help functions
+        pair<int, int> longest_common_location() const;
+        HttpRequest *get_request() const;
         // post method help functions
 
 

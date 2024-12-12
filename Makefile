@@ -1,14 +1,26 @@
-NAME = a.out
+NAME = webserv
 
 CPP = c++
 
-FLAGS =  -std=c++11 -fsanitize=address  #-Wall -Wextra -Werror
+FLAGS =  -std=c++17 -g #-fsanitize=address  #-Wall -Wextra -Werror
 
 RM = rm -f
 
-SRCS = Configuration/Location.cpp main.cpp Configuration/Server.cpp Request/HttpRequest.cpp WebServ.cpp
+SRCS = 	Configuration/Location.cpp\
+		Configuration/Server.cpp\
+		Request/HttpRequest.cpp\
+		Response/HttpResponse.cpp\
+		Response/get_method.cpp\
+		Response/error_response.cpp\
+		WebServ.cpp\
+		main.cpp
 
-HEADERS = Configuration/Location.hpp Configuration/Server.hpp Request/HttpRequest.hpp const.hpp WebServ.hpp
+HEADERS = 	Configuration/Location.hpp\
+			Configuration/Server.hpp\
+			Request/HttpRequest.hpp\
+			Response/HttpResponse.hpp\
+			WebServ.hpp\
+			const.hpp
 
 OBJS = $(SRCS:.cpp=.o)
 

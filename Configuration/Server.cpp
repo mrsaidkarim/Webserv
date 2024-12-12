@@ -12,6 +12,10 @@
 
 #include "Server.hpp"
 
+Server::Server() {
+    
+}
+
 Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
                 const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
                 const vector<string> &indexes, bool autoindex, const vector<string> &error_pages) :

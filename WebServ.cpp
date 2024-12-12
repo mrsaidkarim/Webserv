@@ -11,16 +11,26 @@
 /* ************************************************************************** */
 
 #include "WebServ.hpp"
+#include "Configuration/Server.hpp"
+#include "Request/HttpRequest.hpp"
+#include "Response/HttpResponse.hpp"
+#include "const.hpp"
+#include <sys/_types/_ssize_t.h>
+#include <sys/event.h>
 
 WebServ::WebServ()
-{}
+{
+    cout << "default WebServ constructor called\n";
+}
 
 WebServ::WebServ(const vector<Server> &servers) : servers(servers)
 {
+    cout << "parameterized WebServ constructor called\n";
 }
 
 WebServ::~WebServ()
 {
+    cout << "WebServ destructor called\n";
     this->close_sockets();
 }
 
@@ -80,8 +90,62 @@ bool register_server_sockets(int kq, const map<int, vector<Server>> &servers)
     return (true);
 }
 
+// search for right server
+Server host_server_name(const map<int, vector<Server>> &servers, int server_socket, HttpRequest *request) {
+    map<int, vector<Server>>::const_iterator it = servers.find(server_socket);
+    // I don't this this will happend but if it happend we should return some thing
+    // if client connect to server so the server socket should be in the map
+    if (it != servers.end()) {
+        vector<Server> servers = it->second;
+        return servers[0];
+    }
+    Server server;
+    // if host header is not found in the request
+    // we return the first server in the vector
+    if (request->get_header().find("Host") == request->get_header().end()) {
+        server = it->second[0];
+        return server;
+    }
+
+    // the host header is found in the request
+    string host = request->get_header().find("Host")->second;
+    bool found = false;
+
+    for (int i = 0; i < it->second.size(); i++) {
+        // server_names is a vector of server names for current server in the vector of servers
+        vector<string> server_names = it->second[i].get_server_names();
+        for (int j = 0; j < server_names.size(); j++) {
+            if (server_names[j] == host) {
+                server = it->second[i];
+                found = true;
+                break;
+            }
+        }
+        if (found) {
+            break;
+        }
+    }
+
+    // if not found return the first server in the vector
+    if (!found) {
+        server = it->second[0];
+    }
+
+    return (server);
+}
+
+
 void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 {
+    // set socket to non-blocking
+    // for (map<int, vector<Server>>::const_iterator it = servers.begin(); it != servers.end(); it++)
+    // {
+    //     int server_socket = it->first;
+    //     int flags = fcntl(server_socket, F_GETFL, 0);
+    //     fcntl(server_socket, F_SETFL, flags | O_NONBLOCK);
+    // }
+
+    unordered_map<int, HttpResponse*> client_responses;
     const int MAX_EVENTS = 128; // may we change it after if wasn't perfect for memory usage
     struct kevent event_list[MAX_EVENTS];
     map<int, int> client_server;
@@ -95,6 +159,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
             int fd = event_list[i].ident;
 
             if (servers.find(fd) != servers.end()) {
+                // new client connection
                 sockaddr_in client_addr;
                 socklen_t client_len = sizeof(client_addr);
 
@@ -112,32 +177,64 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     continue;
                 }
                 client_server[client_socket] = fd;
-            }
-            else {
-                // fd is the client socket file descriptor
-                // servers related to socket is servers[client_server[fd]]
-                //3ish a zechi
-                
+            } else if (event_list[i].filter == EVFILT_READ) {
+                // read incoming request from client
+                string serv_request_buffer = string(BUFFER_SIZE2, '\0');
+                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+                /*
+                    MSG_DONTWAIT:
+                    A flag indicating that the call should return immediately if no data is available, 
+                    instead of blocking the process. If no data is available, recv returns -1 and sets
+                    errno to EAGAIN or EWOULDBLOCK
+                */
+                if (bytes_read > 0) {
+                    // process the request
 
-                char buffer[1024];
-                int bytes_read = recv(fd, buffer, sizeof(buffer) - 1, 0);
-                if (bytes_read <= 0) {
-                    if (bytes_read == 0)
-                        cout << "Client disconnected (fd: " << fd << ")\n";
-                    else
-                        perror("Error: Failed to read from client socket");
+                    // get data from request buffer
+                    HttpRequest *request = new HttpRequest(serv_request_buffer);
 
-                    // Remove the client socket from kqueue and close it
+                    // search for right server
+                    int server_socket = client_server[fd];
+                    Server server = host_server_name(servers , server_socket, request);
+
+                    // set client socket and server
+                    request->set_client_socket(fd);
+                    request->set_server(server);
+
+                    // create response object
+                    HttpResponse *response = new HttpResponse(request);
+
+                    // store the response object in the map
+                    client_responses[fd] = response;
+
+                    // add client socket to kqueue for writing event
+                    struct kevent change;
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                    kevent(kq, &change, 1, nullptr, 0, nullptr);
+
+                } else {
+                    // client disconnected
+                    close(fd);
+                }
+
+            } else if (event_list[i].filter == EVFILT_WRITE) {
+                // send chunked response to client
+                HttpResponse *response = client_responses[fd];
+                if (!response) {
                     close(fd);
                     continue;
                 }
-                string server_name = servers.at(client_server[fd])[0].get_server_names()[0];
-                string response_body = "Hello from " + server_name + "!";
-                string response = "HTTP/1.1 200 OK\r\nContent-Length: " + std::to_string(response_body.size()) + "\r\n\r\n" + response_body;
-
-                send(fd, response.c_str(), response.size(), 0);
-                
-                close(fd);
+                response->serv();
+                // if response is complete, remove all client data
+                if (response->get_request()->get_is_complete()) {
+                    delete response->get_request();
+                    delete response;
+                    close(fd);
+                    client_responses.erase(fd);
+                    struct kevent change;
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                    kevent(kq, &change, 1, nullptr, 0, nullptr);
+                }
             }
         }
     }
@@ -145,6 +242,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 
 void WebServ::run_servers()
 {
+    // this map will store the server socket file descriptor as the key and the vector of servers that use that socket as the value
+    // but i think you store some times key as port and some times as socket file descriptor
     map<int, vector<Server>> sockets_created;
     
     for(Server server : this->servers)
@@ -154,23 +253,27 @@ void WebServ::run_servers()
         for(int port: ports)
         {
             sockets_created[port].push_back(server);
+            cout << "to create socket for port: " << port << "\n"; 
         }
     }
+
     for(map<int, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
     {
         int server_socket;
+        // if (!configure_socket(server_socket, it->first)) that's mean socket creation failed
         if (!configure_socket(server_socket, it->first))
-            continue;
+            continue; // should we exit the program.
+        // i think you should erase the port
         socket_servers[server_socket] = it->second;
     }
     int kq = kqueue();
     if (kq == -1)
     {
         cerr << "Error: kqueue creation failed\n";
-        return ;
+        return ; // should we exit the program.
     }
     if (!register_server_sockets(kq, socket_servers))
-        return ;
+        return ; // should we exit the program.
     monitor_server_sockets(kq, socket_servers);
 }
 
@@ -180,4 +283,9 @@ void WebServ::close_sockets()
     {
         close(it->first);
     }
+}
+
+const map<int, vector<Server>> &WebServ::get_socket_servers() const
+{
+    return socket_servers;
 }

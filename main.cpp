@@ -1,151 +1,242 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   main.cpp                                           :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/30 12:06:33 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/10 20:48:47 by skarim           ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
-#include "const.hpp"
+#include "WebServ.hpp"
 #include "Configuration/Location.hpp"
+#include "Response/HttpResponse.hpp"
 #include "Configuration/Server.hpp"
 #include "Request/HttpRequest.hpp"
-#include "WebServ.hpp"
 
-int main(int ac, char **av)
-{
-    // vector<string> route = {"home", "repo1", "index.html"};
-    // vector<string> indexes = {"index.html", "home.html"};
-    // bool auto_index = true;
-    // string root = "/var/www/example";
-    // map<string, bool> methods = {
-    //     {"GET", true},
-    //     {"POST", true},
-    //     {"DELETE", false}
-    // };
-    // pair<string, string> redirections = {"301", "www.youtube.com"};
 
-    // // Create a Location object
-    // Location loc1(route, indexes, auto_index, root, methods, redirections);
-    // Location loc2(
-    //     {"home", "repo2", "index.html"},
-    //     {"home.html"},
-    //     false,
-    //     "",
-    //     {{"GET", true},
-    //     {"POST", false},
-    //     {"DELETE", false}},
-    //     {}
-    // );
-    // Location loc3(
-    //     {"home", "repo3", "index.html"},
-    //     {},
-    //     false,
-    //     "",
-    //     {{"GET", true},
-    //     {"POST", false},
-    //     {"DELETE", false}},
-    //     {"301", "www.youtube.com"}
-    // );
-    // Location.print_lacation_info();
+// this function initializes a server object
+// with some dummy data
+// this is just for testing purposes
+// all those data should be read from the config file
+Server server_init1() {
+    vector<string> route = {"youtube"};
+    vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
+    bool auto_index = false;
+    string root = "";
+    map<string, bool> methods = {
+        {"GET", true},
+        {"POST", true},
+        {"DELETE", false}
+    };
+    pair<string, string> redirections = {"301", "www.youtube.com"};
 
-    // vector<int> ports = {8080, 443};
-    // vector<string> server_names = {"zechi.com", "www.nigro.com"};
-    // long long client_max_body_size = 10485760; // 10 MB
-    // vector<Location> locations = {loc1, loc2, loc3};
-    // string global_root = "/globalroot";
-    // pair<string, string> redirection = {"301", "www.ingtagram.com"};
-    // vector<string> indexes2 = {"indexserver.html", "homeserver.html"};
-    // bool autoindex2 = true;
-    // vector<string> error_pages = {"404.html", "500.html", "403.html"};
-    
-    // Server server(
-    //     ports,
-    //     server_names,
-    //     client_max_body_size,
-    //     locations,
-    //     global_root,
-    //     redirection,
-    //     indexes2,
-    //     autoindex2,
-    //     error_pages
-    // );
-
-    // test run servers
-    Location loc1(
-        {"home", "repo1", "index.html"},
-        {"home.html"},
-        false,
-        "",
+    // Create a Location object
+    Location loc1(route, indexes, auto_index, root, methods, redirections);
+    Location loc2(
+        {"A2", "B2", "C2"},
+        {"home.html", "index.html"},
+        true,
+        "/Volumes/TOSHIBA/www/a2/",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}},
         {}
-    );
-    Location loc2(
-        {"home", "repo2", "index.html"},
-        {},
-        false,
-        "",
-        {{"GET", true},
-        {"POST", false},
-        {"DELETE", false}},
-        {"301", "www.youtube.com"}
     );
     Location loc3(
-        {"home", "repo3", "index.html"},
-        {},
+        {"A3", "B3", "C3"},
+        {"index.html"},
         false,
-        "",
+        "/Volumes/TOSHIBA/www/a3/",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}},
         {}
     );
-    Server server1(
-        {8080},
-        {"zechi.com", "www.nigro.com"},
-        10485760,
-        {loc1, loc2},
-        "/globalroot1",
-        {"301", "www.ingtagram.com"},
-        {"indexserver1.html", "homeserver1.html"},
+    Location loc4(
+        {"A4", "B4", "C4"},
+        {"index.html"},
         true,
-        {"404.html", "500.html", "403.html"}
+        "/Volumes/TOSHIBA/www/a4/",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    // Location.print_lacation_info();
+
+    vector<int> ports = {8080};
+    vector<string> server_names = {"zechi.com", "www.nigro.com"};
+    long long client_max_body_size = -1;
+    vector<Location> locations = {loc1, loc2, loc3, loc4};
+    string global_root = "/Volumes/TOSHIBA/www/";
+    // pair<string, string> redirection = {"301", "https://auth.42.fr"};
+    pair<string, string> redirection = {"", ""};
+    vector<string> indexes2 = {"index.html"};
+    bool autoindex2 = true;
+    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+    
+    Server server(
+        ports,
+        server_names,
+        client_max_body_size,
+        locations,
+        global_root,
+        redirection,
+        indexes2,
+        autoindex2,
+        error_pages
     );
 
-    Server server2(
-        {7070},
-        {"saim.com"},
-        10485760,
-        {loc3},
-        "/globalroot2",
-        {"301", "www.maroc.ma"},
-        {"indexserver2.html", "homeserver2.html"},
-        true,
-        {"404.html", "500.html", "403.html"}
-    );
-    vector<Server> servers = {server1, server2};
-    WebServ ws(servers);
-    ws.run_servers();
+    return (server);
+}
+Server server_init2() {
+    vector<string> route = {"youtube"};
+    vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
+    bool auto_index = false;
+    string root = "";
+    map<string, bool> methods = {
+        {"GET", true},
+        {"POST", true},
+        {"DELETE", false}
+    };
+    pair<string, string> redirections = {"301", "www.youtube.com"};
 
-    //
-    // server.print_server_info();
-	// const char *http_request = 
-	// "GET / HTTP/1.1\r\n"
-	// "Host: localhost\r\n"
-	// "Content-Length: 13\r\n"
-	// "transfer: code\r\n"
-	// "test: HTTPHELLO\r\n"
-	// "\r\n"
-	// "Hello, World!";
-	// HttpRequest test(http_request);
-	// if (test.get_status_code().empty())
-	// 	test.display_request();
-	// else
-	// 	cout << RED << "error: " << test.get_status_code() << "\n" << RESET;
+    // Create a Location object
+    Location loc1(route, indexes, auto_index, root, methods, redirections);
+    Location loc2(
+        {"A2", "B2", "C2"},
+        {"home.html", "index.html"},
+        true,
+        "/Volumes/TOSHIBA/www/a2",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    Location loc3(
+        {"A3", "B3", "C3"},
+        {"index.html"},
+        false,
+        "/Volumes/TOSHIBA/www/a3",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    Location loc4(
+        {"A4", "B4", "C4"},
+        {"index.html"},
+        true,
+        "/Volumes/TOSHIBA/www/a4",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    // Location.print_lacation_info();
+
+    vector<int> ports = {8000, 8001};
+    vector<string> server_names = {"zechi.com", "www.nigro.com"};
+    long long client_max_body_size = -1;
+    vector<Location> locations = {loc1, loc2, loc3, loc4};
+    string global_root = "/Volumes/TOSHIBA/www";
+    // pair<string, string> redirection = {"301", "https://auth.42.fr"};
+    pair<string, string> redirection = {"", ""};
+    vector<string> indexes2 = {"video1.mp4"};
+    bool autoindex2 = true;
+    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+    
+    Server server(
+        ports,
+        server_names,
+        client_max_body_size,
+        locations,
+        global_root,
+        redirection,
+        indexes2,
+        autoindex2,
+        error_pages
+    );
+
+    return (server);
+}
+Server server_init3() {
+    vector<string> route = {"youtube"};
+    vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
+    bool auto_index = false;
+    string root = "";
+    map<string, bool> methods = {
+        {"GET", true},
+        {"POST", true},
+        {"DELETE", false}
+    };
+    pair<string, string> redirections = {"301", "www.youtube.com"};
+
+    // Create a Location object
+    Location loc1(route, indexes, auto_index, root, methods, redirections);
+    Location loc2(
+        {"A2", "B2", "C2"},
+        {"home.html", "index.html"},
+        true,
+        "/Volumes/TOSHIBA/www/a2",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    Location loc3(
+        {"A3", "B3", "C3"},
+        {"index.html"},
+        false,
+        "/Volumes/TOSHIBA/www/a3",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    Location loc4(
+        {"A4", "B4", "C4"},
+        {"index.html"},
+        true,
+        "/Volumes/TOSHIBA/www/a4",
+        {{"GET", true},
+        {"POST", false},
+        {"DELETE", false}},
+        {}
+    );
+    // Location.print_lacation_info();
+
+    vector<int> ports = {8002, 8003, 8004};
+    vector<string> server_names = {"zechi.com", "www.nigro.com"};
+    long long client_max_body_size = -1;
+    vector<Location> locations = {loc1, loc2, loc3, loc4};
+    string global_root = "/Volumes/TOSHIBA/www";
+    // pair<string, string> redirection = {"301", "https://auth.42.fr"};
+    pair<string, string> redirection = {"", ""};
+    vector<string> indexes2 = {"book.pdf"};
+    bool autoindex2 = true;
+    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+    
+    Server server(
+        ports,
+        server_names,
+        client_max_body_size,
+        locations,
+        global_root,
+        redirection,
+        indexes2,
+        autoindex2,
+        error_pages
+    );
+
+    return (server);
+}
+
+
+int main() {
+    signal (SIGPIPE, SIG_IGN); // ignore broken pipe signal from client
+    cout.setf(ios::unitbuf); // flushes the buffer after every output operation
+    // create servers objects
+    Server server1 = server_init1();
+    Server server2 = server_init1();
+    Server server3 = server_init1();
+
+    vector<Server> servers = {server1};
+
+    // create WebServ object
+    WebServ webserv(servers);
+
+    // run the servers
+    webserv.run_servers();
 }

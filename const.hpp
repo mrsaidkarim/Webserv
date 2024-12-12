@@ -1,7 +1,6 @@
 #ifndef CONST_HPP
 #define CONST_HPP
 
-
 #include <iostream>
 #include <vector>
 #include <string>
@@ -13,7 +12,13 @@
 #include <netdb.h>
 #include <arpa/inet.h>
 #include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <fstream>
+#include <dirent.h>
+#include <ctime>
 #include <sys/event.h>
+#include <unordered_map>
 
 #define vector std::vector
 #define string std::string
@@ -26,8 +31,22 @@
 #define setw std::setw
 #define right std::right
 #define left std::left
+#define make_pair std::make_pair
+#define fstream std::fstream
+#define ios std::ios
+#define getline std::getline
+#define to_string std::to_string
+#define filesystem std::filesystem
+#define ostringstream std::ostringstream
+#define hex std::hex
+#define list std::list
+#define streampos std::streampos
+#define unordered_map std::unordered_map
+#define to_string std::to_string
 
 // newline characters 
+#define CR "\r"
+#define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
 
@@ -64,6 +83,7 @@
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
 
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE (1024 * 5)
+#define BUFFER_SIZE2 (1024 * 5)
 
 #endif

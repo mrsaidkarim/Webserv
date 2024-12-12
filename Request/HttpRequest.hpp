@@ -14,19 +14,27 @@
 # define HTTPREQUEST_H
 
 #include "../const.hpp"
+#include "../Configuration/Server.hpp"
 
 class HttpRequest
 {
 	private:
-		string 				method;
+		string 				method; // get post delete
 		vector<string> 		url;
-		string 				version;
-		string 				body;
-		string				query;
+		string 				version; // http version
+		string 				body; // body of the request
+		string				query; 
 		string				fragment;
 		string 				statusCode;
 		map<string, string>	header;
 		map<string, char>	encoding_symbols;
+		fstream				*file_stream; // file stream
+		string			    file_path; // request file path 
+		streampos			file_offset; // file offset
+		bool 				is_chunked; // is chunked response
+		bool 				is_complete; // if offset is at the end of the file
+		Server				server; // the server will serve the request
+		int 				client_socket; // file descriptor of communication socket
 	
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -51,6 +59,13 @@ class HttpRequest
 		bool set_url(const string& _url);
 		bool set_version(const string& _version);
 		bool set_map(const string& _key, const string& _value);
+		void set_client_socket(int _client_socket);
+		void set_server(const Server& _server);
+		void set_is_complete(bool _is_complete);
+		void set_is_chunked(bool _is_chunked);
+		void set_file_path(const string& _file_path);
+		void set_file_stream(fstream* _file_stream);
+		void set_file_offset(streampos _file_offset);
 
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -61,6 +76,15 @@ class HttpRequest
 		const string& get_query(void) const;
 		const string& get_fragment(void) const;
 		const map<string, string>& get_header(void) const;
+		int get_client_socket(void) const;
+		const Server& get_server(void) const;
+		bool get_is_complete(void) const;
+		bool get_is_chunked(void) const;
+		const string& get_file_path(void) const;
+		fstream* get_file_stream(void) const;
+		streampos get_file_offset(void) const;
+
+
 		void  display_request(); // TO REMOVE
 };
 

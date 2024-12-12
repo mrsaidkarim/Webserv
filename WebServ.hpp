@@ -28,6 +28,8 @@ class WebServ
         ~WebServ();
         void run_servers(); // Run All Servers
         void close_sockets();
+
+        const map<int, vector<Server>> &get_socket_servers() const;
 };
 
 #endif
