@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/10 18:34:53 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/12 17:29:51 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ class HttpRequest
 	
 	protected:
 		void				checkFileType(const string& path);
+		void				string_to_lower(string& _str);
 		void				append_to_buffer(const string& _content_request); // to implement this for buuffering;
 		vector<string>		split(const string& str, char delimiter);
 		vector<string>		split_by_string(const string& str, const string& delimiter);

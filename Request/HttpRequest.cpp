@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/11 14:31:42 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/12 17:46:45 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
 	if (this->get_method() == "POST") {
+		cout << "handle post method!\n";
 		if (!this->parse_body(this->get_body())) {
 			goto error;
 		}
@@ -187,7 +188,7 @@ bool HttpRequest::set_version(const string& _version) {
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
-	if (_key == "Host" && ((header.find("Host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
+	if (_key == "host" && ((header.find("host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
 		return (this->set_status_code("400"), false);
 	this->header[_key] = _value;
 	return (true);
@@ -286,6 +287,8 @@ bool HttpRequest::is_valid_header_request(const string& _header) {
 			return (this->set_status_code("400"), false);
 		key = line.substr(0, index);
 		value = line.substr(index + 1);
+		string_to_lower(key);
+		// string_to_lower(value); // ! to discuss this shit is the value also should be lower!
 		if (!this->set_map(key, trim_string(value)))
 			return (this->set_status_code("400"), false);
 		// cout << line << "\n";
@@ -372,6 +375,12 @@ bool HttpRequest::check_url_characters(const string& _url) {
 	}
 	return (true);
 }
+void HttpRequest::string_to_lower(string& _str) {
+	for (int i = 0; i < _str.length(); i++)
+	{
+		_str[i] = tolower(_str[i]);
+	}
+}
 
 bool HttpRequest::is_valid_value(const string& _value) {
 	stringStream	str(_value);
@@ -388,21 +397,21 @@ bool HttpRequest::is_valid_value(const string& _value) {
 }
 
 bool HttpRequest::check_header_elements() {
-	if (this->header["Host"].empty())
+	if (this->header["host"].empty())
 		return (this->set_status_code("400"),false);
-	if (header.find("Content-Length") != header.end() && !is_valid_value(this->header["Content-Length"]))
+	if (header.find("content-length") != header.end() && !is_valid_value(this->header["content-length"]))
 		return (this->set_status_code("400"),false);
-	if (header.find("Transfer-Encoding") != header.end() && (header["Transfer-Encoding"] != "chunked"))
+	if (header.find("transfer-encoding") != header.end() && (header["transfer-encoding"] != "chunked"))
 		return (this->set_status_code("501"), false);
 	return (true);
 }
 
 bool HttpRequest::parse_body(const string& _body) {
-	if (this->header.find("Transfer-Encoding") != header.end()) {
+	if (this->header.find("transfer-encoding") != header.end()) {
 		// if (handle_chunked_request(_body)) // this will return true or false
 			return (true);
 	}
-	else if ((this->header.find("Content-Type") != header.end()) && split(header["Content-Type"], ' ').size() >= 2) {
+	else if ((this->header.find("content-type") != header.end()) && split(header["content-type"], ' ').size() >= 2) {
 		if (!handle_boundary_rquest(body)) { // this also will return true or false
 			return (false);
 		}
@@ -433,8 +442,10 @@ bool HttpRequest::handle_boundary_rquest(const string& _body) {
 		return (this->set_status_code("400"), false);
 	cout << "the key is :" << boundary_key << "\n"; // ! to remove 
 	pos = _body.find(boundary_key + "--");
-	if (pos == string::npos)
+	if (pos == string::npos) {
+		cout << BOLD_RED << "HERE ziko\n" << RESET;
 		return (this->set_status_code("400"), false);
+	}
 	tmp_str = body.substr(0, pos - 2);
 	cout << BOLD_YELLOW << tmp_str << "\n";
 	files_part = split_by_string(tmp_str, "--" + boundary_key + "\r\n");
@@ -482,8 +493,8 @@ const string HttpRequest::get_name_file(void) {
 
 const string HttpRequest::get_boundary_key() {
 	string prefix = "multipart/form-data; boundary=";
-	if (this->header["Content-Type"].find(prefix) == 0)
-		return (this->header["Content-Type"].substr(prefix.length()));
+	if (this->header["content-type"].find(prefix) == 0)
+		return (this->header["content-type"].substr(prefix.length()));
 	return ("bad_request");
 }
 
@@ -508,7 +519,7 @@ bool HttpRequest::get_boundary_file_name(map<string, string>& boundary_header, s
 }
 
 bool HttpRequest::create_file_and_put_data(const string& file_name, const string& data) {
-	std::ofstream	outFile("/Users/zelabbas/Webserv/Upload/" + file_name);
+	std::ofstream	outFile("/Users/zelabbas/OurWebserver/Upload/" + file_name);
 	if (outFile.fail())
 		return (this->set_status_code("500"), false);
 	outFile << data;
