@@ -55,6 +55,13 @@ bool configure_socket(int &server_socket, int port)
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+        cerr << "Error: failed to set server socket as non blocking\n";
+        close(server_socket);
+        return (false);
+    }
+
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
         cerr << "Error: Failed to bind socket\n";
@@ -138,12 +145,6 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
 void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 {
     // set socket to non-blocking
-    // for (map<int, vector<Server>>::const_iterator it = servers.begin(); it != servers.end(); it++)
-    // {
-    //     int server_socket = it->first;
-    //     int flags = fcntl(server_socket, F_GETFL, 0);
-    //     fcntl(server_socket, F_SETFL, flags | O_NONBLOCK);
-    // }
 
     unordered_map<int, HttpResponse*> client_responses;
     const int MAX_EVENTS = 128; // may we change it after if wasn't perfect for memory usage

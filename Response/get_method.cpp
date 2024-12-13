@@ -252,9 +252,12 @@ void HttpResponse::send_response() const {
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
-            "Connection: close\r\n"
+            "connection: keep-alive\r\n"
             "\r\n";
-        send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0);
+        if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0)) {
+            // perror("send failed in send_response()");
+            // request->set_is_complete(true);
+        }
         request->set_is_chunked(true);
 
     }
@@ -273,12 +276,21 @@ void HttpResponse::send_response() const {
         chunk_size += "\r\n";
 
         // Write chunk size
-        send(request->get_client_socket(), chunk_size.c_str(), chunk_size.size(), 0);
+        if (send(request->get_client_socket(), chunk_size.c_str(), chunk_size.size(), 0) < 0) {
+            // perror("send failed in send_response()");
+            // request->set_is_complete(true);
+        }
         // Write actual chunk data
-        send(request->get_client_socket(), buffer, bytes_read, 0);
+        if (send(request->get_client_socket(), buffer, bytes_read, 0)) {
+            // perror("send failed in send_response()");
+            // request->set_is_complete(true);
+        }
         // End of chunk
         // write(request->get_client_socket(), "\r\n", 2);
-        send(request->get_client_socket(), "\r\n", 2, 0);
+        if (send(request->get_client_socket(), "\r\n", 2, 0)) {
+            // perror("send failed in send_response()");
+            // request->set_is_complete(true);
+        }
     }
 
 
