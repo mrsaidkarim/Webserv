@@ -86,4 +86,11 @@
 #define BUFFER_SIZE (1024 * 5)
 #define BUFFER_SIZE2 (1024 * 5)
 
+
+// PATH TO PAGE
+#define FORBIDDEN  "/Users/zelabbas/OurWebserver/pages_html/403.html"
+#define NOT_FOUND "/Users/zelabbas/OurWebserver/pages_html/404.html"
+#define NOT_ALLOWED "/Users/zelabbas/OurWebserver/pages_html/405.html"
+#define DEL_SUCCESS "/Users/zelabbas/OurWebserver/pages_html/delete_successful.html"
+
 #endif

@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 20:40:42 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/13 15:36:24 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ class HttpRequest
 	protected:
 		vector<string>	split(const string& str, char delimiter);
 		string			trim_string(const string& str);
+		void			upper_to_lower(string& str);
 		bool			check_url_characters(const string& _url);
 		bool			is_valid_characters(const string& str);
 		bool			is_valid_value(const string& _value);

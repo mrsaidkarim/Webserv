@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/10 20:49:43 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/14 12:58:42 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) {
+
                 // read incoming request from client
                 string serv_request_buffer = string(BUFFER_SIZE2, '\0');
                 ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
@@ -191,6 +192,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 if (bytes_read > 0) {
                     // process the request
 
+					// ! HERE we should check is a new request or the the continue request that already existe! 
                     // get data from request buffer
                     HttpRequest *request = new HttpRequest(serv_request_buffer);
 

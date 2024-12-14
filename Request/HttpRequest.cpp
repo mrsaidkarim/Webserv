@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/03 14:13:37 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/14 15:47:57 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,17 +18,23 @@ HttpRequest::HttpRequest(const string& _request) {
 	string			body;
 	vector<string>	start_line;
 	size_t			index;
-
+	// to debug
+	static int a;
+	// to debug
 
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
 	file_stream = NULL;
 
-	cout << BOLD_YELLOW << "HttpRequest constructor" << RESET << endl;
+	// to debug
+	cout << BOLD_YELLOW << "HttpRequest constructor: " << a++  << RESET << endl; 
 	index = _request.find(CRLF_2);
+
+	cout << BOLD_RED<< _request << RESET << '\n';
 	if (index == string::npos) {
 		this->set_status_code("400");
+		cout << "here!\n";
 		goto error;
 	}
 	header = _request.substr(0,index);
@@ -148,7 +154,7 @@ bool HttpRequest::set_version(const string& _version) {
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
-	if (_key == "Host" && ((header.find("Host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
+	if (_key == "host" && ((header.find("host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
 		return (this->set_status_code("400"), false);
 	this->header[_key] = _value;
 	return (true);
@@ -247,11 +253,10 @@ bool HttpRequest::is_valid_header_request(const string& _header) {
 			return (this->set_status_code("400"), false);
 		key = line.substr(0, index);
 		value = line.substr(index + 1);
+		upper_to_lower(key);
 		if (!this->set_map(key, trim_string(value)))
 			return (this->set_status_code("400"), false);
-		// cout << line << "\n";
 	}
-	// cout << RED <<"\n is valid header\n" << RESET;
 	return (true);
 }
 
@@ -292,9 +297,17 @@ bool HttpRequest::is_start_with_space(const string& str) {
 	return (false);
 }
 
+void HttpRequest::upper_to_lower(string& str) {
+	for (int i = 0; i < str.length(); i++)
+	{
+		str[i] = tolower(str[i]);
+	}
+}
+
 bool HttpRequest::is_valid_characters(const string& str) {
 	for (int i = 0; i < str.length(); i++)
 	{
+		// if (str[i] >= 9 && str[i] <= 13)
 		if (str[i] == '\t')
 			return (false);
 	}
@@ -317,19 +330,19 @@ bool HttpRequest::is_valid_value(const string& _value) {
 	if (_value.empty())
 		return (this->set_status_code("400"), false);
 	str >> value;
+	if (!str.eof() || value < 0)
+		return (this->set_status_code("400"), false);
 	if (str.fail())
 		return (this->set_status_code("413"), false);
-	if (!str.eof())
-		return (this->set_status_code("400"), false);
 	return (true);
 }
 
 bool HttpRequest::check_header_elements() {
-	if (this->header["Host"].empty())
+	if (this->header["host"].empty())
 		return (this->set_status_code("400"),false);
-	if (header.find("Content-Length") != header.end() && !is_valid_value(this->header["Content-Length"]))
+	if (header.find("content-length") != header.end() && !is_valid_value(this->header["content-length"]))
 		return (this->set_status_code("400"),false);
-	if (header.find("Transfer-Encoding") != header.end() && (header["Transfer-Encoding"] != "chunked"))
+	if (header.find("transfer-encoding") != header.end() && (header["transfer-encoding"] != "chunked"))
 		return (this->set_status_code("501"), false);
 	return (true);
 }
