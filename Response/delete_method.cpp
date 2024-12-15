@@ -76,40 +76,63 @@ void HttpResponse::delete_method() const {
 	int				x;
 	vector<string>	url;
 
-	cout << "here! start\n"; // to remove just for debuging 
+	cout << "here! start delete\n"; // to remove just for debuging 
 
 	 if (request->get_is_chunked()) {
 		send_response();
 		return ;
 	}
+
 	longest = longest_common_location();
+	url = request->get_url();
+
 	if (longest.first != -1) {
 		x = longest.first;
-		// if there's no longest_common_location should return not found ?
-	}
-	// check if the method allowed in this location if no return method not allowed!
-	if (!is_allowed(x)) {
-		cout << request->get_server().get_locations()[x].get_root() << "\n";
-		cout << request->get_server().get_global_root() << "\n";
-		request->set_file_path(NOT_ALLOWED);
-		send_response();
-		return ;
-	}
-	url = request->get_url();
-	path = request->get_server().get_locations()[x].get_root();
+		// check if the method allowed in this location if no return method not allowed!
+		if (!is_allowed(x)) {
+			cout << request->get_server().get_locations()[x].get_root() << "\n";
+			cout << request->get_server().get_global_root() << "\n";
+			request->set_file_path(NOT_ALLOWED);
+			send_response();
+			return ;
+		}
 
-	// check if the location has no root, use global root
-	if (path.empty())
-		path = request->get_server().get_global_root();
-	
-	// join the url with the root location 
-	for (int i = 0; i < url.size(); i++)
-	{
-		// if (i > 0) // TO Discuss 
-		path += "/";
-		path += url[i];
+		path = request->get_server().get_locations()[x].get_root();
+		// check if the location has no root, use global root
+		if (path.empty())
+			path = request->get_server().get_global_root();
+
+		// join the url with the root location 
+		for (int i = 0; i < url.size(); i++)
+		{
+			// if (i > 0) // TO Discuss 
+			path += "/";
+			path += url[i];
+		}
+		cout << BOLD_GREEN << path << RESET << "\n"; // TO REMOVE
+		handle_file(path);
 	}
-	cout << BOLD_GREEN << path << RESET << "\n"; // TO REMOVE
-	handle_file(path);
+	else {
+		cout << "here error!!!!!\n";
+		// longest.first == -1;
+		// if there's no longest_common_location should return not found ?
+		path = request->get_server().get_global_root();
+
+		// if the global root is empty so not found.
+		if (path.empty()) {
+			request->set_file_path(NOT_FOUND);
+			send_response();
+			return ;
+		}
+
+		// join the url with the global root
+		for (int i = 0; i < url.size(); i++)
+		{
+			// if (i > 0) // TO Discuss 
+			path += "/";
+			path += url[i];
+		}
+		handle_file(path);
+	}	
 }
 // end delete method!

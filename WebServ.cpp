@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/14 12:58:42 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/15 14:44:27 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,13 +109,13 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     Server server;
     // if host header is not found in the request
     // we return the first server in the vector
-    if (request->get_header().find("Host") == request->get_header().end()) {
+    if (request->get_header().find("host") == request->get_header().end()) { // update here from zak from key = Host to host
         server = it->second[0];
         return server;
     }
 
     // the host header is found in the request
-    string host = request->get_header().find("Host")->second;
+    string host = request->get_header().find("host")->second; // update here from zak from key = Host to host
     bool found = false;
 
     for (int i = 0; i < it->second.size(); i++) {

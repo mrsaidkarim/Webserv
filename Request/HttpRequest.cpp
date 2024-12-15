@@ -6,11 +6,14 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/14 15:47:57 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/15 14:46:34 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
+
+// ! NOTES
+// ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
 
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
@@ -18,20 +21,19 @@ HttpRequest::HttpRequest(const string& _request) {
 	string			body;
 	vector<string>	start_line;
 	size_t			index;
+
 	// to debug
-	static int a;
+	// static int a;
+	// cout << BOLD_YELLOW << "HttpRequest constructor: " << a++  << RESET << endl; 
+	// cout << BOLD_RED<< _request << RESET << '\n';
 	// to debug
 
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
 	file_stream = NULL;
-
-	// to debug
-	cout << BOLD_YELLOW << "HttpRequest constructor: " << a++  << RESET << endl; 
 	index = _request.find(CRLF_2);
 
-	cout << BOLD_RED<< _request << RESET << '\n';
 	if (index == string::npos) {
 		this->set_status_code("400");
 		cout << "here!\n";
@@ -63,6 +65,14 @@ HttpRequest::HttpRequest(const string& _request) {
 	// start parse header
 	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
+
+	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
+	if (this->get_method() == "POST") {
+		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
+			this->set_status_code("411");
+			goto error;
+		}
+	}
 	// end parse header
 	// print the result
 	// cout << BOLD_GREEN << first_line << "\n" << RESET;
@@ -307,8 +317,8 @@ void HttpRequest::upper_to_lower(string& str) {
 bool HttpRequest::is_valid_characters(const string& str) {
 	for (int i = 0; i < str.length(); i++)
 	{
-		// if (str[i] >= 9 && str[i] <= 13)
-		if (str[i] == '\t')
+		// if (str[i] == '\t')
+		if (str[i] >= 9 && str[i] <= 13)
 			return (false);
 	}
 	return (true);
