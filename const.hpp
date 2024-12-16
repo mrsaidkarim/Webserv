@@ -84,6 +84,6 @@
 #define BG_WHITE "\033[47m"
 
 #define BUFFER_SIZE (1024 * 5)
-#define BUFFER_SIZE2 (1024 * 5)
+#define BUFFER_SIZE2 (200)
 
 #endif

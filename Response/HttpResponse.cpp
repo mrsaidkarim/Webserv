@@ -20,7 +20,8 @@ void    HttpResponse::serv() {
 
 
 void HttpResponse::post_method() const {
-
+    
+    request->set_is_complete(true);
 }
 
 void HttpResponse::delete_method() const {

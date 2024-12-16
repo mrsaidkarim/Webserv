@@ -169,6 +169,11 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     perror("Error: Failed to accept connection\n");
                     continue;
                 }
+                if (fcntl(client_socket, F_SETFL, O_NONBLOCK)) {
+                    cerr << "Error: failed to set server socket as non blocking\n";
+                    close(client_socket);
+                    exit(1);
+                }
                 cout << "Accepted connection on server socket (fd: " << fd << "), client fd: " << client_socket << "\n";
                 struct kevent change;
                 EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
@@ -188,38 +193,59 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     instead of blocking the process. If no data is available, recv returns -1 and sets
                     errno to EAGAIN or EWOULDBLOCK
                 */
-                if (bytes_read > 0) {
+                // if (bytes_read > 0) {
                     // process the request
+                // for post check if already HttpRequest exist
+                unordered_map<int, HttpResponse*>::iterator it = client_responses.find(fd);
+                if (it != client_responses.end()) {
+                    it->second->get_request()->add_to_body(serv_request_buffer, bytes_read);
+                    if (it->second->get_request()->get_is_complete()) {
+                        it->second->get_request()->display_request();
+                        delete it->second->get_request();
+                        delete it->second;
+                        close(fd);
+                        client_responses.erase(fd);
+                        struct kevent change;
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                        kevent(kq, &change, 1, nullptr, 0, nullptr);
+                    }
+                    continue;
+                }
 
-                    // get data from request buffer
-                    HttpRequest *request = new HttpRequest(serv_request_buffer);
+                cout << "this is the first time\n\n\n";
+                // get data from request buffer
+                HttpRequest *request = new HttpRequest(serv_request_buffer);
+                cout << request->get_method() << "\n";
 
-                    // search for right server
-                    int server_socket = client_server[fd];
-                    Server server = host_server_name(servers , server_socket, request);
+                // search for right server
+                int server_socket = client_server[fd];
+                Server server = host_server_name(servers , server_socket, request);
 
-                    // set client socket and server
-                    request->set_client_socket(fd);
-                    request->set_server(server);
+                // set client socket and server
+                request->set_client_socket(fd);
+                request->set_server(server);
 
-                    // create response object
-                    HttpResponse *response = new HttpResponse(request);
+                // create response object
+                HttpResponse *response = new HttpResponse(request);
 
-                    // store the response object in the map
-                    client_responses[fd] = response;
+                // store the response object in the map
+                client_responses[fd] = response;
 
-                    // add client socket to kqueue for writing event
-                    struct kevent change;
+                // add client socket to kqueue for writing event
+                struct kevent change;
+                if (request->get_method() != "POST") {
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     kevent(kq, &change, 1, nullptr, 0, nullptr);
-
-                } else {
-                    // client disconnected
-                    close(fd);
                 }
+
+                // } else {
+                //     // client disconnected
+                //     close(fd);
+                // }
 
             } else if (event_list[i].filter == EVFILT_WRITE) {
                 // send chunked response to client
+                // cout << BOLD_RED << "madkholch hna\n";
                 HttpResponse *response = client_responses[fd];
                 if (!response) {
                     close(fd);

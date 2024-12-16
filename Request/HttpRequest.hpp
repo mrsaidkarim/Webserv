@@ -84,6 +84,10 @@ class HttpRequest
 		fstream* get_file_stream(void) const;
 		streampos get_file_offset(void) const;
 
+		// for post method
+
+		void	add_to_body(const string &, int );
+
 
 		void  display_request(); // TO REMOVE
 };

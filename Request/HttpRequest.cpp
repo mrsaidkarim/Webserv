@@ -434,3 +434,14 @@ void HttpRequest::set_file_offset(streampos _file_offset) {
 streampos HttpRequest::get_file_offset(void) const {
 	return (this->file_offset);
 }
+
+
+
+// for post method
+
+void HttpRequest::add_to_body(const string &slice, int byte_read) {
+	if (byte_read < BUFFER_SIZE2) {
+		is_complete = true; 
+	}
+	body += slice;	
+}
