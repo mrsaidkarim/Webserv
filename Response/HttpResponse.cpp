@@ -20,8 +20,9 @@ void    HttpResponse::serv() {
 
 
 void HttpResponse::post_method() const {
-
+    
 }
+
 
 void HttpResponse::delete_method() const {
 

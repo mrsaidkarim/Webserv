@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/10 20:49:43 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/16 13:30:16 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,6 +179,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) {
+                cout << "READ\n";
                 // read incoming request from client
                 string serv_request_buffer = string(BUFFER_SIZE2, '\0');
                 ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
@@ -190,35 +191,65 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 */
                 if (bytes_read > 0) {
                     // process the request
+                    // cout << "hhhhhhhhhh\n";
+                    if (client_responses.find(fd) == client_responses.end()){
+                        cout << "new request\n";
+                        // get data from request buffer
+                        HttpRequest *request = new HttpRequest(serv_request_buffer);
 
-                    // get data from request buffer
-                    HttpRequest *request = new HttpRequest(serv_request_buffer);
+                        // search for right server
+                        int server_socket = client_server[fd];
+                        Server server = host_server_name(servers , server_socket, request);
 
-                    // search for right server
-                    int server_socket = client_server[fd];
-                    Server server = host_server_name(servers , server_socket, request);
+                        // set client socket and server
+                        request->set_client_socket(fd);
+                        request->set_server(server);
 
-                    // set client socket and server
-                    request->set_client_socket(fd);
-                    request->set_server(server);
+                        // create response object
+                        HttpResponse *response = new HttpResponse(request);
 
-                    // create response object
-                    HttpResponse *response = new HttpResponse(request);
+                        // store the response object in the map
+                        client_responses[fd] = response;
 
-                    // store the response object in the map
-                    client_responses[fd] = response;
-
-                    // add client socket to kqueue for writing event
-                    struct kevent change;
-                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                    kevent(kq, &change, 1, nullptr, 0, nullptr);
-
+                        // add client socket to kqueue for writing event
+                        if (request->get_method() != "POST")
+                        {
+                            struct kevent change;
+                            EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                            kevent(kq, &change, 1, nullptr, 0, nullptr);
+                        }
+                        // else
+                        //     EV_SET(&change, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                            
+                        cout << "end new request part\n";
+                    }
+                    else { // case of post_method continuation of reading the request body
+                        HttpResponse *response = client_responses[fd];
+                        HttpRequest *request = response->get_request();
+                        // cout << "******\n";
+                        // cout << request->get_body() << "\n*****\n";
+                        request->append_to_body(serv_request_buffer);
+                        if (request->get_is_complete())
+                        {
+                            cout << request->get_body();
+                            close(fd);
+                        }
+                        else
+                        {
+                            struct kevent change;
+                            EV_SET(&change, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                            kevent(kq, &change, 1, nullptr, 0, nullptr);
+                        }
+                    }
                 } else {
                     // client disconnected
                     close(fd);
                 }
 
             } else if (event_list[i].filter == EVFILT_WRITE) {
+                // cout << "Client disconnected\n";
+                // close(fd);
+                cout << "WRITE\n";
                 // send chunked response to client
                 HttpResponse *response = client_responses[fd];
                 if (!response) {
