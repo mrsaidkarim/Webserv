@@ -65,6 +65,11 @@ HttpRequest::HttpRequest(const string& _request) {
 
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
+		// set_boundary_key it looks for boundary key :) in header map
+		// if boundary key founded it return true , false otherwise
+		body = "\r\n" + body;
+		cout <<  "\n\n@@@@@" << body << "@@@@@@\n\n";
+		set_boundary_key();
 		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
 			this->set_status_code("411");
 			goto error;
@@ -487,3 +492,46 @@ void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	}
 	body += slice;	
 }
+
+bool HttpRequest::set_boundary_key(void) {
+	map<string, string>::iterator it = header.find("content-type");
+	if (it == header.end()) {
+		cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
+		return (false);
+	}
+	size_t pos = it->second.find("boundary=");
+	if (pos == string::npos) {
+		cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
+		return (false);
+	}
+	boundary_key = it->second.substr(pos + 9); // 9 is length("boundary=")
+
+	// set boundary key begin 
+
+	boundary_key_begin = CRLF;
+	boundary_key_begin += "--";
+	boundary_key_begin += boundary_key;
+	boundary_key_begin += CRLF;
+
+	// set boundary key end
+
+	boundary_key_end = CRLF;
+	boundary_key_end += "--";
+	boundary_key_end += boundary_key;
+	boundary_key_end += "--";
+	boundary_key_end += CRLF;
+
+
+	cout << BOLD_GREEN << boundary_key << "\n" << RESET;
+	return (true);
+}
+
+
+const string& HttpRequest::get_boundary_key_begin(void) const {
+	return (boundary_key_begin);
+}
+
+const string& HttpRequest::get_boundary_key_end(void) const {
+	return (boundary_key_end);
+}
+

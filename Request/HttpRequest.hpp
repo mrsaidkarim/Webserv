@@ -37,6 +37,9 @@ class HttpRequest
 		Server				server; // the server will serve the request
 		int 				client_socket; // file descriptor of communication socket
 		size_t				read_content_length;
+		string				boundary_key; // for post method
+		string 				boundary_key_begin;
+		string				boundary_key_end;
 	
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -69,6 +72,7 @@ class HttpRequest
 		void set_file_path(const string& _file_path);
 		void set_file_stream(fstream* _file_stream);
 		void set_file_offset(streampos _file_offset);
+		bool set_boundary_key(void);
 
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -86,6 +90,8 @@ class HttpRequest
 		const string& get_file_path(void) const;
 		fstream* get_file_stream(void) const;
 		streampos get_file_offset(void) const;
+		const string& get_boundary_key_begin(void) const;
+		const string& get_boundary_key_end(void) const;
 
 		// for post method
 

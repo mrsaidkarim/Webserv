@@ -8,7 +8,6 @@ HttpResponse::~HttpResponse() {
 
 }
 
-
 void    HttpResponse::serv() {
 
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
@@ -20,15 +19,6 @@ void    HttpResponse::serv() {
         delete_method();
 }
 
-
-void HttpResponse::post_method() const {
-    
-    request->set_is_complete(true);
-}
-
-// void HttpResponse::delete_method() const {
-
-// }
 
 HttpRequest *HttpResponse::get_request() const {
     return this->request;

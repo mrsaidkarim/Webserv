@@ -50,6 +50,7 @@
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
+#define POST_PATH "/Volumes/TOSHIBA/post_files/"
 
 // Reset Color
 #define RESET "\033[0m"
