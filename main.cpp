@@ -27,7 +27,7 @@ Server server_init1() {
         {"A2", "B2", "C2"},
         {"home.html", "index.html"},
         true,
-        "/Volumes/TOSHIBA/www/a2/",
+        "~/Downloads",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}},
@@ -37,7 +37,7 @@ Server server_init1() {
         {"A3", "B3", "C3"},
         {"index.html"},
         false,
-        "/Volumes/TOSHIBA/www/a3/",
+        "~/Downloads",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}},
@@ -47,7 +47,7 @@ Server server_init1() {
         {"A4", "B4", "C4"},
         {"index.html"},
         true,
-        "/Volumes/TOSHIBA/www/a4/",
+        "~/Downloads",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}},
@@ -59,7 +59,7 @@ Server server_init1() {
     vector<string> server_names = {"zechi.com", "www.nigro.com"};
     long long client_max_body_size = -1;
     vector<Location> locations = {loc1, loc2, loc3, loc4};
-    string global_root = "/Volumes/TOSHIBA/www/";
+    string global_root = "/Volumes/TOSHIBA/www/";//"/Users/skarim/Downloads/";//
     // pair<string, string> redirection = {"301", "https://auth.42.fr"};
     pair<string, string> redirection = {"", ""};
     vector<string> indexes2 = {"index.html"};

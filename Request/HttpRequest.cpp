@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/16 13:26:13 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/17 12:37:46 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -467,9 +467,4 @@ void HttpRequest::append_to_body(const string &data) {
             this->is_complete = true;
         }
     }
-	else
-	{	for (const auto &element: this->header)
-			cout << "key: " << element.first << ", value: " << element.second << "\n";
-		cout << "moshkil content_length" << this->header["content-length"] << "\n";
-	}
 }

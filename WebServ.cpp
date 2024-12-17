@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/16 13:30:16 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/17 15:53:03 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,6 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) {
-                cout << "READ\n";
                 // read incoming request from client
                 string serv_request_buffer = string(BUFFER_SIZE2, '\0');
                 ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
@@ -191,9 +190,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 */
                 if (bytes_read > 0) {
                     // process the request
-                    // cout << "hhhhhhhhhh\n";
-                    if (client_responses.find(fd) == client_responses.end()){
-                        cout << "new request\n";
+                    if (client_responses.find(fd) == client_responses.end() || client_responses[fd]->get_request()->get_method() != "post"){
                         // get data from request buffer
                         HttpRequest *request = new HttpRequest(serv_request_buffer);
 
@@ -210,7 +207,12 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 
                         // store the response object in the map
                         client_responses[fd] = response;
-
+                        cout << BG_WHITE << "request_data\n";
+                        for (auto &element : request->get_header())
+                        {
+                            cout << "key: " << element.first << ", value: " << element.second << endl;
+                        }
+                        cout << RESET;
                         // add client socket to kqueue for writing event
                         if (request->get_method() != "POST")
                         {
@@ -221,9 +223,10 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                         // else
                         //     EV_SET(&change, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                             
-                        cout << "end new request part\n";
+                        // cout << "end new request part\n";
                     }
-                    else { // case of post_method continuation of reading the request body
+                    else {
+                        cout << "lkamla dpost\n";// case of post_method continuation of reading the request body
                         HttpResponse *response = client_responses[fd];
                         HttpRequest *request = response->get_request();
                         // cout << "******\n";
@@ -231,7 +234,12 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                         request->append_to_body(serv_request_buffer);
                         if (request->get_is_complete())
                         {
-                            cout << request->get_body();
+                            // std::ofstream outFile("result_here");
+                            // outFile << "*** heda lbody\n";
+                            // outFile << request->get_body();
+                            // outFile << "\nsala lbody****\n";
+                            // outFile.close(); 
+                            cout << BG_GREEN << request->get_body() << RESET;
                             close(fd);
                         }
                         else
@@ -249,7 +257,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
             } else if (event_list[i].filter == EVFILT_WRITE) {
                 // cout << "Client disconnected\n";
                 // close(fd);
-                cout << "WRITE\n";
+                // cout << "WRITE\n";
                 // send chunked response to client
                 HttpResponse *response = client_responses[fd];
                 if (!response) {
