@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/02 20:40:42 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/13 15:36:24 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "../const.hpp"
 #include "../Configuration/Server.hpp"
+#include <cstddef>
 
 class HttpRequest
 {
@@ -35,10 +36,12 @@ class HttpRequest
 		bool 				is_complete; // if offset is at the end of the file
 		Server				server; // the server will serve the request
 		int 				client_socket; // file descriptor of communication socket
+		size_t				read_content_length;
 	
 	protected:
 		vector<string>	split(const string& str, char delimiter);
 		string			trim_string(const string& str);
+		void			upper_to_lower(string& str);
 		bool			check_url_characters(const string& _url);
 		bool			is_valid_characters(const string& str);
 		bool			is_valid_value(const string& _value);

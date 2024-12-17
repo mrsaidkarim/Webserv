@@ -36,7 +36,11 @@ class HttpResponse {
 
 
         // delete method help functions
-
+		bool	is_allowed(int index_location) const;
+		void	handle_file(const string& path) const;
+		bool	does_not_exist(const string& path) const;
+		bool	is_a_file(const string& path) const;
+		bool	delete_file(const string& file_path) const;
 };
 
 #endif

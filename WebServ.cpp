@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/10 20:49:43 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/15 14:44:27 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,11 +56,11 @@ bool configure_socket(int &server_socket, int port)
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
-        cerr << "Error: failed to set server socket as non blocking\n";
-        close(server_socket);
-        return (false);
-    }
+    // if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+    //     cerr << "Error: failed to set server socket as non blocking\n";
+    //     close(server_socket);
+    //     return (false);
+    // }
 
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
@@ -109,13 +109,13 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     Server server;
     // if host header is not found in the request
     // we return the first server in the vector
-    if (request->get_header().find("Host") == request->get_header().end()) {
+    if (request->get_header().find("host") == request->get_header().end()) { // update here from zak from key = Host to host
         server = it->second[0];
         return server;
     }
 
     // the host header is found in the request
-    string host = request->get_header().find("Host")->second;
+    string host = request->get_header().find("host")->second; // update here from zak from key = Host to host
     bool found = false;
 
     for (int i = 0; i < it->second.size(); i++) {
@@ -156,6 +156,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
             perror("Error: kevent monitoring failed\n");
             continue;
         }
+
+
         for (int i = 0; i < event_count; ++i) {
             int fd = event_list[i].ident;
 
@@ -169,11 +171,11 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     perror("Error: Failed to accept connection\n");
                     continue;
                 }
-                if (fcntl(client_socket, F_SETFL, O_NONBLOCK)) {
-                    cerr << "Error: failed to set server socket as non blocking\n";
-                    close(client_socket);
-                    exit(1);
-                }
+                // if (fcntl(client_socket, F_SETFL, O_NONBLOCK)) {
+                //     cerr << "Error: failed to set server socket as non blocking\n";
+                //     close(client_socket);
+                //     exit(1);
+                // }
                 cout << "Accepted connection on server socket (fd: " << fd << "), client fd: " << client_socket << "\n";
                 struct kevent change;
                 EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
@@ -184,9 +186,10 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) {
+
                 // read incoming request from client
                 string serv_request_buffer = string(BUFFER_SIZE2, '\0');
-                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, MSG_DONTWAIT);
                 /*
                     MSG_DONTWAIT:
                     A flag indicating that the call should return immediately if no data is available, 
@@ -212,7 +215,6 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     continue;
                 }
 
-                cout << "this is the first time\n\n\n";
                 // get data from request buffer
                 HttpRequest *request = new HttpRequest(serv_request_buffer);
                 cout << request->get_method() << "\n";

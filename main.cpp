@@ -17,7 +17,7 @@ Server server_init1() {
     map<string, bool> methods = {
         {"GET", true},
         {"POST", true},
-        {"DELETE", false}
+        {"DELETE", true}
     };
     pair<string, string> redirections = {"301", "www.youtube.com"};
 
@@ -27,10 +27,10 @@ Server server_init1() {
         {"A2", "B2", "C2"},
         {"home.html", "index.html"},
         true,
-        "/Volumes/TOSHIBA/www/a2/",
+        "/Users/zelabbas/OurWebserver/dir", // it was something /Volumes/Toshiba.....
         {{"GET", true},
         {"POST", false},
-        {"DELETE", false}},
+        {"DELETE", true}}, // it was false
         {}
     );
     Location loc3(
@@ -40,7 +40,7 @@ Server server_init1() {
         "/Volumes/TOSHIBA/www/a3/",
         {{"GET", true},
         {"POST", false},
-        {"DELETE", false}},
+        {"DELETE", false}}, // it was false
         {}
     );
     Location loc4(
@@ -50,7 +50,7 @@ Server server_init1() {
         "/Volumes/TOSHIBA/www/a4/",
         {{"GET", true},
         {"POST", false},
-        {"DELETE", false}},
+        {"DELETE", false}}, // it was false
         {}
     );
     // Location.print_lacation_info();

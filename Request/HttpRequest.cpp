@@ -6,11 +6,15 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/03 14:13:37 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/15 14:46:34 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
+#include <cstddef>
+
+// ! NOTES
+// ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
 
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
@@ -19,16 +23,17 @@ HttpRequest::HttpRequest(const string& _request) {
 	vector<string>	start_line;
 	size_t			index;
 
-
+	read_content_length = 0;
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
 	file_stream = NULL;
-
-	cout << BOLD_YELLOW << "HttpRequest constructor" << RESET << endl;
 	index = _request.find(CRLF_2);
+	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
+
 	if (index == string::npos) {
 		this->set_status_code("400");
+		cout << "here!\n";
 		goto error;
 	}
 	header = _request.substr(0,index);
@@ -57,6 +62,14 @@ HttpRequest::HttpRequest(const string& _request) {
 	// start parse header
 	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
+
+	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
+	if (this->get_method() == "POST") {
+		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
+			this->set_status_code("411");
+			goto error;
+		}
+	}
 	// end parse header
 	// print the result
 	// cout << BOLD_GREEN << first_line << "\n" << RESET;
@@ -84,6 +97,7 @@ void	HttpRequest::set_status_code(const string& _status) {
 
 void	HttpRequest::set_body(const string& _body) {
 	this->body = _body;
+	read_content_length += _body.size();
 }
 
 bool HttpRequest::set_method(const string& _method) {
@@ -148,7 +162,7 @@ bool HttpRequest::set_version(const string& _version) {
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
-	if (_key == "Host" && ((header.find("Host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
+	if (_key == "host" && ((header.find("host") != header.end()) || _value[0] == ':' || !is_valid_characters(_value) || split(_value, ' ').size() != 1))
 		return (this->set_status_code("400"), false);
 	this->header[_key] = _value;
 	return (true);
@@ -247,11 +261,10 @@ bool HttpRequest::is_valid_header_request(const string& _header) {
 			return (this->set_status_code("400"), false);
 		key = line.substr(0, index);
 		value = line.substr(index + 1);
+		upper_to_lower(key);
 		if (!this->set_map(key, trim_string(value)))
 			return (this->set_status_code("400"), false);
-		// cout << line << "\n";
 	}
-	// cout << RED <<"\n is valid header\n" << RESET;
 	return (true);
 }
 
@@ -292,10 +305,18 @@ bool HttpRequest::is_start_with_space(const string& str) {
 	return (false);
 }
 
+void HttpRequest::upper_to_lower(string& str) {
+	for (int i = 0; i < str.length(); i++)
+	{
+		str[i] = tolower(str[i]);
+	}
+}
+
 bool HttpRequest::is_valid_characters(const string& str) {
 	for (int i = 0; i < str.length(); i++)
 	{
-		if (str[i] == '\t')
+		// if (str[i] == '\t')
+		if (str[i] >= 9 && str[i] <= 13)
 			return (false);
 	}
 	return (true);
@@ -317,21 +338,40 @@ bool HttpRequest::is_valid_value(const string& _value) {
 	if (_value.empty())
 		return (this->set_status_code("400"), false);
 	str >> value;
+	if (!str.eof() || value < 0)
+		return (this->set_status_code("400"), false);
 	if (str.fail())
 		return (this->set_status_code("413"), false);
-	if (!str.eof())
-		return (this->set_status_code("400"), false);
 	return (true);
 }
 
 bool HttpRequest::check_header_elements() {
-	if (this->header["Host"].empty())
+	if (this->header["host"].empty())
 		return (this->set_status_code("400"),false);
-	if (header.find("Content-Length") != header.end() && !is_valid_value(this->header["Content-Length"]))
+	if (header.find("content-length") != header.end() && !is_valid_value(this->header["content-length"]))
 		return (this->set_status_code("400"),false);
-	if (header.find("Transfer-Encoding") != header.end() && (header["Transfer-Encoding"] != "chunked"))
+	if (header.find("transfer-encoding") != header.end() && (header["transfer-encoding"] != "chunked"))
 		return (this->set_status_code("501"), false);
 	return (true);
+}
+
+
+/// to remove
+string add_dollars_before_CRLF(const string &input) {
+    string result;
+    string word = "\r\n";
+    size_t pos = 0;
+    size_t found;
+
+    while ((found = input.find(word, pos)) != string::npos) {
+        result += input.substr(pos, found - pos);
+        result += "{$$$$}";
+        result += word;
+        pos = found + word.length();
+    }
+    result += input.substr(pos);
+
+    return result;
 }
 
 // display the Request: info
@@ -353,7 +393,7 @@ void HttpRequest::display_request() {
 	}
 	cout << RESET;
 
-	cout << BG_MAGENTA << "Body: " << get_body() << "\n" << RESET;
+	cout << "Body: " << add_dollars_before_CRLF(get_body()) << "\n" << RESET;
 }
 
 //  if (it->second.find_first_not_of("!#$&'()*+,/:;=?@[]-_.~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != std::string::npos)
@@ -440,7 +480,9 @@ streampos HttpRequest::get_file_offset(void) const {
 // for post method
 
 void HttpRequest::add_to_body(const string &slice, int byte_read) {
-	if (byte_read < BUFFER_SIZE2) {
+	read_content_length += byte_read;
+	// cout << header.find("content-length")->second << "\n";
+	if (read_content_length >= stoi((header.find("content-length")->second))) {
 		is_complete = true; 
 	}
 	body += slice;	

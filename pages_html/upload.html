@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Upload File</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        background: linear-gradient(135deg, #9f98a8, #2575fc);
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+      }
+
+      .upload-container {
+        background: rgba(255, 255, 255, 0.1);
+        border: 2px dashed #fff;
+        border-radius: 15px;
+        padding: 30px;
+        text-align: center;
+        width: 90%;
+        max-width: 400px;
+        animation: fadeIn 1.5s ease-in-out;
+      }
+
+      .upload-container h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+      }
+
+      .file-input {
+        display: none;
+      }
+
+      .upload-btn {
+        background-color: #fff;
+        color: #2575fc;
+        border: none;
+        border-radius: 5px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .upload-btn:hover {
+        transform: scale(1.1);
+      }
+
+      .upload-label {
+        cursor: pointer;
+        padding: 20px;
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 10px;
+        transition: background-color 0.3s;
+      }
+
+      .upload-label:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="upload-container">
+      <h1>Upload Your File</h1>
+      <form
+        action="http://localhost:8080/Users/zelabbas/Webserv/Upload/"
+        method="POST"
+        enctype="multipart/form-data"
+      >
+        <label class="upload-label" for="file">
+          Click to Choose File
+          <input class="file-input" type="file" name="file" id="file" />
+        </label>
+        <br /><br />
+        <button class="upload-btn" type="submit">Upload</button>
+      </form>
+    </div>
+  </body>
+</html>

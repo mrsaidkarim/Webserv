@@ -43,6 +43,7 @@
 #define streampos std::streampos
 #define unordered_map std::unordered_map
 #define to_string std::to_string
+#define to_integer std::to_integer
 
 // newline characters 
 #define CR "\r"
@@ -84,6 +85,13 @@
 #define BG_WHITE "\033[47m"
 
 #define BUFFER_SIZE (1024 * 5)
-#define BUFFER_SIZE2 (200)
+#define BUFFER_SIZE2 (1024 * 5)
+
+
+// PATH TO PAGE
+#define FORBIDDEN  "/Users/zelabbas/OurWebserver/pages_html/403.html"
+#define NOT_FOUND "/Users/zelabbas/OurWebserver/pages_html/404.html"
+#define NOT_ALLOWED "/Users/zelabbas/OurWebserver/pages_html/405.html"
+#define DEL_SUCCESS "/Users/zelabbas/OurWebserver/pages_html/delete_successful.html"
 
 #endif
