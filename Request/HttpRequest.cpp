@@ -65,11 +65,11 @@ HttpRequest::HttpRequest(const string& _request) {
 
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
+		body = "\r\n" + body; // I add crlf before body because it was removed before
+		set_body(body); // update body
 		// set_boundary_key it looks for boundary key :) in header map
 		// if boundary key founded it return true , false otherwise
-		body = "\r\n" + body;
-		cout <<  "\n\n@@@@@" << body << "@@@@@@\n\n";
-		set_boundary_key();
+		set_boundary_key(); 
 		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
 			this->set_status_code("411");
 			goto error;
@@ -163,7 +163,6 @@ bool HttpRequest::set_version(const string& _version) {
 	}
 	return (this->set_status_code("400"), false);
 }
-
 bool HttpRequest::set_map(const string& _key, const string& _value) {
 	if (!is_valid_characters(_key) || split(_key, ' ').size() != 1)
 		return (this->set_status_code("400"), false);
@@ -488,7 +487,10 @@ void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	read_content_length += byte_read;
 	// cout << header.find("content-length")->second << "\n";
 	if (read_content_length >= stoi((header.find("content-length")->second))) {
-		is_complete = true; 
+		// is_complete = true;
+		cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
+		cout << read_content_length << "\n";
+		cout << header.find("content-length")->second << "\n";
 	}
 	body += slice;	
 }

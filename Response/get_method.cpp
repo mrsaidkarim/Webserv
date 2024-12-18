@@ -81,88 +81,6 @@ void HttpResponse::serv_redirection() const{
     request->set_is_complete(true);
 }
 
-
-//priority: 4 (autoindex)
-// void HttpResponse::serv_autoindex(string path) const {
-//     string body_content =
-//         "<!DOCTYPE html>"
-//         "<html lang=\"en\">"
-//         "<head>"
-//         "<meta charset=\"UTF-8\">"
-//         "<title>Autoindex</title>"
-//         "<style>"
-//         "body {"
-//         "background-color: black;"
-//         "color: white;"
-//         "}"
-//         "a {"
-//         "color: white;"
-//         "}"
-//         "h1 {"
-//         "color: white;"
-//         "text-align: center;"
-//         "}"
-//         "</style>"
-//         "</head>"
-//         "<body>"
-//         "<h1><a href=\"../\" class=\"back-link\">..</a></h1>";
-
-//     string url;
-//     for (int i = 0; i < request->get_url().size(); i++) {
-//         url += request->get_url()[i];
-//         url += "/";
-//     }
-
-//     DIR *dir = opendir(path.c_str());
-//     if (!dir) {
-//         body_content += "<h1>Error: Unable to open directory</h1>";
-//     } else {
-//         struct dirent *entry;
-//         while ((entry = readdir(dir)) != NULL) {
-//             string name = entry->d_name;
-
-//             // Skip . and .. and hidden files
-//             if (name == "." || name == ".." || name[0] == '.') {
-//                 continue;
-//             }
-
-//             string full_path = path;
-//             if (path.back() != '/') {
-//                 full_path += "/";
-//             }
-//             full_path += name;
-
-//             // Get file info
-//             struct stat file_stat;
-//             if (stat(full_path.c_str(), &file_stat) < 0) {
-//                 continue; // Skip this file if stat fails
-//             }
-
-//             // Append file/directory link
-//             body_content += "<h1><a href='" + url + name;
-//             if (S_ISDIR(file_stat.st_mode)) {
-//                 body_content += "/";
-//             }
-//             body_content += "'>" + name + "</a></h1>";
-//         }
-//         closedir(dir);
-//     }
-
-//     body_content += "</body>"
-//                     "</html>";
-
-//     string httpResponse =
-//         "HTTP/1.1 200 OK\r\n"
-//         "Content-Length: " + to_string(body_content.size()) + "\r\n"
-//         "Content-Type: text/html\r\n"
-//         "Connection: Closed\r\n"
-//         "\r\n" + body_content;
-
-//     send(request->get_client_socket(), httpResponse.c_str(), httpResponse.size(), 0);
-//     request->set_is_complete(true);
-// }
-
-
 void HttpResponse::serv_autoindex(const string& path) const {
         string body_content =
             "<!DOCTYPE html>"
@@ -292,7 +210,6 @@ void HttpResponse::send_response() const {
             // request->set_is_complete(true);
         }
     }
-
 
     request->set_file_offset(file->tellg());
     // cout << BOLD_YELLOW << "cur offset: " << request->get_file_offset() << RESET << endl;

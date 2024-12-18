@@ -56,11 +56,11 @@ bool configure_socket(int &server_socket, int port)
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    // if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
-    //     cerr << "Error: failed to set server socket as non blocking\n";
-    //     close(server_socket);
-    //     return (false);
-    // }
+    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+        cerr << "Error: failed to set server socket as non blocking\n";
+        close(server_socket);
+        return (false);
+    }
 
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
@@ -189,7 +189,11 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 
                 // read incoming request from client
                 string serv_request_buffer = string(BUFFER_SIZE2, '\0');
-                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, MSG_DONTWAIT);
+                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+                cout << bytes_read << "\n";
+                if (bytes_read < 0) {
+                    perror("failed to read\n");
+                }
                 /*
                     MSG_DONTWAIT:
                     A flag indicating that the call should return immediately if no data is available, 
@@ -202,6 +206,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 unordered_map<int, HttpResponse*>::iterator it = client_responses.find(fd);
                 if (it != client_responses.end()) {
                     it->second->get_request()->add_to_body(serv_request_buffer, bytes_read);
+                    it->second->serv(); // for post
+                    cout << "here2222222222222222222\n";
                     if (it->second->get_request()->get_is_complete()) {
                         it->second->get_request()->display_request();
                         delete it->second->get_request();
@@ -217,7 +223,6 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 
                 // get data from request buffer
                 HttpRequest *request = new HttpRequest(serv_request_buffer);
-                cout << request->get_method() << "\n";
 
                 // search for right server
                 int server_socket = client_server[fd];
@@ -238,6 +243,18 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 if (request->get_method() != "POST") {
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     kevent(kq, &change, 1, nullptr, 0, nullptr);
+                } else {
+                    cout << "here1111111111111\n";
+                    response->serv(); // for post
+                    if (response->get_request()->get_is_complete()) {
+                        delete response->get_request();
+                        delete response;
+                        close(fd);
+                        client_responses.erase(fd);
+                        struct kevent change;
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                        kevent(kq, &change, 1, nullptr, 0, nullptr);
+                    }
                 }
 
                 // } else {
