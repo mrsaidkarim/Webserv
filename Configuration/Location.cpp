@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Location.cpp                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/01 15:00:20 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/18 12:32:14 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,13 @@
 
 Location::Location()
 {
-    
+	methods["GET"] = true;
+	methods["POST"] = false;
+	methods["DELETE"] = false;
+	auto_index = false;
+	methods_set = false;
+	auto_index_set = false;
+	cout << "constructor location\n";
 }
 
 Location::Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
@@ -25,7 +31,7 @@ Location::Location(const vector<string> &route, const vector<string> &indexes, b
         // Location(string file_path); here do your shit alparser nigro o zid setters;
 Location::~Location()
 {
-    
+	// cout << "destructor location\n";
 }
 
 const vector<string> &Location::get_route(void) const
@@ -60,39 +66,116 @@ const pair<string, string> &Location::get_redirections(void) const
 
 bool Location::set_route(const vector<string> &route)
 {
-    this->route = route;
+	// if (!this->route.empty())
+	// 	return (false);
+	for (int i = 1; i < route.size() - 1; i++)
+	{
+		this->route.push_back(route[i]);
+	}
+    // this->route = route;
     return (true);
 }
 
 bool Location::set_indexes(const vector<string> &indexes)
 {
-    this->indexes = indexes;
+	// this mean duplicate in config file
+	if (!this->indexes.empty())
+		return (false);
+	for (int i = 1; i < indexes.size(); i++)
+	{
+		this->indexes.push_back(indexes[i]);
+	}
+    // this->indexes = indexes;
     return (true);
 }
 
 bool Location::set_auto_index(bool auto_index)
 {
+	// this mean duplicate in config file
+	if (auto_index_set)
+		return (false);
     this->auto_index = auto_index;
+	auto_index_set = true;
     return (true);
 }
 
 bool Location::set_root(const string &root)
 {
+	// this mean duplicate in config file
+	if (!this->root.empty())
+		return (false);
     this->root = root;
     return (true);
 }
 
 bool Location::set_methods(const map<string, bool> &methods)
 {
+	// this mean duplicate in config file
+	if (methods_set)
+		return (false);
     this->methods = methods;
+	methods_set = true;
     return (true);
 }
 
 bool Location::set_redirections(const pair<string, string> &redirections)
 {
+	// this mean duplicate in config file
+	if (!this->redirections.first.empty() && !this->redirections.second.empty())
+		return (false);
     this->redirections = redirections;
     return (true);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 void Location::print_lacation_info() const {
@@ -100,9 +183,9 @@ void Location::print_lacation_info() const {
 
     cout << BOLD_BLUE << "\t" << "route       : ";
     for (unsigned long i = 0; i < route.size(); i++) {
-        cout << route[i];
-        if (i < route.size() - 1)
-            cout << "/";
+        cout << route[i] << " ";
+        // if (i < route.size() - 1)
+        //     cout << "/";
     }
     // for(unsigned ) << BOLD_BLACK << route << " \n";
     cout << "\n";

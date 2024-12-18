@@ -3,17 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:53:50 by skarim            #+#    #+#             */
-/*   Updated: 2024/11/30 14:06:08 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/18 13:26:18 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Server.hpp"
 
 Server::Server() {
-    
+	client_max_body_size = -1;
+	autoindex = false;
+	autoindex_set = false;
 }
 
 Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
@@ -70,6 +72,93 @@ const vector<string> &Server::get_error_pages(void) const
 {
     return (error_pages);
 }
+
+// SETTERS
+
+void Server::set_locations(Location& location) {
+	locations.push_back(location);
+}
+
+void Server::set_ports(int port) {
+	if (port != -1)
+		this->ports.push_back(port);
+}
+
+bool Server::set_server_names(const vector<string>& vec) {
+	// this is check duplicate in config file!
+	if (!this->server_names.empty())
+		return (false);
+	for (int i = 1; i < vec.size(); i++)
+	{
+		this->server_names.push_back(vec[i]);
+	}
+	return (true);
+}
+
+bool Server::set_global_root(const string& root) {
+	if (!this->global_root.empty())
+		return (false);
+	this->global_root = root;
+	return (true);
+}
+
+bool Server::set_indexes(const vector<string>& vec) {
+	// this is check duplicate in config file!
+	if (!this->indexes.empty())
+		return (false);
+	for (int i = 1; i < vec.size(); i++)
+	{
+		this->indexes.push_back(vec[i]);
+	}
+	return (true);
+}
+
+bool Server::set_autoindex(bool auto_index) {
+	// this is check duplicate in config file!
+	if (autoindex_set)
+		return (false);
+	this->autoindex = auto_index;
+	autoindex_set = true;
+	return (true);
+}
+
+bool Server::set_redirection(const pair<string, string>& _redirection) {
+	// this is check duplicate in config file!
+	if (!redirection.first.empty() && !redirection.second.empty())
+		return (false);
+	this->redirection = _redirection;
+	return (true);
+}
+
+bool Server::set_client_max_body_size(const string& str_value) {
+
+	// this is check duplicate in config file!
+	if (client_max_body_size != -1)
+		return (false);
+	stringStream ss(str_value);
+	ss >> client_max_body_size;
+	if (ss.fail() || !ss.eof())
+		return (false);
+	if (client_max_body_size < 0)
+		return (false);
+	return (true);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void Server::print_server_info(void) const {
     cout << BOLD_YELLOW << "********************* server info *********************" << RESET << endl;

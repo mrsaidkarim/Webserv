@@ -12,6 +12,9 @@ class Location
         string root;
         map<string, bool> methods;
         pair<string, string> redirections;
+
+		bool	methods_set;
+		bool	auto_index_set;
     public:
         Location();
         Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,

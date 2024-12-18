@@ -2,11 +2,12 @@ NAME = webserv
 
 CPP = c++
 
-FLAGS =  -std=c++17 -g #-fsanitize=address  #-Wall -Wextra -Werror
+FLAGS =  -std=c++17 -g -fsanitize=address  #-Wall -Wextra -Werror
 
 RM = rm -f
 
-SRCS = 	Configuration/Location.cpp\
+SRCS =	ParseConfigFile/ParserConfig.cpp\
+		Configuration/Location.cpp\
 		Configuration/Server.cpp\
 		Request/HttpRequest.cpp\
 		Response/HttpResponse.cpp\
@@ -16,7 +17,8 @@ SRCS = 	Configuration/Location.cpp\
 		WebServ.cpp\
 		main.cpp
 
-HEADERS = 	Configuration/Location.hpp\
+HEADERS =	ParseConfigFile/ParserConfig.hpp\
+			Configuration/Location.hpp\
 			Configuration/Server.hpp\
 			Request/HttpRequest.hpp\
 			Response/HttpResponse.hpp\

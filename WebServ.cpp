@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/15 14:44:27 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/17 14:56:19 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -291,4 +291,8 @@ void WebServ::close_sockets()
 const map<int, vector<Server>> &WebServ::get_socket_servers() const
 {
     return socket_servers;
+}
+
+void WebServ::set_servers(Server& server) {
+	servers.push_back(server);
 }

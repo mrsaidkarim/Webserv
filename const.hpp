@@ -19,8 +19,10 @@
 #include <ctime>
 #include <sys/event.h>
 #include <unordered_map>
+#include <stack>
 
 #define vector std::vector
+#define stack std::stack
 #define string std::string
 #define map std::map
 #define pair std::pair
@@ -37,6 +39,7 @@
 #define getline std::getline
 #define to_string std::to_string
 #define filesystem std::filesystem
+#define ifstream std::ifstream
 #define ostringstream std::ostringstream
 #define hex std::hex
 #define list std::list
