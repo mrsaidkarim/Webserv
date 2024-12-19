@@ -65,7 +65,8 @@ Server server_init1() {
     pair<string, string> redirection = {"", ""};
     vector<string> indexes2 = {"index.html"};
     bool autoindex2 = true;
-    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+    map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
+
     
     Server server(
         ports,
@@ -136,7 +137,7 @@ Server server_init2() {
     pair<string, string> redirection = {"", ""};
     vector<string> indexes2 = {"video1.mp4"};
     bool autoindex2 = true;
-    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+     map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
     
     Server server(
         ports,
@@ -207,7 +208,7 @@ Server server_init3() {
     pair<string, string> redirection = {"", ""};
     vector<string> indexes2 = {"book.pdf"};
     bool autoindex2 = true;
-    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+     map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
     
     Server server(
         ports,

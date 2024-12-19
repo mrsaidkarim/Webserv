@@ -8,16 +8,15 @@ class ParserConfig
 {
 	private:
 		/* data */
+	int					num_line;
 	vector<string>		directive_server;
 	vector<string>		directive_location;
 	stack<char>			stack_brackets;
 	int					port;
-	// long long			max_body_size;
 	map<string, bool>		methods;
 	pair<string, string>	redirections;
 	ifstream				config_file;
 	bool					good_config;
-	// bool					start_server;
 	protected:
 		void			init_directive();
 		bool			open_file(const string& path);
@@ -40,6 +39,14 @@ class ParserConfig
 		bool			check_upload_store(const vector<string>& vec);
 		bool			check_listen(const vector<string>& vec);
 		bool			check_return(const vector<string>& vec);
+		bool			check_error_pages_and_set(const vector<string>& vec, Server& server);
+		bool			is_path(const string& path);
+
+		void			display_error(const string& line);
+
+		// // to implement!
+		// bool			check_attributes_server(Server& server); // to implement! to check the important element are not empty
+		// bool			check_attributes_location(Server& server); // to implement! to check the important element are not empty
 	public:
 		ParserConfig(const string& path, WebServ& webserv);
 		~ParserConfig();

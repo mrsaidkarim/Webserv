@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/18 12:32:14 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/19 14:42:29 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,10 @@ Location::~Location()
 const vector<string> &Location::get_route(void) const
 {
     return (route);
+}
+
+const string& Location::get_location_upload_store(void) const {
+	return (location_upload_store);
 }
 
 const vector<string> &Location::get_indexes(void) const
@@ -118,6 +122,14 @@ bool Location::set_methods(const map<string, bool> &methods)
     return (true);
 }
 
+bool Location::set_location_upload_store(const string& upload_store) {
+	// this mean duplicate in config file
+	if (!location_upload_store.empty())
+		return (false);
+	this->location_upload_store = upload_store;
+	return (true);
+}
+
 bool Location::set_redirections(const pair<string, string> &redirections)
 {
 	// this mean duplicate in config file
@@ -126,40 +138,6 @@ bool Location::set_redirections(const pair<string, string> &redirections)
     this->redirections = redirections;
     return (true);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -203,6 +181,7 @@ void Location::print_lacation_info() const {
     else cout << "off " << " \n";
 
     cout << BOLD_BLUE << "\t" << "root        : " << BOLD_BLACK << root << " \n";
+    cout << BOLD_BLUE << "\t" << "location_upload_store        : " << BOLD_BLACK << location_upload_store << " \n";
 
     cout << BOLD_BLUE << "\t" <<  "methods     : \n" << BOLD_BLACK;
     cout << "\t      GET   : ";

@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:53:50 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/18 13:26:18 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/19 16:23:49 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Server::Server() {
 
 Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
                 const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
-                const vector<string> &indexes, bool autoindex, const vector<string> &error_pages) :
+                const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages) :
                 ports(ports), server_names(server_names), client_max_body_size(client_max_body_size),
                 locations(locations), global_root(global_root), redirection(redirection), indexes(indexes), autoindex(autoindex), 
                 error_pages(error_pages)
@@ -68,9 +68,13 @@ bool Server::get_autoindex(void) const
     return (autoindex);
 }
 
-const vector<string> &Server::get_error_pages(void) const
+const map<string, string> &Server::get_error_pages(void) const
 {
     return (error_pages);
+}
+
+const string& Server::get_global_upload_store(void) const {
+	return (global_upload_store);
 }
 
 // SETTERS
@@ -82,6 +86,10 @@ void Server::set_locations(Location& location) {
 void Server::set_ports(int port) {
 	if (port != -1)
 		this->ports.push_back(port);
+}
+
+void Server::set_error_pages(const string& key,const string& value) {
+	this->error_pages[key] = value;
 }
 
 bool Server::set_server_names(const vector<string>& vec) {
@@ -96,9 +104,20 @@ bool Server::set_server_names(const vector<string>& vec) {
 }
 
 bool Server::set_global_root(const string& root) {
+	// to check if the path exist !
+	// this is check duplicate in config file!
 	if (!this->global_root.empty())
 		return (false);
 	this->global_root = root;
+	return (true);
+}
+
+bool Server::set_global_upload_store(const string& upload_stor) {
+	// to check if the path exist !
+	// this is check duplicate in config file!
+	if (!this->global_upload_store.empty())
+		return (false);
+	this->global_upload_store = upload_stor;
 	return (true);
 }
 
@@ -145,21 +164,6 @@ bool Server::set_client_max_body_size(const string& str_value) {
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 void Server::print_server_info(void) const {
     cout << BOLD_YELLOW << "********************* server info *********************" << RESET << endl;
     cout << BG_BLACK;
@@ -189,16 +193,19 @@ void Server::print_server_info(void) const {
     cout << "]" << endl;
 
     cout << BOLD_BLUE << left << setw(20) << "error_pages " << ": " << BOLD_WHITE << "[";
-    for (int i = 0; i < error_pages.size(); i++) {
+	int i = 0;
+    for (auto it = error_pages.begin() ; it != error_pages.end(); it++) {
         if (i > 0)
             cout << ", ";
-        cout << error_pages[i];
+        cout << it->first << ": " << it->second;
+		i++;
     }
     cout << "]" << endl;
 
     cout << BOLD_BLUE << left << setw(20) << "client_max_body_size" << ": " << BOLD_WHITE << client_max_body_size << " Byte\n";
+    cout << BOLD_BLUE << left << "" << "global_upload_store: " << BOLD_WHITE << global_upload_store << "\n";
 
-    cout << BOLD_BLUE << left << setw(20) << "global_root " << ": " << BOLD_WHITE << global_root << "\n";
+    cout << BOLD_BLUE << left << setw(20) << "global_root " << " :" << BOLD_WHITE << global_root << "\n";
 
     cout << BOLD_BLUE << left << setw(20) <<  "redirection " << ": " << BOLD_WHITE;
     cout << "[" << redirection.first << "]" << " [" << redirection.second << "]\n";
