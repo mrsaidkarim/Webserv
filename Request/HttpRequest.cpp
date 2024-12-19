@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/17 12:37:46 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/19 12:59:29 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -455,16 +455,16 @@ streampos HttpRequest::get_file_offset(void) const {
 	return (this->file_offset);
 }
 
-void HttpRequest::append_to_body(const string &data) {
-    this->body += data;
-
-    // Update completeness check if Content-Length is known
-    if (this->header.find("content-length") != this->header.end())
+void HttpRequest::append_to_body(const string &data)
+{
+	std::istringstream iss(header["content-length"]);
+	int c_length;
+	iss >> c_length;
+	if (data.size() + body.size() >= c_length)
 	{
-        size_t content_length = stoi(this->header["content-length"]); // stoi should replaced with an implemented one
-        if (this->body.size() >= content_length)
-		{
-            this->is_complete = true;
-        }
-    }
+		body.append(data, 0, c_length - body.size());
+		this->is_complete = true;
+	}
+	else
+		body.append(data);
 }

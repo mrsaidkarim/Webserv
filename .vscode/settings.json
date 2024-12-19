@@ -62,6 +62,9 @@
     "tuple": "cpp",
     "type_traits": "cpp",
     "typeinfo": "cpp",
-    "unordered_map": "cpp"
+    "unordered_map": "cpp",
+    "deque": "cpp",
+    "fstream": "cpp",
+    "stack": "cpp"
   }
 }

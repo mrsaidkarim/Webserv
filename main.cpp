@@ -59,7 +59,7 @@ Server server_init1() {
     vector<string> server_names = {"zechi.com", "www.nigro.com"};
     long long client_max_body_size = -1;
     vector<Location> locations = {loc1, loc2, loc3, loc4};
-    string global_root = "/Volumes/TOSHIBA/www/";//"/Users/skarim/Downloads/";//
+    string global_root = "/Users/skarim/Downloads";//"/Users/skarim/Downloads/";//
     // pair<string, string> redirection = {"301", "https://auth.42.fr"};
     pair<string, string> redirection = {"", ""};
     vector<string> indexes2 = {"index.html"};

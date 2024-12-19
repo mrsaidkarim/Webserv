@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/17 15:53:03 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/19 21:59:52 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,11 +141,75 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     return (server);
 }
 
+string addPrefixBeforeCRLF(const string &input) {
+    const string word = "\r\n";
+    const string prefix = "{$$$$}";
+    string result = input;
+    size_t pos = 0;
+
+    while ((pos = result.find(word, pos)) != string::npos) {
+        result.insert(pos, prefix);
+        pos += prefix.size() + word.size(); // Move past the added prefix and word
+    }
+
+    return result;
+}
+
+void process_request(unordered_map<int, HttpResponse*> &client_responses, map<int, int> &client_server,
+                        const map<int, vector<Server>> &servers, int &kq, int &fd)
+{
+    string serv_request_buffer = string(BUFFER_SIZE2, 0);
+    ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+    if (bytes_read > 0) { // process the request
+        serv_request_buffer.resize(bytes_read);
+        if (client_responses.find(fd) == client_responses.end()){ // new request
+            HttpRequest *request = new HttpRequest(serv_request_buffer);
+            int server_socket = client_server[fd];
+            Server server = host_server_name(servers , server_socket, request);
+            request->set_client_socket(fd);
+            request->set_server(server);
+            HttpResponse *response = new HttpResponse(request);
+            client_responses[fd] = response;
+            map<string, string>	header = request->get_header();
+            if (request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
+            {
+                struct kevent change;
+                EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    perror("Error: Failed to re-register client socket for writing");
+                    close(fd);
+                    delete request;
+                    client_responses.erase(fd);
+                }
+                return ;
+            }
+        }
+        else { // case of post_method continuation of reading the request body
+            HttpResponse *response = client_responses[fd];
+            HttpRequest *request = response->get_request();
+            request->append_to_body(serv_request_buffer);
+            if (request->get_is_complete())
+            {
+                cout << "\n*****"<<BG_GREEN << addPrefixBeforeCRLF(request->get_body()) << RESET<< "*****\n";
+                struct kevent change;
+                EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    perror("Error: Failed to re-register client socket for writing");
+                    close(fd);
+                    delete request;
+                    client_responses.erase(fd);
+                }
+            }
+        }
+    } else { // client disconnected
+        close(fd);
+        client_responses.erase(fd);
+        client_server.erase(fd);
+    }
+}
 
 void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
 {
-    // set socket to non-blocking
-
     unordered_map<int, HttpResponse*> client_responses;
     const int MAX_EVENTS = 128; // may we change it after if wasn't perfect for memory usage
     struct kevent event_list[MAX_EVENTS];
@@ -159,17 +223,16 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
         for (int i = 0; i < event_count; ++i) {
             int fd = event_list[i].ident;
 
-            if (servers.find(fd) != servers.end()) {
-                // new client connection
+            if (servers.find(fd) != servers.end()) { // new client connection
                 sockaddr_in client_addr;
                 socklen_t client_len = sizeof(client_addr);
-
                 int client_socket = accept(fd, (sockaddr *)&client_addr, &client_len);
                 if (client_socket == -1){
                     perror("Error: Failed to accept connection\n");
                     continue;
                 }
                 cout << "Accepted connection on server socket (fd: " << fd << "), client fd: " << client_socket << "\n";
+                fcntl(client_socket, F_SETFL, O_NONBLOCK);
                 struct kevent change;
                 EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
@@ -178,94 +241,15 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     continue;
                 }
                 client_server[client_socket] = fd;
-            } else if (event_list[i].filter == EVFILT_READ) {
-                // read incoming request from client
-                string serv_request_buffer = string(BUFFER_SIZE2, '\0');
-                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
-                /*
-                    MSG_DONTWAIT:
-                    A flag indicating that the call should return immediately if no data is available, 
-                    instead of blocking the process. If no data is available, recv returns -1 and sets
-                    errno to EAGAIN or EWOULDBLOCK
-                */
-                if (bytes_read > 0) {
-                    // process the request
-                    if (client_responses.find(fd) == client_responses.end() || client_responses[fd]->get_request()->get_method() != "post"){
-                        // get data from request buffer
-                        HttpRequest *request = new HttpRequest(serv_request_buffer);
-
-                        // search for right server
-                        int server_socket = client_server[fd];
-                        Server server = host_server_name(servers , server_socket, request);
-
-                        // set client socket and server
-                        request->set_client_socket(fd);
-                        request->set_server(server);
-
-                        // create response object
-                        HttpResponse *response = new HttpResponse(request);
-
-                        // store the response object in the map
-                        client_responses[fd] = response;
-                        cout << BG_WHITE << "request_data\n";
-                        for (auto &element : request->get_header())
-                        {
-                            cout << "key: " << element.first << ", value: " << element.second << endl;
-                        }
-                        cout << RESET;
-                        // add client socket to kqueue for writing event
-                        if (request->get_method() != "POST")
-                        {
-                            struct kevent change;
-                            EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                            kevent(kq, &change, 1, nullptr, 0, nullptr);
-                        }
-                        // else
-                        //     EV_SET(&change, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                            
-                        // cout << "end new request part\n";
-                    }
-                    else {
-                        cout << "lkamla dpost\n";// case of post_method continuation of reading the request body
-                        HttpResponse *response = client_responses[fd];
-                        HttpRequest *request = response->get_request();
-                        // cout << "******\n";
-                        // cout << request->get_body() << "\n*****\n";
-                        request->append_to_body(serv_request_buffer);
-                        if (request->get_is_complete())
-                        {
-                            // std::ofstream outFile("result_here");
-                            // outFile << "*** heda lbody\n";
-                            // outFile << request->get_body();
-                            // outFile << "\nsala lbody****\n";
-                            // outFile.close(); 
-                            cout << BG_GREEN << request->get_body() << RESET;
-                            close(fd);
-                        }
-                        else
-                        {
-                            struct kevent change;
-                            EV_SET(&change, fd, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                            kevent(kq, &change, 1, nullptr, 0, nullptr);
-                        }
-                    }
-                } else {
-                    // client disconnected
-                    close(fd);
-                }
-
+            } else if (event_list[i].filter == EVFILT_READ) { // read incoming request from client
+                process_request(client_responses, client_server, servers, kq, fd);
             } else if (event_list[i].filter == EVFILT_WRITE) {
-                // cout << "Client disconnected\n";
-                // close(fd);
-                // cout << "WRITE\n";
-                // send chunked response to client
                 HttpResponse *response = client_responses[fd];
                 if (!response) {
                     close(fd);
                     continue;
                 }
                 response->serv();
-                // if response is complete, remove all client data
                 if (response->get_request()->get_is_complete()) {
                     delete response->get_request();
                     delete response;
@@ -279,6 +263,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
         }
     }
 }
+
 
 void WebServ::run_servers()
 {
