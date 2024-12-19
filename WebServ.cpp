@@ -15,6 +15,7 @@
 #include "Request/HttpRequest.hpp"
 #include "Response/HttpResponse.hpp"
 #include "const.hpp"
+#include <fstream>
 #include <sys/_types/_ssize_t.h>
 #include <sys/event.h>
 
@@ -188,9 +189,19 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
             } else if (event_list[i].filter == EVFILT_READ) {
 
                 // read incoming request from client
-                string serv_request_buffer = string(BUFFER_SIZE2, '\0');
-                ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
-                cout << bytes_read << "\n";
+                string serv_request_buffer = string(BUFFER_SIZE2, 0);
+                char array[BUFFER_SIZE2] = {0};
+                // ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+                ssize_t bytes_read = recv(fd, array, BUFFER_SIZE2, 0);
+                serv_request_buffer.assign(array, bytes_read);
+                // cout << bytes_read << "\n";
+                std::ofstream ss("msg.py", ios::app| ios::binary);
+                ss << serv_request_buffer;
+                
+                cout << RED << (int)serv_request_buffer[serv_request_buffer.length() - 1] << endl;
+                
+                ss << "\n\n----------------------------------------\n\n";
+
                 if (bytes_read < 0) {
                     perror("failed to read\n");
                 }

@@ -48,21 +48,15 @@ string extract_new_file_name(const string &info) {
     return (file_name);
 }
 
-void write_in_file(fstream *file, const string& content) {
-    for (int i = 0; i < content.size(); i++) {
-        if (content[i] != 0)
-            *file << content[i];
-    }
-}
 
 void HttpResponse::post_method() const {
 
     string body = request->get_body(); // get body from request
     cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 
-    cout << "===================== current body ============================\n";
-    cout << body << "\n"; // to remove
-    cout << "===============================================================\n";
+    // cout << "===================== current body ============================\n";
+    // cout << body << "\n"; // to remove
+    // cout << "===============================================================\n";
 
 
     fstream *file = request->get_file_stream(); // get file from request
@@ -89,7 +83,7 @@ void HttpResponse::post_method() const {
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else
-            write_in_file(file, body);
+            *file << body;
         request->set_body(""); // clear previous body
         return ;
     }
@@ -109,7 +103,7 @@ void HttpResponse::post_method() const {
             // cout << slice << "\n";
             // cout << "=================================================\n"; 
             if (file) {
-                write_in_file(file, slice);
+                *file << slice;
                 if (slice.find(CRLF) != string::npos) {
                     cout << "found crlf in slice\n";
                 }
@@ -132,10 +126,10 @@ void HttpResponse::post_method() const {
             // search for CRLF after Content-Disposition
             pos_info = body.find(CRLF);
             info = body.substr(0, pos_info);
-            cout << "<<<<" << info << ">>>>>" << "\n";
+            // cout << "<<<<" << info << ">>>>>" << "\n";
             // get name of new file
             new_file_name = extract_new_file_name(info);
-            cout << "file name: <<<<" << new_file_name << ">>>>\n";
+            // cout << "file name: <<<<" << new_file_name << ">>>>\n";
             if (file) {
                 file->close();
                 delete file;
@@ -170,7 +164,7 @@ void HttpResponse::post_method() const {
             pos_bound_end = body.find(request->get_boundary_key_end());
             // we are done
             if (pos_bound_end != string::npos) {
-                cout << "---------------> found boundary key end \n";
+                // cout << "---------------> found boundary key end \n";
                 slice = body.substr(0, pos_bound_end);
                 if (!file) {
                     cerr << BOLD_RED << "can't write in file in post_method() func 2\n" << RESET;
@@ -178,7 +172,7 @@ void HttpResponse::post_method() const {
                     cout << BOLD_GREEN << "we read all 3\n\n";
                 }
                 else
-                    write_in_file(file, slice);
+                    *file << slice;
 
                 request->set_body("");
                 request->set_is_complete(true); // this task is done
