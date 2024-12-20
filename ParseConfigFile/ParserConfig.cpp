@@ -48,7 +48,7 @@ ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 	// }
 	return ;
 	bad_config:
-		cerr << BOLD_RED << "Bad config file!\n" << RESET;
+		cerr << BOLD_RED << "ERROR! 🤯🤯🤯🤯🤯\n" << RESET;
 }
 
 ParserConfig::~ParserConfig()
@@ -212,6 +212,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 					return (false);
 				}
 				// check the server beffor push it 
+				// ! activate after merge
 				// if (!server.check_attributes_server())
 				// 	return (false);
 				// push the server in webservers!
@@ -542,5 +543,7 @@ vector<string> ParserConfig::split(const string& str, char delimiter1, char deli
 // }
 
 void ParserConfig::display_error(const string& line) {
+
+	cerr << BOLD_RED << "Bad config file!\n" << RESET;
 	cerr << BOLD_RED << "here >>> line:" << num_line << " => " << line << "\n" << RESET;
 }
