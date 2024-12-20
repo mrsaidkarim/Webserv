@@ -226,8 +226,10 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 				display_error(tmp_line);
 				return (false);
 			}
-			if (!handle_location(server, split_line))
+			if (!handle_location(server, split_line)) {
+				display_error(tmp_line);
 				return (false);
+			}
 		}
 		else if (it != directive_server.end() && !set_directive_server(split_line, it, server)) {
 			display_error(tmp_line);
@@ -277,7 +279,9 @@ bool ParserConfig::handle_location(Server& server, const vector<string>& vec) {
 	vector<string>				split_line;
 	vector<string>::iterator	it;
 
-	location.set_route(vec);
+	if (vec.size() != 3)
+		return (false);
+	location.set_route(split(vec[1], '/', '/'));
 	while (getline(config_file, line))
 	{	tmp_line = line;
 		num_line++;

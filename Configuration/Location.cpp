@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/20 12:01:24 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/20 20:16:33 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ bool Location::set_route(const vector<string> &route)
 {
 	// if (!this->route.empty())
 	// 	return (false);
-	for (int i = 1; i < route.size() - 1; i++)
+	for (int i = 0; i < route.size(); i++)
 	{
 		this->route.push_back(route[i]);
 	}
