@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/19 14:42:29 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/20 12:01:24 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,22 +139,35 @@ bool Location::set_redirections(const pair<string, string> &redirections)
     return (true);
 }
 
+bool Location::does_not_exist(const string& path) {
+	struct stat statbuf;
+	return (stat(path.c_str(), &statbuf) != 0); // Returns true if the file does not exist.
+}
 
+bool Location::is_a_file(const string& path) {
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) == 0)
+		return S_ISREG(statbuf.st_mode);
+	return false; // The path does not exist or is not a regular file.
+}
 
+bool Location::check_is_dir(const string& path, int num_server) {
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+	if (does_not_exist(path)) {
+		cerr << BOLD_RED << "Error server" << num_server <<" in location: path => " << path << " does not exist!\n" << RESET;
+		return false;
+	}
+	if (is_a_file(path)) {
+		cerr << BOLD_RED << "Error server" << num_server << " in location: path => " << path << " should not be a file!\n" << RESET;
+		return (false);
+	} else {
+		if (access(path.c_str(), W_OK | X_OK) != 0) {
+			cerr << BOLD_RED << "Error server" << num_server << " in location: You don't have the write permission for: " << path << "\n" << RESET;
+			return (false);
+		}
+	}
+	return (true);
+}
 
 void Location::print_lacation_info() const {
     cout << BG_WHITE;

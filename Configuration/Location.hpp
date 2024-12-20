@@ -42,7 +42,9 @@ class Location
         bool	set_redirections(const pair<string, string> &);
 		bool	set_location_upload_store(const string& upload_store);
 
-		bool	check_attributes_location(); // to implement check the important attributes!
+		bool	does_not_exist(const string& path);
+		bool	is_a_file(const string& path);
+		bool	check_is_dir(const string& path, int num_server);
         // to remove
         void print_lacation_info(void) const;
 };

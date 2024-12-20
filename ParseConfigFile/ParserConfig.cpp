@@ -211,6 +211,9 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 					display_error(tmp_line);
 					return (false);
 				}
+				// check the server beffor push it 
+				// if (!server.check_attributes_server())
+				// 	return (false);
 				// push the server in webservers!
 				webserver.set_servers(server);
 				server.print_server_info();
@@ -453,11 +456,11 @@ bool ParserConfig::check_error_pages_and_set(const vector<string>& vec, Server& 
 	return (true);
 }
 
-bool ParserConfig::check_upload_store(const vector<string>& vec) {
+// bool ParserConfig::check_upload_store(const vector<string>& vec) {
 
-	// should check if is a dir and exist ? 
-	return (true);
-}
+// 	// should check if is a dir and exist ? 
+// 	return (true);
+// }
 
 
 bool ParserConfig::check_line_location(string& line) {
@@ -506,6 +509,37 @@ vector<string> ParserConfig::split(const string& str, char delimiter1, char deli
 		words.push_back(word);
 	return words;
 }
+
+
+// bool ParserConfig::does_not_exist(const string& path) {
+// 	struct stat statbuf;
+// 	return (stat(path.c_str(), &statbuf) != 0); // Returns true if the file does not exist.
+// }
+
+// bool ParserConfig::is_a_file(const string& path) {
+// 	struct stat statbuf;
+// 	if (stat(path.c_str(), &statbuf) == 0)
+// 		return S_ISREG(statbuf.st_mode);
+// 	return false; // The path does not exist or is not a regular file.
+// }
+
+// bool ParserConfig::check_is_dir(const string& path) {
+
+// 	if (does_not_exist(path)) {
+// 		cerr << BOLD_RED << "Error: path => " << path << " does not exist!\n" << RESET;
+// 		return false;
+// 	}
+// 	if (is_a_file(path)) {
+// 		cerr << BOLD_RED << "Error: path => " << path << " should not be a file!\n" << RESET;
+// 		return (false);
+// 	} else {
+// 		if (access(path.c_str(), W_OK | X_OK) != 0) {
+// 			cerr << BOLD_RED << "Error: You don't have the write permission for: " << path << "\n" << RESET;
+// 			return (false);
+// 		}
+// 	}
+// 	return (true);
+// }
 
 void ParserConfig::display_error(const string& line) {
 	cerr << BOLD_RED << "here >>> line:" << num_line << " => " << line << "\n" << RESET;

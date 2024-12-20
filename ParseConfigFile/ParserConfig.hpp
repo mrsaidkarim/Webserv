@@ -36,11 +36,14 @@ class ParserConfig
 		bool			check_line_location(string& line);
 		bool			check_autoindex(const vector<string>& vec);
 		bool			check_allow_methods(const vector<string>& vec);
-		bool			check_upload_store(const vector<string>& vec);
+		// bool			check_upload_store(const vector<string>& vec);
 		bool			check_listen(const vector<string>& vec);
 		bool			check_return(const vector<string>& vec);
 		bool			check_error_pages_and_set(const vector<string>& vec, Server& server);
 		bool			is_path(const string& path);
+		// bool			does_not_exist(const string& path);
+		// bool			is_a_file(const string& path);
+		// bool			check_is_dir(const string& path);
 
 		void			display_error(const string& line);
 

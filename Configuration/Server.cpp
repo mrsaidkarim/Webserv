@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:53:50 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/19 16:23:49 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/20 12:02:28 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@ Server::Server(const vector<int> &ports, const vector<string> &server_names, con
                 locations(locations), global_root(global_root), redirection(redirection), indexes(indexes), autoindex(autoindex), 
                 error_pages(error_pages)
 {
-    
 }
 
 const vector<int> &Server::get_ports(void) const
@@ -160,6 +159,83 @@ bool Server::set_client_max_body_size(const string& str_value) {
 		return (false);
 	if (client_max_body_size < 0)
 		return (false);
+	return (true);
+}
+
+bool Server::does_not_exist(const string& path) {
+	struct stat statbuf;
+	return (stat(path.c_str(), &statbuf) != 0); // Returns true if the file does not exist.
+}
+
+bool Server::is_a_file(const string& path) {
+	struct stat statbuf;
+	if (stat(path.c_str(), &statbuf) == 0)
+		return S_ISREG(statbuf.st_mode);
+	return false; // The path does not exist or is not a regular file.
+}
+
+bool Server::check_is_dir(const string& path, int num_server) {
+
+	if (does_not_exist(path)) {
+		cerr << BOLD_RED << "Error server" << num_server <<": path => " << path << " does not exist!\n" << RESET;
+		return false;
+	}
+	if (is_a_file(path)) {
+		cerr << BOLD_RED << "Error server" << num_server <<": path => " << path << " should not be a file!\n" << RESET;
+		return (false);
+	} else {
+		if (access(path.c_str(), W_OK | X_OK) != 0) {
+			cerr << BOLD_RED << "Error server" << num_server <<": You don't have the write permission for: " << path << "\n" << RESET;
+			return (false);
+		}
+	}
+	return (true);
+}
+
+bool Server::check_attributes_server() {
+	static int order_server = 1;
+	if (ports.empty()) {
+		cerr << BOLD_RED << "Error: server"<< order_server << " => need port!\n" << RESET;
+		return (false);
+	}
+	if (server_names.empty()) {
+		cerr << BOLD_RED << "Error: server"<< order_server << " => need server_name!\n" << RESET;
+		return (false);
+	}
+	if (global_root.empty()) {
+		cerr << BOLD_RED << "Error: server"<< order_server << " => need global root path!\n" << RESET;
+		return (false);
+	}
+	else {
+		if (!check_is_dir(global_root, order_server))
+			return (false);
+	}
+	if (global_upload_store.empty()) {
+		cerr << BOLD_RED << "Error: server"<< order_server << " => need global upload store path!\n" << RESET;
+		return (false);
+	}
+	else {
+		if (!check_is_dir(global_upload_store, order_server))
+			return (false);
+	}
+	// set upload stor for each location!
+	for (int i = 0; i < locations.size(); i++)
+	{
+		if (locations[i].get_root().empty()) {
+			locations[i].set_location_upload_store(global_root + global_upload_store);
+			if(!locations[i].check_is_dir(locations[i].get_location_upload_store(), order_server))
+				return (false);
+		}
+		else {
+			locations[i].set_location_upload_store(locations[i].get_root() + global_upload_store);
+			if(!locations[i].check_is_dir(locations[i].get_location_upload_store(), order_server))
+				return (false);
+		}
+	}
+	global_upload_store = global_root + global_upload_store;
+	if (!check_is_dir(global_upload_store, order_server))
+		return (false);
+	order_server++;
 	return (true);
 }
 

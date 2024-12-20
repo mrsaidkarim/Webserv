@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:39:27 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/19 20:09:10 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/20 11:56:55 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,6 +61,9 @@ class Server
 		bool	set_client_max_body_size(const string& str_value);
 		bool	set_global_upload_store(const string& upload_stor);
 		
+		bool	does_not_exist(const string& path);
+		bool	is_a_file(const string& path);
+		bool	check_is_dir(const string& path, int num_server);
 		bool	check_attributes_server(); // to implement check the important attributes!
 
 		// to remove
