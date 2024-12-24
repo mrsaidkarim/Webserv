@@ -247,6 +247,10 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 		return (false);
 	}
 	server.print_server_info();
+	// check the server beffor push it 
+	// ! activate after merge
+	// if (!server.check_attributes_server())
+	// 	return (false);
 	webserver.set_servers(server);
 	return (true);
 }
