@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/19 21:59:52 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/24 21:05:29 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -141,7 +141,7 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     return (server);
 }
 
-string addPrefixBeforeCRLF(const string &input) {
+static string addPrefixBeforeCRLF(const string &input) {
     const string word = "\r\n";
     const string prefix = "{$$$$}";
     string result = input;
@@ -171,6 +171,8 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             HttpResponse *response = new HttpResponse(request);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
+            if (request->get_method() != "POST" )
+                response->serv();
             if (request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
             {
                 struct kevent change;
@@ -187,10 +189,17 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
         else { // case of post_method continuation of reading the request body
             HttpResponse *response = client_responses[fd];
             HttpRequest *request = response->get_request();
-            request->append_to_body(serv_request_buffer);
+            request->add_to_body(serv_request_buffer, bytes_read);
+            response->serv();
+            // request->append_to_body(serv_request_buffer);
             if (request->get_is_complete())
             {
-                cout << "\n*****"<<BG_GREEN << addPrefixBeforeCRLF(request->get_body()) << RESET<< "*****\n";
+                // cout << BG_RED << "request completed\n" << RESET;
+                // cout << BG_RED;
+                // for (auto x : request->get_header())
+                //     cout << x.first << ", " << x.second << "\n";
+                // cout << RESET;
+                // cout << BG_GREEN << addPrefixBeforeCRLF(request->get_body()) << RESET<< "\n";
                 struct kevent change;
                 EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
@@ -232,7 +241,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     continue;
                 }
                 cout << "Accepted connection on server socket (fd: " << fd << "), client fd: " << client_socket << "\n";
-                fcntl(client_socket, F_SETFL, O_NONBLOCK);
+                fcntl(client_socket, F_SETFL, O_NONBLOCK); // need to know more about it
                 struct kevent change;
                 EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {

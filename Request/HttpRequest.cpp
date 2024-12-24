@@ -6,12 +6,25 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/19 12:59:29 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/24 20:53:30 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HttpRequest.hpp"
 
+static string addPrefixBeforeCRLF(const string &input) {
+    const string word = "\r\n";
+    const string prefix = "{$$$$}";
+    string result = input;
+    size_t pos = 0;
+
+    while ((pos = result.find(word, pos)) != string::npos) {
+        result.insert(pos, prefix);
+        pos += prefix.size() + word.size(); // Move past the added prefix and word
+    }
+
+    return result;
+}
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
 	string			header;
@@ -24,7 +37,8 @@ HttpRequest::HttpRequest(const string& _request) {
 	// cout << BOLD_YELLOW << "HttpRequest constructor: " << a++  << RESET << endl; 
 	// cout << BOLD_RED<< _request << RESET << '\n';
 	// to debug
-
+    // cout << ""<<BG_RED << addPrefixBeforeCRLF(_request) << RESET<< "\n";
+	
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
@@ -65,6 +79,15 @@ HttpRequest::HttpRequest(const string& _request) {
 
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
+		check_chunked();
+		body = "\r\n" + body; // I add crlf before body because it was removed before
+		if (this->is_chunked)
+			body = "\r\n" + body;
+		set_body(body); // update body
+		
+		// set_boundary_key it looks for boundary key :) in header map
+		// if boundary key founded it return true , false otherwise
+		set_boundary_key();
 		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
 			this->set_status_code("411");
 			goto error;
@@ -454,6 +477,70 @@ void HttpRequest::set_file_offset(streampos _file_offset) {
 streampos HttpRequest::get_file_offset(void) const {
 	return (this->file_offset);
 }
+
+// for post method
+
+void HttpRequest::add_to_body(const string &slice, int byte_read) {
+	read_content_length += byte_read;
+	// cout << header.find("content-length")->second << "\n";
+	// if (read_content_length >= stoi((header.find("content-length")->second))) {
+	// 	// is_complete = true;
+	// 	// cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
+	// 	// cout << read_content_length << "\n";
+	// 	// cout << header.find("content-length")->second << "\n";
+	// }
+	body += slice;	
+}
+
+bool HttpRequest::set_boundary_key(void) {
+	map<string, string>::iterator it = header.find("content-type");
+	if (it == header.end()) {
+		cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
+		return (false);
+	}
+	size_t pos = it->second.find("boundary=");
+	if (pos == string::npos) {
+		cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
+		return (false);
+	}
+	boundary_key = it->second.substr(pos + 9); // 9 is length("boundary=")
+
+	// set boundary key begin 
+
+	boundary_key_begin = CRLF;
+	boundary_key_begin += "--";
+	boundary_key_begin += boundary_key;
+	boundary_key_begin += CRLF;
+
+	// set boundary key end
+
+	boundary_key_end = CRLF;
+	boundary_key_end += "--";
+	boundary_key_end += boundary_key;
+	boundary_key_end += "--";
+	boundary_key_end += CRLF;
+
+	// cout << BOLD_GREEN << boundary_key << "\n" << RESET;
+	return (true);
+}
+
+void HttpRequest::check_chunked()
+{
+	map<string, string>::iterator it = header.find("transfer-encoding");
+	if (it->second == "chunked")
+		this->is_chunked = true;
+}
+
+
+
+const string& HttpRequest::get_boundary_key_begin(void) const {
+	return (boundary_key_begin);
+}
+
+const string& HttpRequest::get_boundary_key_end(void) const {
+	return (boundary_key_end);
+}
+
 
 void HttpRequest::append_to_body(const string &data)
 {

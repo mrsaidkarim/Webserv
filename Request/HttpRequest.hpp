@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/16 13:14:56 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/24 15:07:51 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,11 @@ class HttpRequest
 		bool 				is_complete; // if offset is at the end of the file
 		Server				server; // the server will serve the request
 		int 				client_socket; // file descriptor of communication socket
-	
+		size_t				read_content_length;
+		string				boundary_key; // for post method
+		string 				boundary_key_begin;
+		string				boundary_key_end;
+
 	protected:
 		vector<string>	split(const string& str, char delimiter);
 		string			trim_string(const string& str);
@@ -67,7 +71,8 @@ class HttpRequest
 		void set_file_path(const string& _file_path);
 		void set_file_stream(fstream* _file_stream);
 		void set_file_offset(streampos _file_offset);
-
+		bool set_boundary_key(void);
+		
 		// GETTERS:
 		const string& get_status_code(void) const;
 		const string& get_method(void) const;
@@ -84,8 +89,14 @@ class HttpRequest
 		const string& get_file_path(void) const;
 		fstream* get_file_stream(void) const;
 		streampos get_file_offset(void) const;
+		const string& get_boundary_key_begin(void) const;
+		const string& get_boundary_key_end(void) const;
 
+		// for post method
 
+		void	add_to_body(const string &, int );
+		void check_chunked();
+		
 		void  display_request(); // TO REMOVE
 		void append_to_body(const string &data);
 };
