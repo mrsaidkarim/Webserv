@@ -196,6 +196,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 		// 	display_error(tmp_line);
 		// 	return (false);
 		// }
+		cout << BOLD_GREEN << line << RESET << "\n";
 		split_line = split(line, ' ', '\t');
 		if (line.empty())
 			continue ;
@@ -254,7 +255,7 @@ bool ParserConfig::check_line_server(string& line) {
 	int pos;
 	if (line.empty() || line == "}")
 		return (true);
-	if ((line.find("location") != string::npos) || (line.find("server") != string::npos)) {
+	if ((line.find("location") != string::npos) || (line.find("server ") != string::npos)) {
 		if (line.find("location") != 0 && line.find("server") != 0)
 			return (false);
 		return (true);
@@ -268,6 +269,7 @@ bool ParserConfig::check_line_server(string& line) {
 		if (line[pos + 1] != '\0')
 			return (false);
 	}
+	
 	line = line.substr(0, pos);
 	return (true);
 }
