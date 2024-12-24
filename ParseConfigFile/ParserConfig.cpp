@@ -255,7 +255,7 @@ bool ParserConfig::check_line_server(string& line) {
 	int pos;
 	if (line.empty() || line == "}")
 		return (true);
-	if ((line.find("location") != string::npos) || (line.find("server ") != string::npos)) {
+	if ((line.find("location ") != string::npos) || (line.find("server ") != string::npos)) {
 		if (line.find("location") != 0 && line.find("server") != 0)
 			return (false);
 		return (true);
