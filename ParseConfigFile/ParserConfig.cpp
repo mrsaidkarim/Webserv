@@ -196,7 +196,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 		// 	display_error(tmp_line);
 		// 	return (false);
 		// }
-		cout << BOLD_GREEN << line << RESET << "\n";
+		// cout << BOLD_GREEN << line << RESET << "\n";
 		split_line = split(line, ' ', '\t');
 		if (line.empty())
 			continue ;
@@ -228,7 +228,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 				return (false);
 			}
 			if (!handle_location(server, split_line)) {
-				display_error(tmp_line);
+				// display_error(tmp_line);
 				return (false);
 			}
 		}
