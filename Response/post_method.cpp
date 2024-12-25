@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 12:54:20 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/24 21:05:15 by skarim           ###   ########.fr       */
+/*   Updated: 2024/12/25 15:27:19 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,25 +49,52 @@ bool is_crlf_exist_more_than_five_times(const string &s) {
 //             pos += 2;
 //     }
 // }
+// void normalize_chunked_data(string &s) {
+//     size_t pos = 0;
+
+//     while ((pos = s.find(CRLF, pos)) != string::npos) {
+//         size_t chunk_start = pos + 2;
+//         size_t i = chunk_start;
+
+//         while (i < s.size() && isxdigit(s[i])) {
+//             i++;
+//         }
+
+//         if (i > chunk_start && i + 1 < s.size() && s[i] == '\r' && s[i + 1] == '\n') {
+//             s = s.substr(0, pos) + s.substr(i + 2);
+//             pos = pos;
+//         } else {
+//             pos += 2;
+//         }
+//     }
+//     cout << BOLD_BLUE << pos << "normalized\n" << RESET;
+// }
 void normalize_chunked_data(string &s) {
+    const string crlf = "\r\n";
+    string res; // To store the processed data
     size_t pos = 0;
 
-    while ((pos = s.find(CRLF, pos)) != string::npos) {
-        size_t chunk_start = pos + 2;
+    while ((pos = s.find(crlf, pos)) != string::npos) {
+        size_t chunk_start = pos + crlf.size(); // Start of potential chunk size
         size_t i = chunk_start;
 
+        // Check if the chunk size is a valid hexadecimal number
         while (i < s.size() && isxdigit(s[i])) {
             i++;
         }
 
+        // Ensure the detected chunk size is followed by crlf
         if (i > chunk_start && i + 1 < s.size() && s[i] == '\r' && s[i + 1] == '\n') {
-            s = s.substr(0, pos) + s.substr(i + 2);
-            pos = pos;
+            // Remove the chunk size pattern (chunk size + crlf)
+            s = s.substr(0, pos) + s.substr(i + crlf.size());
+            pos = pos; // Reset position for further processing
         } else {
-            pos += 2;
+            pos += crlf.size(); // Move past CRLF if no valid chunk size is found
         }
     }
+    cout << BOLD_BLUE << pos << "normalized\n" << RESET;
 }
+
 
 
 string extract_new_file_name(const string &info) {
@@ -100,9 +127,9 @@ void HttpResponse::post_method() const {
 
     if (request->get_is_chunked())
         normalize_chunked_data(body);
-    // cout << "===================== current body ============================\n";
+    // cout << BG_GREEN << "===================== current body ============================\n";
     // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
-    // cout << "===============================================================\n";
+    // cout << "===============================================================\n" << RESET;
     fstream *file = request->get_file_stream(); // get file from request
     string slice;
     size_t pos_crlf = body.find(CRLF);
@@ -204,7 +231,7 @@ void HttpResponse::post_method() const {
 
                 request->set_body("");
                 request->set_is_complete(true); // this task is done
-                // cout << BOLD_GREEN << "we read all 4\n\n";
+                cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
             } else {
                 break;
@@ -213,9 +240,9 @@ void HttpResponse::post_method() const {
         }
         pos_crlf = body.find(CRLF);
     }
-    // if (request->get_is_complete())
-    //     cout << BOLD_GREEN << "we read all 5\n\n" << RESET;
-    // cout << BOLD_GREEN << "we read all 6\n\n" << RESET;
+    if (request->get_is_complete())
+        cout << BOLD_GREEN << "we read all 5\n\n" << RESET;
+    cout << BOLD_GREEN << "we read all 6\n\n" << RESET;
 }
 
 // void HttpResponse::post_method() const {
