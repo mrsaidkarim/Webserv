@@ -128,7 +128,7 @@ bool ParserConfig::check_start_server(const string& line) {
 
 bool ParserConfig::check_start_location(const vector<string>& vec) {
 
-	if (vec.size() < 3)
+	if (vec.size() != 3)
 		return (false);
 	if (vec[vec.size() - 1] != "{")
 		return (false);
@@ -285,8 +285,8 @@ bool ParserConfig::handle_location(Server& server, const vector<string>& vec) {
 	vector<string>				split_line;
 	vector<string>::iterator	it;
 
-	if (vec.size() != 3)
-		return (false);
+	// if (vec.size() != 3)
+	// 	return (false);
 	location.set_route(split(vec[1], '/', '/'));
 	while (getline(config_file, line))
 	{	tmp_line = line;
