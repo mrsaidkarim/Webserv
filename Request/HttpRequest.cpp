@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/15 14:46:34 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/26 14:56:07 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,8 +132,10 @@ bool HttpRequest::set_url(const string& _url) {
 	fragment_pos = update_url.find('#');
 	path_end = std::min(query_pos, fragment_pos);
 	if (path_end == string::npos) path_end = _url.length();
-	if (query_pos != string::npos && (fragment_pos == string::npos || query_pos < fragment_pos))
-		set_query(update_url.substr(query_pos + 1, fragment_pos - query_pos - 1));
+	if (query_pos != string::npos && (fragment_pos == string::npos || query_pos < fragment_pos)) {
+		if (!set_query(update_url.substr(query_pos + 1, fragment_pos - query_pos - 1)))
+			return (this->set_status_code("400"), false);
+	}
 	if (fragment_pos != string::npos)
 		set_fragment(update_url.substr(fragment_pos + 1));
 	update_url = update_url.substr(0, path_end);
@@ -210,8 +212,11 @@ void HttpRequest::set_encoding_symbols() {
 	this->encoding_symbols["%7E"] = '~';
 }
 
-void HttpRequest::set_query(const string& _query) {
+bool HttpRequest::set_query(const string& _query) {
+	if (_query.find('?') != string::npos)
+		return (false);
 	this->query = _query;
+	return (true);
 }
 
 // GETTERS

@@ -244,8 +244,8 @@ int main(int ac, char** av) {
 	// }
 	
     Server server1 = server_init1();
-    Server server2 = server_init1();
-    Server server3 = server_init1();
+    Server server2 = server_init2();
+    Server server3 = server_init3();
 
     vector<Server> servers = {server1};
 
@@ -254,4 +254,5 @@ int main(int ac, char** av) {
 
     // run the servers
     webserv.run_servers();
+	// web_serv.run_servers();
 }

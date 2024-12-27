@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/13 15:36:24 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/26 14:46:58 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ class HttpRequest
 		void set_encoding_symbols();
 		void set_status_code(const string& _status);
 		void set_fragment(const string& _fragment);
-		void set_query(const string& _query);
+		bool set_query(const string& _query);
 		void set_body(const string& _body);
 		bool set_method(const string& _method);
 		bool set_url(const string& _url);

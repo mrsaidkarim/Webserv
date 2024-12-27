@@ -81,6 +81,7 @@ void ParserConfig::init_directive() {
 	directive_location.push_back("allow_methods");
 	directive_location.push_back("root");
 	directive_location.push_back("index");
+	directive_location.push_back("cgi_extension");
 	directive_location.push_back("return");
 }
 
@@ -203,6 +204,10 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 		it = find(directive_server.begin(), directive_server.end(), split_line[0]);
 		if (it == directive_server.end() && split_line[0] != "location" && split_line[0] != "}")
 		{
+			if (split_line[0] == "cgi_extension") {
+				display_error(tmp_line);
+				return (false);
+			}
 			if (find(directive_location.begin(), directive_location.end(), split_line[0]) == directive_location.end()) {
 				if (!check_start_server(line)) {
 					display_error(tmp_line);
@@ -379,6 +384,10 @@ bool ParserConfig::set_directive_location(const vector<string>& vec, const vecto
 	}
 	if (*directive == "return") {
 		if (!check_return(vec) || !loc.set_redirections(redirections))
+			return (false);
+	}
+	if (*directive == "cgi_extension") {
+		if (!loc.set_cgi_extension(vec))
 			return (false);
 	}
 	return (true);

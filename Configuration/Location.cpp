@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/20 20:16:33 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/27 22:49:59 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,9 @@ Location::Location()
 	auto_index = false;
 	methods_set = false;
 	auto_index_set = false;
+	cgi_extension["php"] = "";
+	cgi_extension["py"] = "";
+	cgi_extension["js"] = "";
 	cout << "constructor location\n";
 }
 
@@ -169,6 +172,32 @@ bool Location::check_is_dir(const string& path, int num_server) {
 	return (true);
 }
 
+bool Location::check_binary_file(const string& path) {
+	if (does_not_exist(path)) {
+		cerr << BOLD_RED << "path does not exist!" << "\n" << RESET;
+		return (false);
+	}
+	if (!is_a_file(path)) {
+		cerr << BOLD_RED << "should be a path to binary file!" << "\n" << RESET;
+		return (false);
+	}
+	return (true);
+}
+
+bool Location::set_cgi_extension(const vector<string>& vec) {
+
+	if (vec.size() != 3)
+		return (false);
+	if (vec[1] != "php" && vec[1] != "py" && vec[1] != "js")
+		return (false);
+	if (!cgi_extension[vec[1]].empty())
+		return (false);
+	if (!check_binary_file(vec[2]))
+		return (false);
+	cgi_extension[vec[1]] = vec[2];
+	return (true);
+}
+
 void Location::print_lacation_info() const {
     cout << BG_WHITE;
 
@@ -221,4 +250,10 @@ void Location::print_lacation_info() const {
 
     cout << RESET;
 
+	cout << BOLD_BLUE << "\t" << "cgi_extension : \n" << BOLD_BLACK;
+	for (auto it = cgi_extension.begin(); it != cgi_extension.end() ; it++)
+	{
+		cout << "\t\t" <<it->first << " : " << it->second << "\n";
+	}
+	cout << RESET;
 }
