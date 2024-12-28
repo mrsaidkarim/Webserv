@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/26 14:56:07 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/28 12:09:46 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,6 +216,11 @@ bool HttpRequest::set_query(const string& _query) {
 	if (_query.find('?') != string::npos)
 		return (false);
 	this->query = _query;
+	for (int i = 0; i < this->query.length(); i++)
+	{
+		if (this->query[i] == '+')
+			this->query[i] = ' ';
+	}
 	return (true);
 }
 
