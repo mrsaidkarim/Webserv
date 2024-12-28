@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>505 HTTP Version Not Supported</title>
+    <title>408 Request Timeout</title>
     <style>
       body {
         font-family: "Arial", sans-serif;
@@ -13,52 +13,53 @@
         justify-content: center;
         align-items: center;
         height: 100vh;
-        background: linear-gradient(to right, #333, #222);
+        background-color: #060505;
+
         color: #333;
       }
       .container {
         text-align: center;
-        background: rgba(224, 219, 219, 0.9);
-        padding: 30px;
+        padding: 100px;
+        background: rgba(225, 220, 220, 0.95);
         border-radius: 10px;
-        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
       }
       .container h1 {
-        font-size: 120px;
+        font-size: 100px;
         margin: 0;
-        color: #e63946;
+        color: #e74c3c;
       }
       .container h2 {
         font-size: 36px;
         margin: 10px 0;
+        color: #444;
       }
       .container p {
         font-size: 18px;
         margin: 20px 0;
-        color: #555;
+        color: #666;
       }
       .container a {
         text-decoration: none;
-        color: white;
-        background-color: #e63946;
-        padding: 10px 20px;
+        color: #fff;
+        background-color: #e74c3c;
+        padding: 12px 24px;
         border-radius: 5px;
         font-size: 18px;
         transition: background-color 0.3s ease;
       }
       .container a:hover {
-        background-color: #b22234;
+        background-color: #c0392b;
       }
     </style>
   </head>
   <body>
     <div class="container">
-      <h1>505</h1>
-      <h2>HTTP Version Not Supported</h2>
+      <h1>408</h1>
+      <h2>Request Timeout</h2>
       <p>
-        Oops! The HTTP version used in your request is not supported by this
-        server. <br />
-        Please try again with a supported version
+        The server timed out waiting for your request.<br />
+        Please check your connection and try again.
       </p>
     </div>
   </body>
