@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 11:24:19 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/27 22:49:59 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/28 10:30:11 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,8 @@ bool Location::set_root(const string &root)
 	if (!this->root.empty())
 		return (false);
     this->root = root;
+	if (this->root[this->root.length() - 1] != '/')
+		this->root += '/';
     return (true);
 }
 
@@ -248,7 +250,7 @@ void Location::print_lacation_info() const {
     cout << BOLD_BLUE << "\t" <<  "redirection : " << BOLD_BLACK;
     cout << "[" << redirections.first << "]" << " [" << redirections.second << "] \n";
 
-    cout << RESET;
+    // cout << RESET;
 
 	cout << BOLD_BLUE << "\t" << "cgi_extension : \n" << BOLD_BLACK;
 	for (auto it = cgi_extension.begin(); it != cgi_extension.end() ; it++)
