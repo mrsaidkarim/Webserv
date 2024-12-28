@@ -6,7 +6,7 @@
 /*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 12:53:50 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/20 12:02:28 by zelabbas         ###   ########.fr       */
+/*   Updated: 2024/12/28 11:10:36 by zelabbas         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,8 @@ bool Server::set_global_root(const string& root) {
 	if (!this->global_root.empty())
 		return (false);
 	this->global_root = root;
+	if (global_root[global_root.length() - 1] != '/')
+		global_root += '/';
 	return (true);
 }
 
