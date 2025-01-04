@@ -55,7 +55,7 @@ Server server_init1() {
     );
     // Location.print_lacation_info();
 
-    vector<int> ports = {9090};
+    vector<int> ports = {8080};
     vector<string> server_names = {"zechi.com", "www.nigro.com"};
     long long client_max_body_size = -1;
     vector<Location> locations = {loc1, loc2, loc3, loc4};

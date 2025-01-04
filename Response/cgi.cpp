@@ -71,24 +71,46 @@ void HttpResponse::cgi() const{
         cerr << "failed fork"; // try catch
         request->set_is_complete(true);
         return;
-    } else if (pid > 0) {
+    } else if (pid == 0) {
         //child
-        char** char_pointer_array = new char*[2]; // 2 elements: one for the string, one for the NULL terminator
-
-        // Allocate memory for the string and copy it
-        char_pointer_array[0] = new char[request->get_file_path().size() + 1]; // +1 for the null terminator
-        strcpy(char_pointer_array[0], request->get_file_path().c_str());
-
-        // Null-terminate the array
-        char_pointer_array[1] = NULL;
         close(kq);
+        char *args[] = {
+            const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi("py").c_str()),
+            const_cast<char *>(request->get_file_path().c_str()),
+            NULL
+        };
+
+        execve(args[0], args, env);
+        // char** char_pointer_array = new char*[2]; // 2 elements: one for the string, one for the NULL terminator
+
+        // // Allocate memory for the string and copy it
+        // char_pointer_array[0] = new char[request->get_file_path().size() + 1]; // +1 for the null terminator
+        // strcpy(char_pointer_array[0], request->get_file_path().c_str());
+
+        // // Null-terminate the array
+        // char_pointer_array[1] = NULL;
+        // // close(kq);
         // execve(request->get_server().get_locations()[index_location].get_path_cgi("py").c_str(), char_pointer_array, env);
+    // const string python_path = "/usr/bin/python3"; // Path to the Python interpreter
+    // const string script_path = request->get_file_path(); // Path to the Python script
+
+    // char **argv = new char *[3]; // 3 elements: python path, script path, NULL terminator
+    // argv[0] = new char[python_path.size() + 1];
+    // strcpy(argv[0], python_path.c_str());
+    // argv[1] = new char[script_path.size() + 1];
+    // strcpy(argv[1], script_path.c_str());
+    // argv[2] = NULL; // Null-terminate the array
+
+    // Execute the CGI script
+    // execve(python_path.c_str(), argv, env);
         cerr << "execve failed\n";
         exit(1);
     
     } else {
         //parent
+        exit_status = -1;
         waitpid(pid, &exit_status, 0);
+        cout << " the exist status for the child is :" << exit_status << "\n";
     }
     // we need path of file (stdin) and dup it with 0
     // create output file and dup it with 1

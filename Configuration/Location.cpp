@@ -21,7 +21,7 @@ Location::Location()
     methods_set = false;
     auto_index_set = false;
     cgi_extension["php"] = "";
-    cgi_extension["py"] = "/usr/bin/python";
+    cgi_extension["py"] = "/usr/bin/python3";
     cgi_extension["js"] = "";
     cout << "constructor location\n";
 }
@@ -34,7 +34,7 @@ Location::Location(const vector<string> &route, const vector<string> &indexes, b
     methods_set = false;
     auto_index_set = false;
     cgi_extension["php"] = "";
-    cgi_extension["py"] = "/usr/bin/python";
+    cgi_extension["py"] = "/usr/bin/python3";
     cgi_extension["js"] = "";
     cout << "constructor location\n";
 }
