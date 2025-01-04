@@ -19,6 +19,7 @@
 #include <sys/event.h>
 #include <unordered_map>
 #include <iostream>
+#include <algorithm>
 
 #define vector std::vector
 #define string std::string
@@ -44,6 +45,8 @@
 #define unordered_map std::unordered_map
 #define to_string std::to_string
 #define to_integer std::to_integer
+#define transform std::transform
+#define replace std::replace
 
 // newline characters 
 #define CR "\r"
