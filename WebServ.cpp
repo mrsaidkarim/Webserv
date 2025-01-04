@@ -194,16 +194,27 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 // ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
                 ssize_t bytes_read = recv(fd, array, BUFFER_SIZE2, 0);
                 serv_request_buffer.assign(array, bytes_read);
-                // cout << bytes_read << "\n";
-                std::ofstream ss("msg.py", ios::app| ios::binary);
+                 // cout << bytes_read << "\n";
+                std::ofstream ss("msg.py", ios::app| ios::binary | ios::trunc);
                 ss << serv_request_buffer;
-                
-                cout << RED << (int)serv_request_buffer[serv_request_buffer.length() - 1] << endl;
-                
                 ss << "\n\n----------------------------------------\n\n";
 
                 if (bytes_read < 0) {
                     perror("failed to read\n");
+                } else if (bytes_read == 0) {
+                    /// here we should unlink the file;
+                    unordered_map<int, HttpResponse*>::iterator it = client_responses.find(fd);
+                    if (it != client_responses.end()) {
+                        it->second->get_request()->display_request();
+                        delete it->second->get_request();
+                        delete it->second;
+                        close(fd);
+                        client_responses.erase(fd);
+                        struct kevent change;
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                        kevent(kq, &change, 1, nullptr, 0, nullptr);
+                        continue;
+                    }
                 }
                 /*
                     MSG_DONTWAIT:
@@ -217,8 +228,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 unordered_map<int, HttpResponse*>::iterator it = client_responses.find(fd);
                 if (it != client_responses.end()) {
                     it->second->get_request()->add_to_body(serv_request_buffer, bytes_read);
+                    cout << it->second->get_request()->get_body().size() << "\n";
                     it->second->serv(); // for post
-                    cout << "here2222222222222222222\n";
                     if (it->second->get_request()->get_is_complete()) {
                         it->second->get_request()->display_request();
                         delete it->second->get_request();
@@ -255,7 +266,6 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     kevent(kq, &change, 1, nullptr, 0, nullptr);
                 } else {
-                    cout << "here1111111111111\n";
                     response->serv(); // for post
                     if (response->get_request()->get_is_complete()) {
                         delete response->get_request();

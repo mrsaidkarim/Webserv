@@ -31,6 +31,7 @@ bool is_crlf_exist_more_than_five_times(const string &s) {
     while (count < 5 && pos != string::npos) {
         count++;
         pos += 2; // 2 is size of CRLF
+        pos = s.find(CRLF, pos);
     }
 
     return (count == 5);
@@ -49,13 +50,28 @@ string extract_new_file_name(const string &info) {
 }
 
 
+static string addPrefixBeforeCRLF(const string &input) {
+    const string word = "\r\n";
+    const string prefix = "{$$$$}";
+    string result = input;
+    size_t pos = 0;
+
+    while ((pos = result.find(word, pos)) != string::npos) {
+        result.insert(pos, prefix);
+        pos += prefix.size() + word.size(); // Move past the added prefix and word
+    }
+
+    return result;
+}
+
+
 void HttpResponse::post_method() const {
 
     string body = request->get_body(); // get body from request
     cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 
     // cout << "===================== current body ============================\n";
-    // cout << body << "\n"; // to remove
+    // cout << addPrefixBeforeCRLF(body) << "\n";
     // cout << "===============================================================\n";
 
 
@@ -67,19 +83,10 @@ void HttpResponse::post_method() const {
     size_t pos_info;
     string info;
     string new_file_name;
-
-    // if (body.find(request->get_boundary_key_end()) != string::npos) {
-    //     cout << "-------------------> found end boundary key\n";
-    //     request->set_is_complete(true);
-    //     cout << BOLD_GREEN << "we read all 1\n\n";
-    // }
     
-    if (request->get_is_complete()) {
-        cout << BOLD_YELLOW << "completed here\n";
-        cout << body << "\n";
-    }
     // CRLF not exist in body so I can safely add body to file
     if (pos_crlf == string::npos) {
+        // cout << "writing in file 1\n";
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else
@@ -94,34 +101,37 @@ void HttpResponse::post_method() const {
     // search for boundary_key_end
     
     while (pos_crlf != string::npos) {
+        // cout << "$$$$$$$$$$$$$$$$$$$$$$$$$$$ in loop \n";
         pos_bound_begin = body.find(request->get_boundary_key_begin());
         if (pos_bound_begin != string::npos) {
             // cout << "-----------------------> found boundary begin key\n";
             // every thing befor this pos_bound_begin should be added in the file
             slice = body.substr(0, pos_bound_begin);
             // cout << "=================slice ==========================\n";
-            // cout << slice << "\n";
+            // cout << addPrefixBeforeCRLF(slice) << "\n";
             // cout << "=================================================\n"; 
             if (file) {
                 *file << slice;
+                cout << "writing in file 2\n";
                 if (slice.find(CRLF) != string::npos) {
                     cout << "found crlf in slice\n";
                 }
             }
             body = body.substr(pos_bound_begin);
             // cout << "==================== body becomes 1 ================\n";
-            // cout << body << "\n";
+            // cout << addPrefixBeforeCRLF(body) << "\n";
             // cout << "====================================================\n";
             // now I should find five CRLF 
             if (!is_crlf_exist_more_than_five_times(body)) {
                 // not founded means i need more shanks to complete this task
                 request->set_body(body); // update body
+                cout << "tesssst\n";
                 return;
             }
             // erase boundary_key_begin
             body = body.substr(request->get_boundary_key_begin().size());
             // cout << "==================== body becomes 2 ================\n";
-            // cout << body << "\n";
+            // cout << addPrefixBeforeCRLF(body) << "\n";
             // cout << "====================================================\n";
             // search for CRLF after Content-Disposition
             pos_info = body.find(CRLF);
@@ -154,9 +164,10 @@ void HttpResponse::post_method() const {
                 cerr << BOLD_RED << "something wrong we couldn't find Content-Type\n" << RESET;
                 return ;
             }
+            // cout << "######here\n";
             body = body.substr(pos_info + 4);
             // cout << "==================== body becomes 3 ================\n";
-            // cout << body << "\n";
+            // cout << addPrefixBeforeCRLF(body) << "\n";
             // cout << "====================================================\n";
             request->set_body(body);
         }
@@ -171,22 +182,28 @@ void HttpResponse::post_method() const {
                     request->set_is_complete(true);
                     cout << BOLD_GREEN << "we read all 3\n\n";
                 }
-                else
+                else {
+                    cout << "writing in file 3\n";
                     *file << slice;
+                }
 
                 request->set_body("");
                 request->set_is_complete(true); // this task is done
-                cout << BOLD_GREEN << "we read all 4\n\n";
+                // cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
             } else {
+                if (body.find(CRLF) != string::npos)
+                    cout << "tiri tiri tiri\n";
+                // cout << "==================== last slice becomes 4 ================\n";
+                // cout << addPrefixBeforeCRLF(slice) << "\n";
+                // cout << "====================================================\n";
+
+                *file << body;
+                request->set_body("");
+                // cout << "Crlf exist but ....!\n";
                 break;
             }
-            cout << "ba9in fi loop\n";
         }
         pos_crlf = body.find(CRLF);
     }
-
-    if (request->get_is_complete())
-        cout << BOLD_GREEN << "we read all 5\n\n";
-    cout << BOLD_GREEN << "we read all 6\n\n";
 }
