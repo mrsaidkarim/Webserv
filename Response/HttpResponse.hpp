@@ -9,6 +9,7 @@ class HttpResponse {
     private:
         HttpRequest *request;
         vector<Server> servers;
+        
 
     public:
         HttpResponse(HttpRequest *);
@@ -41,6 +42,9 @@ class HttpResponse {
 		bool	does_not_exist(const string& path) const;
 		bool	is_a_file(const string& path) const;
 		bool	delete_file(const string& file_path) const;
+
+        // cgi;
+        char**  header_to_env() const;  
 };
 
 #endif
