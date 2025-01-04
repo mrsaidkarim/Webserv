@@ -10,6 +10,7 @@ HttpResponse::~HttpResponse() {
 
 void    HttpResponse::serv() {
 
+    // check if it is a cgi
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
     if (request->get_method() == "GET")
         get_method();

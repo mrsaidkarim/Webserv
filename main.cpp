@@ -44,10 +44,10 @@ Server server_init1() {
         {}
     );
     Location loc4(
-        {"A4", "B4", "C4"},
+        {"cgi-tiriri"},
         {"index.html"},
         true,
-        "/Volumes/TOSHIBA/www/a4/",
+        "/Volumes/TOSHIBA/www/",
         {{"GET", true},
         {"POST", false},
         {"DELETE", false}}, // it was false
@@ -55,7 +55,7 @@ Server server_init1() {
     );
     // Location.print_lacation_info();
 
-    vector<int> ports = {8080};
+    vector<int> ports = {9090};
     vector<string> server_names = {"zechi.com", "www.nigro.com"};
     long long client_max_body_size = -1;
     vector<Location> locations = {loc1, loc2, loc3, loc4};

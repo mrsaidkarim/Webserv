@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+int kq;
 #include "WebServ.hpp"
 #include "Configuration/Server.hpp"
 #include "Request/HttpRequest.hpp"
@@ -333,7 +334,7 @@ void WebServ::run_servers()
         // i think you should erase the port
         socket_servers[server_socket] = it->second;
     }
-    int kq = kqueue();
+    kq = kqueue();
     if (kq == -1)
     {
         cerr << "Error: kqueue creation failed\n";

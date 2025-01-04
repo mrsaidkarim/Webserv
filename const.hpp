@@ -21,6 +21,7 @@
 #include <iostream>
 #include <algorithm>
 
+extern int kq;
 #define vector std::vector
 #define string std::string
 #define map std::map
@@ -46,7 +47,7 @@
 #define to_string std::to_string
 #define to_integer std::to_integer
 #define transform std::transform
-#define replace std::replace
+#define copy std::copy
 
 // newline characters 
 #define CR "\r"

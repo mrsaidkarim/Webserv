@@ -14,13 +14,29 @@
 
 Location::Location()
 {
-    
+    methods["GET"] = true;
+    methods["POST"] = false;
+    methods["DELETE"] = false;
+    auto_index = false;
+    methods_set = false;
+    auto_index_set = false;
+    cgi_extension["php"] = "";
+    cgi_extension["py"] = "/usr/bin/python";
+    cgi_extension["js"] = "";
+    cout << "constructor location\n";
 }
 
 Location::Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
                 const string &root, const map<string, bool> &methods,
                 const pair<string, string> &redirections): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections)
 {
+    auto_index = false;
+    methods_set = false;
+    auto_index_set = false;
+    cgi_extension["php"] = "";
+    cgi_extension["py"] = "/usr/bin/python";
+    cgi_extension["js"] = "";
+    cout << "constructor location\n";
 }
         // Location(string file_path); here do your shit alparser nigro o zid setters;
 Location::~Location()
@@ -51,6 +67,11 @@ const string &Location::get_root(void) const
 const map<string, bool> &Location::get_methods(void) const
 {
     return (methods);
+}
+
+
+const string &Location::get_path_cgi(const string &key) const {
+    return (cgi_extension.find(key)->second);
 }
 
 const pair<string, string> &Location::get_redirections(void) const

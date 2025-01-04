@@ -9,13 +9,14 @@ class HttpResponse {
     private:
         HttpRequest *request;
         vector<Server> servers;
+        int index_location;
         
 
     public:
         HttpResponse(HttpRequest *);
         ~HttpResponse();
 
-        void get_method() const;
+        void get_method();
         void post_method() const;
         void delete_method() const;
 
@@ -44,7 +45,10 @@ class HttpResponse {
 		bool	delete_file(const string& file_path) const;
 
         // cgi;
-        char**  header_to_env() const;  
+        char**  header_to_env() const;
+        bool    is_cgi() const;
+        void    cgi() const;
+        void    print_env(char **env) const;
 };
 
 #endif

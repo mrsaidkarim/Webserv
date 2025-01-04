@@ -12,6 +12,10 @@ class Location
         string root;
         map<string, bool> methods;
         pair<string, string> redirections;
+        map<string, string> cgi_extension; // for cgi
+        bool    methods_set;
+        bool    auto_index_set;
+
     public:
         Location();
         Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
@@ -27,6 +31,7 @@ class Location
         const string &get_root(void) const;
         const map<string, bool> &get_methods(void) const;
         const pair<string, string> &get_redirections(void) const;
+        const string &get_path_cgi(const string &key) const;
 
         // SETTERS
         bool set_route(const vector<string> &route);

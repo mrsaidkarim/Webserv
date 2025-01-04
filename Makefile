@@ -14,6 +14,7 @@ SRCS = 	Configuration/Location.cpp\
 		Response/post_method.cpp\
 		Response/delete_method.cpp\
 		Response/error_response.cpp\
+		Response/cgi.cpp\
 		WebServ.cpp\
 		main.cpp
 

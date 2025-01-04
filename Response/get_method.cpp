@@ -156,6 +156,12 @@ void HttpResponse::serv_autoindex(const string& path) const {
 
 
 void HttpResponse::send_response() const {
+    // is cgi
+    if (is_cgi()) {
+        cgi();
+        return;
+    }
+
     if (request->get_file_offset() == 0) {
         string path = request->get_file_path();
         fstream *file = new fstream(path.c_str(), ios::in);
@@ -255,7 +261,7 @@ pair<int, int> HttpResponse::longest_common_location() const{
 }
 
 
-void HttpResponse::get_method() const{
+void HttpResponse::get_method() {
     // we already checked if the request is chunked
     // so we continue sending the response
     if (request->get_is_chunked()) {
@@ -272,7 +278,8 @@ void HttpResponse::get_method() const{
     //priority: 2 (location)
     pair<int, int> longest = longest_common_location();
     if (longest.first != -1) {
-        // cout << "location should handle this shit\n";
+        index_location = longest.first;
+        cout << "location should handle this shit\n";
         int x = longest.first;
         int y = longest.second;
 
