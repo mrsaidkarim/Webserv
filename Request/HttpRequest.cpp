@@ -27,7 +27,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
-	is_cgi = true;
+	is_cgi = false;
 	is_unlink_file_path = false;
 	file_stream = NULL;
 	index = _request.find(CRLF_2);
@@ -488,12 +488,12 @@ streampos HttpRequest::get_file_offset(void) const {
 void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	read_content_length += byte_read;
 	// cout << header.find("content-length")->second << "\n";
-	if (read_content_length >= stoi((header.find("content-length")->second))) {
-		// is_complete = true;
-		cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
-		cout << read_content_length << "\n";
-		cout << header.find("content-length")->second << "\n";
-	}
+	// if (read_content_length >= stoi((header.find("content-length")->second))) {
+	// 	// is_complete = true;
+	// 	cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
+	// 	cout << read_content_length << "\n";
+	// 	cout << header.find("content-length")->second << "\n";
+	// }
 	body += slice;	
 }
 

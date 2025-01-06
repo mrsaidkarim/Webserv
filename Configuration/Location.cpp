@@ -28,14 +28,14 @@ Location::Location()
 
 Location::Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
                 const string &root, const map<string, bool> &methods,
-                const pair<string, string> &redirections): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections)
+                const pair<string, string> &redirections, const map<string, string> &cgi): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections), cgi_extension(cgi)
 {
-    auto_index = false;
+    auto_index = auto_index;
     methods_set = false;
     auto_index_set = false;
-    cgi_extension["php"] = "";
-    cgi_extension["py"] = "/usr/bin/python3";
-    cgi_extension["js"] = "";
+    // cgi_extension["php"] = "";
+    // cgi_extension["py"] = "/usr/bin/python3";
+    // cgi_extension["js"] = "";
     cout << "constructor location\n";
 }
         // Location(string file_path); here do your shit alparser nigro o zid setters;

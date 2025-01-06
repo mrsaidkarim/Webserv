@@ -98,9 +98,10 @@ extern int kq;
 
 
 // PATH TO PAGE
-#define FORBIDDEN  "/Users/zelabbas/OurWebserver/pages_html/403.html"
-#define NOT_FOUND "/Users/zelabbas/OurWebserver/pages_html/404.html"
-#define NOT_ALLOWED "/Users/zelabbas/OurWebserver/pages_html/405.html"
-#define DEL_SUCCESS "/Users/zelabbas/OurWebserver/pages_html/delete_successful.html"
+#define FORBIDDEN  "./pages_html/403.html"
+#define NOT_FOUND "./pages_html/404.html"
+#define NOT_ALLOWED "./pages_html/405.html"
+#define DEL_SUCCESS "./delete_successful.html"
+#define INTERNAL_SERVER_ERROR "./pages_html/500.html"
 
 #endif

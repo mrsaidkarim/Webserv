@@ -28,7 +28,19 @@ char** HttpResponse::header_to_env() const{
 
 bool HttpResponse::is_cgi() const{
     cout << "cgi file path: " << request->get_file_path() << "\n";
-    return (request->get_is_cgi()); // check extension is matched with cgi
+    size_t pos = request->get_file_path().rfind(".");
+    if (pos == string::npos)
+        return (false);
+    string extension = request->get_file_path().substr(pos + 1);
+    cout << extension << "\n";
+    if (extension != "py" && extension != "php" && extension != "js")
+        return (false);
+    const string path = request->get_server().get_locations()[index_location].get_path_cgi(extension);
+    if (path.empty()) {
+        request->set_file_path(FORBIDDEN);
+        return (false);
+    }
+    return (true); // check extension is matched with cgi
 }
 
 void HttpResponse::print_env(char **env) const {
@@ -64,7 +76,7 @@ void HttpResponse::cgi() const{
     char **env = header_to_env();
     print_env(env);
 
-    cout << request->get_server().get_locations()[index_location].get_path_cgi("py").c_str() << "\n";
+    // cout << request->get_server().get_locations()[index_location].get_path_cgi("py").c_str() << "\n";
     
     string file_path = generate_file_name();
     request->set_is_unlink_file_path(true);
@@ -80,8 +92,11 @@ void HttpResponse::cgi() const{
     } else if (pid == 0) {
         //child
         close(kq);
+        size_t pos = request->get_file_path().rfind(".");
+        string extension = request->get_file_path().substr(pos + 1);
+
         char *args[] = {
-            const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi("py").c_str()),
+            const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str()),
             const_cast<char *>(request->get_file_path().c_str()),
             NULL
         };
@@ -102,7 +117,7 @@ void HttpResponse::cgi() const{
             exit(1);
         }
         execve(args[0], args, env);
-        cerr << "execve failed\n";
+        cerr << BOLD_RED << "execve failed\n" << RESET;
         close(fd_write);
         exit(1);
     
@@ -111,7 +126,10 @@ void HttpResponse::cgi() const{
         exit_status = -1;
         waitpid(pid, &exit_status, 0);
         request->set_is_cgi(false);
-        request->set_file_path(file_path);
+        if ((exit_status) == 0)
+            request->set_file_path(file_path);
+        else
+            request->set_file_path(INTERNAL_SERVER_ERROR);
         send_response();
         cout << " the exist status for the child is :" << exit_status << "\n";
     }

@@ -20,7 +20,7 @@ class Location
         Location();
         Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
                 const string &root, const map<string, bool> &methods,
-                const pair<string, string> &redirections);
+                const pair<string, string> &redirections, const map<string, string> &cgi);
         // Location(string file_path); here do your shit alparser nigro o 9ed setters;
         ~Location();
 
