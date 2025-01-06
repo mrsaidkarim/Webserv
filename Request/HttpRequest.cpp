@@ -27,6 +27,8 @@ HttpRequest::HttpRequest(const string& _request) {
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
+	is_cgi = true;
+	is_unlink_file_path = false;
 	file_stream = NULL;
 	index = _request.find(CRLF_2);
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
@@ -537,3 +539,18 @@ const string& HttpRequest::get_boundary_key_end(void) const {
 	return (boundary_key_end);
 }
 
+bool HttpRequest::get_is_cgi(void) const {
+	return is_cgi;
+}
+
+void HttpRequest::set_is_cgi(bool is_cgi) {
+	this->is_cgi = is_cgi;
+} 
+
+bool HttpRequest::get_is_unlink_file_path(void) const {
+	return is_unlink_file_path;
+}
+
+void HttpRequest::set_is_unlink_file_path(bool is_unlink) {
+	this->is_unlink_file_path = is_unlink;
+}

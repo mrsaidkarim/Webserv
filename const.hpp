@@ -20,6 +20,8 @@
 #include <unordered_map>
 #include <iostream>
 #include <algorithm>
+#include <sys/time.h>
+#include <cstdio> 
 
 extern int kq;
 #define vector std::vector
@@ -49,12 +51,14 @@ extern int kq;
 #define transform std::transform
 #define copy std::copy
 
+
 // newline characters 
 #define CR "\r"
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
 #define POST_PATH "/Users/zech-chi/goinfre/upload_store/"
+#define CGI_PATH "/tmp/"
 
 // Reset Color
 #define RESET "\033[0m"

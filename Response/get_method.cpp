@@ -156,7 +156,6 @@ void HttpResponse::serv_autoindex(const string& path) const {
 
 
 void HttpResponse::send_response() const {
-    // is cgi
     if (is_cgi()) {
         cgi();
         return;

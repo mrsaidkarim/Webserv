@@ -207,6 +207,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     unordered_map<int, HttpResponse*>::iterator it = client_responses.find(fd);
                     if (it != client_responses.end()) {
                         it->second->get_request()->display_request();
+                        if (it->second->get_request()->get_is_unlink_file_path())
+                            remove(it->second->get_request()->get_file_path().c_str());
                         delete it->second->get_request();
                         delete it->second;
                         close(fd);
@@ -233,6 +235,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                     it->second->serv(); // for post
                     if (it->second->get_request()->get_is_complete()) {
                         it->second->get_request()->display_request();
+                        if (it->second->get_request()->get_is_unlink_file_path())
+                            remove(it->second->get_request()->get_file_path().c_str());
                         delete it->second->get_request();
                         delete it->second;
                         close(fd);
@@ -269,6 +273,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 } else {
                     response->serv(); // for post
                     if (response->get_request()->get_is_complete()) {
+                        if (response->get_request()->get_is_unlink_file_path())
+                            remove(response->get_request()->get_file_path().c_str());
                         delete response->get_request();
                         delete response;
                         close(fd);
@@ -295,6 +301,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 response->serv();
                 // if response is complete, remove all client data
                 if (response->get_request()->get_is_complete()) {
+                    if (response->get_request()->get_is_unlink_file_path())
+                        remove(response->get_request()->get_file_path().c_str());
                     delete response->get_request();
                     delete response;
                     close(fd);

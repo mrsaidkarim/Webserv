@@ -49,6 +49,8 @@ class HttpResponse {
         bool    is_cgi() const;
         void    cgi() const;
         void    print_env(char **env) const;
+
+        string generate_file_name() const;
 };
 
 #endif

@@ -34,6 +34,8 @@ class HttpRequest
 		streampos			file_offset; // file offset
 		bool 				is_chunked; // is chunked response
 		bool 				is_complete; // if offset is at the end of the file
+		bool				is_cgi;
+		bool				is_unlink_file_path;
 		Server				server; // the server will serve the request
 		int 				client_socket; // file descriptor of communication socket
 		size_t				read_content_length;
@@ -73,6 +75,8 @@ class HttpRequest
 		void set_file_stream(fstream* _file_stream);
 		void set_file_offset(streampos _file_offset);
 		bool set_boundary_key(void);
+		void set_is_cgi(bool is_cgi);
+		void set_is_unlink_file_path(bool is_unlink);
 
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -92,6 +96,8 @@ class HttpRequest
 		streampos get_file_offset(void) const;
 		const string& get_boundary_key_begin(void) const;
 		const string& get_boundary_key_end(void) const;
+		bool get_is_cgi(void) const;
+		bool get_is_unlink_file_path(void) const;
 
 		// for post method
 
