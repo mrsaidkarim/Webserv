@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <sys/fcntl.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -84,19 +85,25 @@ void HttpResponse::cgi() const{
             const_cast<char *>(request->get_file_path().c_str()),
             NULL
         };
-        int fd = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        if (fd < 0) {
+        int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+        int fd_read = open("/Volumes/TOSHIBA/www/index.html", O_RDWR);
+        if (fd_write < 0) {
             cerr << "can't open file in child\n";
             exit(1);
         }
-        if (dup2(fd, 1) < 0) {
-            cerr << "dup2 failed in child\n";
-            close(fd);
+        if (dup2(fd_write, 1) < 0) {
+            cerr << "1) dup2 failed in child\n";
+            close(fd_write);
+            exit(1);
+        }
+        if (dup2(fd_read, 0) < 0) {
+            cerr << "2) dup2 failed in child\n";
+            close(fd_write);
             exit(1);
         }
         execve(args[0], args, env);
         cerr << "execve failed\n";
-        close(fd);
+        close(fd_write);
         exit(1);
     
     } else {
