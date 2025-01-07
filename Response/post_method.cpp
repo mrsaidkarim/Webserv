@@ -66,7 +66,8 @@ static string addPrefixBeforeCRLF(const string &input) {
 
 
 void HttpResponse::post_method() const {
-
+    // request->set_is_complete(true);
+    // return;
     string body = request->get_body(); // get body from request
     cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 
@@ -86,11 +87,29 @@ void HttpResponse::post_method() const {
     
     // CRLF not exist in body so I can safely add body to file
     if (pos_crlf == string::npos) {
-        // cout << "writing in file 1\n";
+        cout << "writing in file 1\n";
+        cout << BOLD_BLUE << body << "\n" << RESET;
+        if (body.empty())
+            request->set_is_complete(true);
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else
             *file << body;
+
+        if (file->is_open()) {
+            cout << BOLD_GREEN << "is open\n" << RESET;
+        }
+        // file->flush();
+        // std::ifstream file(request->get_cgi_path_post().c_str());
+        // streampos offset = 0;
+        // file.seekg(offset, ios::beg);
+        // if (!file) {
+        //     cerr << "Error: Unable to open file " << request->get_cgi_path_post() << '\n';
+        // }
+        // cout << request->get_cgi_path_post() << "\n";
+        // cout << BG_CYAN<< "content file is : >> " <<file.rdbuf() << "\n" << RESET; // Write the file content to stdout
+
+        // file.close();
         request->set_body(""); // clear previous body
         return ;
     }
@@ -146,6 +165,7 @@ void HttpResponse::post_method() const {
                 request->set_file_stream(NULL);
             }
             // fill new information;
+            // !!!!!!!!!!!!!!! we need to check if file name is empty
             file = new fstream((POST_PATH + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
             if (!file->is_open()) {
                 cerr << "Couldn't create the new file\n";

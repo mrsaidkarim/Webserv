@@ -150,6 +150,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
 {
     string serv_request_buffer = string(BUFFER_SIZE2, 0);
     ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
+    cout << BOLD_YELLOW << serv_request_buffer << RESET << "\n";
     if (bytes_read > 0) { // process the request
         serv_request_buffer.resize(bytes_read);
         if (client_responses.find(fd) == client_responses.end()){ // new request
@@ -191,6 +192,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 // cout << RESET;
                 // cout << BG_GREEN << addPrefixBeforeCRLF(request->get_body()) << RESET<< "\n";
                 struct kevent change;
+
                 EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     perror("Error: Failed to re-register client socket for writing");
@@ -198,6 +200,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                     delete request;
                     client_responses.erase(fd);
                 }
+                
             }
         }
     } else { // client disconnected
@@ -260,6 +263,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 response->serv();
                 if (response->get_request()->get_is_complete()) {
+                    response->send_response();
                     delete response->get_request();
                     delete response;
                     close(fd);

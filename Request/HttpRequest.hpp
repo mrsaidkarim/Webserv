@@ -36,6 +36,7 @@ class HttpRequest
 		bool 				is_complete; // if offset is at the end of the file
 		bool				is_cgi;
 		bool				is_unlink_file_path;
+		string				cgi_path_post;
 		Server				server; // the server will serve the request
 		int 				client_socket; // file descriptor of communication socket
 		size_t				read_content_length;
@@ -98,6 +99,7 @@ class HttpRequest
 		const string& get_boundary_key_end(void) const;
 		bool get_is_cgi(void) const;
 		bool get_is_unlink_file_path(void) const;
+		const string& get_cgi_path_post(void) const;
 
 		// for post method
 

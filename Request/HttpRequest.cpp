@@ -16,6 +16,31 @@
 // ! NOTES
 // ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
 
+static string generate_file_name(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
+    
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
+
+    // Create the formatted string
+    ostringstream oss;
+    oss << CGI_PATH
+        << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+        << (timeInfo->tm_mon + 1) << "_"           // Month
+        << timeInfo->tm_mday << "_"               // Day
+        << timeInfo->tm_hour << "_"               // Hours
+        << timeInfo->tm_min << "_"                // Minutes
+        << timeInfo->tm_sec << "_"                // Seconds
+        << microseconds << ".txt";               // Microseconds
+
+    return oss.str();
+}
+
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
 	string			header;
@@ -67,10 +92,23 @@ HttpRequest::HttpRequest(const string& _request) {
 
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
-		body = "\r\n" + body; // I add crlf before body because it was removed before
-		set_body(body); // update body
 		// set_boundary_key it looks for boundary key :) in header map
 		// if boundary key founded it return true , false otherwise
+		if (this->header.find("content-type")->second == "application/x-www-form-urlencoded") {
+			this->is_cgi = true;
+			cgi_path_post = generate_file_name();
+			cout << BOLD_RED << cgi_path_post << "\n" << RESET;
+			file_stream = new fstream(cgi_path_post.c_str(), ios::out | ios::trunc | ios::binary);
+			if (!file_stream || !file_stream->is_open()) {
+				cerr << "can't open the file\n";
+			}
+			*file_stream << "testing\n";
+		} else {
+			// I add crlf before body because it was removed before
+		 	// update body
+			body = "\r\n" + body;
+			set_body(body);
+		}
 		set_boundary_key(); 
 		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
 			this->set_status_code("411");
@@ -553,4 +591,8 @@ bool HttpRequest::get_is_unlink_file_path(void) const {
 
 void HttpRequest::set_is_unlink_file_path(bool is_unlink) {
 	this->is_unlink_file_path = is_unlink;
+}
+
+const string& HttpRequest::get_cgi_path_post() const {
+	return cgi_path_post;
 }

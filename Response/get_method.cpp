@@ -156,7 +156,9 @@ void HttpResponse::serv_autoindex(const string& path) const {
 
 
 void HttpResponse::send_response() const {
+    cout << BOLD_GREEN << "in send response\n" << RESET;
     if (is_cgi()) {
+        cout << BOLD_RED << "is cgi\n" << RESET;
         cgi();
         return;
     }

@@ -27,6 +27,9 @@ char** HttpResponse::header_to_env() const{
 
 
 bool HttpResponse::is_cgi() const{
+    // to remove
+    if (request->get_is_cgi())
+        return (true);
     cout << "cgi file path: " << request->get_file_path() << "\n";
     size_t pos = request->get_file_path().rfind(".");
     if (pos == string::npos)
@@ -73,11 +76,21 @@ void HttpResponse::cgi() const{
     // }
     // request->set_is_complete(true);
 
+    // std::ifstream file(request->get_cgi_path_post().c_str());
+
+    // if (!file) {
+    //     cerr << "Error: Unable to open file " << '\n';
+    // }
+
+    // cout << BG_CYAN<< "content file is : >> " <<file.rdbuf() << "\n" << RESET; // Write the file content to stdout
+
+    // file.close();
+
     char **env = header_to_env();
     print_env(env);
 
     // cout << request->get_server().get_locations()[index_location].get_path_cgi("py").c_str() << "\n";
-    
+
     string file_path = generate_file_name();
     request->set_is_unlink_file_path(true);
     cout << "output file for cgi: " << file_path << "\n";
@@ -95,24 +108,33 @@ void HttpResponse::cgi() const{
         size_t pos = request->get_file_path().rfind(".");
         string extension = request->get_file_path().substr(pos + 1);
 
-        char *args[] = {
-            const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str()),
-            const_cast<char *>(request->get_file_path().c_str()),
-            NULL
-        };
+        // int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-        int fd_read = open("/Volumes/TOSHIBA/www/index.html", O_RDWR);
         if (fd_write < 0) {
             cerr << "can't open file in child\n";
             exit(1);
         }
+        char *args[3];
+        if (request->get_method() == "POST") {
+            request->get_file_stream()->close();
+            args[0] = const_cast<char *>("/usr/bin/python3");
+            args[1] = const_cast<char *>(CGI_POST_SCRIPT);
+            args[2] = NULL;
+
+            int fd_read = open(request->get_cgi_path_post().c_str(), O_RDWR);
+            if (dup2(fd_read, 0) < 0) {
+                cerr << "2) dup2 failed in child\n";
+                close(fd_write);
+                exit(1);
+            }
+        } else {
+            cout  << "here >>> " << index_location << "\n";
+            args[0] = const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str());
+            args[1] = const_cast<char *>(request->get_file_path().c_str());
+            args[2] = NULL;
+        }
         if (dup2(fd_write, 1) < 0) {
             cerr << "1) dup2 failed in child\n";
-            close(fd_write);
-            exit(1);
-        }
-        if (dup2(fd_read, 0) < 0) {
-            cerr << "2) dup2 failed in child\n";
             close(fd_write);
             exit(1);
         }
