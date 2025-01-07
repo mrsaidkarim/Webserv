@@ -164,6 +164,7 @@ void HttpResponse::send_response() const {
     }
 
     if (request->get_file_offset() == 0) {
+        cout << "here >>>>>>> 1000\n";
         string path = request->get_file_path();
         fstream *file = new fstream(path.c_str(), ios::in);
         if (!file->is_open()) {
@@ -174,7 +175,7 @@ void HttpResponse::send_response() const {
         request->set_file_stream(file);
         string content_type = get_content_type(path);
         string http_response_header =
-            "HTTP/1.1 200 OK\r\n"
+            "HTTP/1.1 200 OK\r\n"      // 200 not everytime!!!!!!!!!!!!!!!!!!!!!!!!!
             "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
             "connection: keep-alive\r\n"
@@ -217,7 +218,7 @@ void HttpResponse::send_response() const {
             // request->set_is_complete(true);
         }
     }
-
+    cout << "hello >>>>>>2222000000\n";
     request->set_file_offset(file->tellg());
     // cout << BOLD_YELLOW << "cur offset: " << request->get_file_offset() << RESET << endl;
     // Check if we have reached the end of the file

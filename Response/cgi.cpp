@@ -1,5 +1,7 @@
 #include "HttpResponse.hpp"
+#include <sys/_types/_pid_t.h>
 #include <sys/fcntl.h>
+#include <sys/signal.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
@@ -60,6 +62,119 @@ void HttpResponse::print_env(char **env) const {
     }
     cout << "-------------------------------------------\n";
 }
+
+void HttpResponse::handle_timeout(pid_t pid, const string& file_path) const {
+    struct kevent change;
+
+    // Monitor the child process exit event
+    EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, nullptr);
+    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+        cerr << "Failed to monitor child process\n";
+        kill(pid, SIGKILL);
+        request->set_file_path(INTERNAL_SERVER_ERROR);
+        send_response();
+        return;
+    }
+
+    // Add timeout monitoring (this is a timer that triggers if the child takes too long)
+    struct kevent timeout_event;
+    EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, nullptr);  // Timeout in milliseconds
+    if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+        cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
+        kill(pid, SIGKILL);
+        request->set_file_path(INTERNAL_SERVER_ERROR);
+        send_response();
+        return;
+    }
+
+    // Now handle events asynchronously
+    struct kevent event;
+    int num_events = kevent(kq, nullptr, 0, &event, 1, nullptr);
+    while (num_events > 0) {
+        if (event.filter == EVFILT_PROC) {
+            // Child process exit event
+            pid_t child_pid = event.ident; // The pid of the child that triggered the event
+            int status = event.data; // The exit status data
+
+            if (WIFEXITED(status)) {
+                int exit_status = WEXITSTATUS(status);
+                cout << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
+
+                if (exit_status == 0) {
+                    request->set_file_path(file_path); // Successful CGI execution
+                } else {
+                    cerr << "CGI process exited with error status: " << exit_status << "\n";
+                    request->set_file_path(INTERNAL_SERVER_ERROR);
+                }
+            } else if (WIFSIGNALED(status)) {
+                int signal_num = WTERMSIG(status);
+                cerr << "Child process " << child_pid << " was terminated by signal: " << signal_num << "\n";
+                request->set_file_path(INTERNAL_SERVER_ERROR);
+            } else {
+                cerr << "Unexpected child process exit status\n";
+                request->set_file_path(INTERNAL_SERVER_ERROR);
+            }
+
+            // Mark request as complete and send response
+            // request->set_is_complete(true);
+            request->set_is_cgi(false);
+            send_response();
+            EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
+            if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                cerr << "Failed to remove child process monitoring\n";
+            }
+
+            // Remove the timeout event
+            EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
+            if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+                cerr << "Failed to remove timeout event\n";
+            }
+            return;  // Exit since we've handled the exit event
+        } else if (event.filter == EVFILT_TIMER) {
+            // Timeout event triggered (if CGI process takes too long)
+            cerr << "CGI process exceeded timeout\n";
+            kill(pid, SIGKILL);  // Kill the child process if it's still running
+            request->set_file_path(REQUEST_TIMEOUT);
+            // request->set_is_complete(true);
+            send_response();
+            EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
+            if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                cerr << "Failed to remove child process monitoring\n";
+            }
+
+            // Remove the timeout event
+            EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
+            if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+                cerr << "Failed to remove timeout event\n";
+            }
+            return;  // Exit after handling the timeout
+        }
+
+        // Re-check the kevent queue for other events
+        num_events = kevent(kq, nullptr, 0, &event, 1, nullptr);
+    }
+    // int exit_status = -1;
+    // int rr;
+    // int i = 0;
+    // while (i < 2000000) {
+    //     rr = waitpid(pid, &exit_status, WNOHANG);
+    //     if (rr > 0)
+    //         break;
+    //     i++;
+    // }
+    // kill(pid, SIGKILL);
+    // request->set_is_cgi(false);
+    // if (i == 2000000)
+    //     request->set_file_path(REQUEST_TIMEOUT);
+    // else if ((exit_status) == 0)
+    //     request->set_file_path(file_path);
+    // else
+    //     request->set_file_path(INTERNAL_SERVER_ERROR);
+    // send_response();
+    // cout << " the exist status for the child is :" << exit_status << "\n";
+    cout << "here >>>>>>>>>> 4\n";
+}
+
 
 void HttpResponse::cgi() const{
     // get env
@@ -144,16 +259,18 @@ void HttpResponse::cgi() const{
         exit(1);
     
     } else {
-        //parent
-        exit_status = -1;
-        waitpid(pid, &exit_status, 0);
-        request->set_is_cgi(false);
-        if ((exit_status) == 0)
-            request->set_file_path(file_path);
-        else
-            request->set_file_path(INTERNAL_SERVER_ERROR);
-        send_response();
-        cout << " the exist status for the child is :" << exit_status << "\n";
+        // handle_timeout(pid, file_path);
+        webserv->handle_timeout(pid, file_path, this);
+        // //parent
+        // exit_status = -1;
+        // waitpid(pid, &exit_status, 0);
+        // request->set_is_cgi(false);
+        // if ((exit_status) == 0)
+        //     request->set_file_path(file_path);
+        // else
+        //     request->set_file_path(INTERNAL_SERVER_ERROR);
+        // send_response();
+        // cout << " the exist status for the child is :" << exit_status << "\n";
     }
     // we need path of file (stdin) and dup it with 0
     // create output file and dup it with 1

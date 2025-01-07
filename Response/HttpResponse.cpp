@@ -1,7 +1,9 @@
 #include "HttpResponse.hpp"
 
-HttpResponse::HttpResponse(HttpRequest *_request) {
+
+HttpResponse::HttpResponse(HttpRequest *_request, WebServ *_webserv) {
     this->request = _request;
+    this->webserv = _webserv;
 }
 
 HttpResponse::~HttpResponse() {

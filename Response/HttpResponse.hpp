@@ -4,16 +4,20 @@
 #include "../const.hpp"
 #include "../Configuration/Server.hpp"
 #include "../Request/HttpRequest.hpp"
+#include <sys/_types/_pid_t.h>
+#include "../WebServ.hpp"
+
+class WebServ;
 
 class HttpResponse {
     private:
         HttpRequest *request;
         vector<Server> servers;
         int index_location;
-        
+        WebServ *webserv;
 
     public:
-        HttpResponse(HttpRequest *);
+        HttpResponse(HttpRequest *_request, WebServ *_webserv);
         ~HttpResponse();
 
         void get_method();
@@ -51,6 +55,7 @@ class HttpResponse {
         void    print_env(char **env) const;
 
         string generate_file_name() const;
+        void    handle_timeout(pid_t pid, const string& file_path) const;
 };
 
 #endif

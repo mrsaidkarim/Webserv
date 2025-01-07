@@ -58,11 +58,11 @@ bool configure_socket(int &server_socket, int port)
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
-        cerr << "Error: failed to set server socket as non blocking\n";
-        close(server_socket);
-        return (false);
-    }
+    // if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+    //     cerr << "Error: failed to set server socket as non blocking\n";
+    //     close(server_socket);
+    //     return (false);
+    // }
 
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
@@ -146,7 +146,7 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
 
 
 void process_request(unordered_map<int, HttpResponse*> &client_responses, map<int, int> &client_server,
-                        const map<int, vector<Server>> &servers, int &kq, int &fd)
+                        const map<int, vector<Server>> &servers, int &kq, int &fd, WebServ* webserv)
 {
     string serv_request_buffer = string(BUFFER_SIZE2, 0);
     ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
@@ -159,7 +159,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             Server server = host_server_name(servers , server_socket, request);
             request->set_client_socket(fd);
             request->set_server(server);
-            HttpResponse *response = new HttpResponse(request);
+            HttpResponse *response = new HttpResponse(request, webserv);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
             if (request->get_method() != "POST" )
@@ -171,7 +171,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     perror("Error: Failed to re-register client socket for writing");
                     close(fd);
-                    delete request;
+                    // delete request;
                     client_responses.erase(fd);
                 }
                 return ;
@@ -197,7 +197,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     perror("Error: Failed to re-register client socket for writing");
                     close(fd);
-                    delete request;
+                    // delete request;
                     client_responses.erase(fd);
                 }
                 
@@ -220,10 +220,38 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
     and don't forget to remover response for leaks
 */
 
-void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
+void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response) {
+    struct kevent change;
+
+    // Monitor the child process exit event
+    EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, nullptr);
+    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+        cerr << "Failed to monitor child process\n";
+        kill(pid, SIGKILL);
+        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+        response->send_response();
+        return;
+    }
+
+    // Add timeout monitoring (this is a timer that triggers if the child takes too long)
+    struct kevent timeout_event;
+    EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, nullptr);  // Timeout in milliseconds
+    if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+        cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
+        kill(pid, SIGKILL);
+        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+        response->send_response();
+        return;
+    }
+
+    pid_childs[pid] = response;
+    file_paths[pid] = file_path;
+}
+
+void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, WebServ* webserv)
 {
     unordered_map<int, HttpResponse*> client_responses;
-    const int MAX_EVENTS = 128; // may we change it after if wasn't perfect for memory usage
+    const int MAX_EVENTS = 128; // may we change itif wa after sn't perfect for memory usage
     struct kevent event_list[MAX_EVENTS];
     map<int, int> client_server;
     while (true) {
@@ -254,23 +282,98 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers)
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) { // read incoming request from client
-                process_request(client_responses, client_server, servers, kq, fd);
+                process_request(client_responses, client_server, servers, kq, fd, webserv);
             } else if (event_list[i].filter == EVFILT_WRITE) {
                 HttpResponse *response = client_responses[fd];
-                if (!response) {
+                if (!response || !response->get_request()) {
                     close(fd);
                     continue;
                 }
                 response->serv();
                 if (response->get_request()->get_is_complete()) {
                     response->send_response();
-                    delete response->get_request();
-                    delete response;
+                    // delete response->get_request();
+                    // delete response;
                     close(fd);
                     client_responses.erase(fd);
                     struct kevent change;
                     EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
                     kevent(kq, &change, 1, nullptr, 0, nullptr);
+                }
+            } else if (event_list[i].filter == EVFILT_PROC) {
+                // Child process exit event
+                pid_t child_pid = event_list[i].ident; // The pid of the child that triggered the event
+                unordered_map<pid_t, const HttpResponse*>::const_iterator it = webserv->get_pid_childs().find(child_pid);
+                unordered_map<pid_t, string>::const_iterator it2 = webserv->get_file_paths().find(child_pid);
+                const HttpResponse *response = it->second;
+                if (!response || !response->get_request()) {
+                    close(fd);
+                    continue;
+                }
+                int status = event_list[i].data; // The exit status data
+
+                if (WIFEXITED(status)) {
+                    int exit_status = WEXITSTATUS(status);
+                    cout << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
+
+                    if (exit_status == 0) {
+                        response->get_request()->set_file_path(it2->second); // Successful CGI execution
+                    } else {
+                        cerr << "CGI process exited with error status: " << exit_status << "\n";
+                        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                    }
+                } else if (WIFSIGNALED(status)) {
+                    int signal_num = WTERMSIG(status);
+                    cerr << "Child process " << child_pid << " was terminated by signal: " << signal_num << "\n";
+                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                } else {
+                    cerr << "Unexpected child process exit status\n";
+                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                }
+
+                // Mark request as complete and send response
+                // request->set_is_complete(true);
+                struct kevent change;
+                struct kevent timeout_event;
+
+                response->get_request()->set_is_cgi(false);
+                response->send_response();
+                EV_SET(&change, child_pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    cerr << "Failed to remove child process monitoring\n";
+                }
+
+                // Remove the timeout event
+                EV_SET(&timeout_event, child_pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
+                if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+                    cerr << "Failed to remove timeout event\n";
+                }
+            } else if (event_list[i].filter == EVFILT_TIMER) {
+                pid_t child_pid = event_list[i].ident; // The pid of the child that triggered the event
+                unordered_map<pid_t, const HttpResponse*>::const_iterator it = webserv->get_pid_childs().find(child_pid);
+                const HttpResponse *response = it->second;
+                if (!response) {
+                    close(fd);
+                    continue;
+                }
+                // Timeout event triggered (if CGI process takes too long)
+                cerr << "CGI process exceeded timeout\n";
+                kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
+                response->get_request()->set_file_path(REQUEST_TIMEOUT);
+                response->send_response();
+                response->get_request()->set_is_complete(true);
+                struct kevent change;
+                struct kevent timeout_event;
+
+                EV_SET(&change, event_list[i].ident, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    cerr << "Failed to remove child process monitoring\n";
+                }
+
+                // Remove the timeout event
+                EV_SET(&timeout_event, event_list[i].ident, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
+                if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+                    cerr << "Failed to remove timeout event\n";
                 }
             }
         }
@@ -484,7 +587,7 @@ void WebServ::run_servers()
     }
     if (!register_server_sockets(kq, socket_servers))
         return ; // should we exit the program.
-    monitor_server_sockets(kq, socket_servers);
+    monitor_server_sockets(kq, socket_servers, this);
 }
 
 void WebServ::close_sockets()
@@ -498,4 +601,12 @@ void WebServ::close_sockets()
 const map<int, vector<Server>> &WebServ::get_socket_servers() const
 {
     return socket_servers;
+}
+
+const unordered_map<pid_t, const HttpResponse*>& WebServ::get_pid_childs() const {
+    return (pid_childs);
+}
+
+const unordered_map<pid_t, string>& WebServ::get_file_paths() const {
+    return (file_paths);
 }

@@ -16,19 +16,29 @@
 #include "const.hpp"
 #include "Configuration/Server.hpp"
 #include "Request/HttpRequest.hpp"
+#include "Response/HttpResponse.hpp"
+#include <sys/_types/_pid_t.h>
+
+class HttpResponse;
 
 class WebServ
 {
     private:
         vector<Server> servers;
         map<int, vector<Server>> socket_servers;
+        unordered_map<pid_t, const HttpResponse*> pid_childs;
+        unordered_map<pid_t, string> file_paths;
+
     public:
         WebServ();
         WebServ(const vector<Server> &servers);
         ~WebServ();
         void run_servers(); // Run All Servers
         void close_sockets();
+        void handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response);
 
+        const unordered_map<pid_t, const HttpResponse*>& get_pid_childs() const;
+        const unordered_map<pid_t, string>& get_file_paths() const;
         const map<int, vector<Server>> &get_socket_servers() const;
 };
 

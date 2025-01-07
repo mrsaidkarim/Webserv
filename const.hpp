@@ -22,6 +22,8 @@
 #include <algorithm>
 #include <sys/time.h>
 #include <cstdio> 
+#include <signal.h>
+
 
 extern int kq;
 #define vector std::vector
@@ -97,6 +99,7 @@ extern int kq;
 
 #define BUFFER_SIZE (1024 * 5)
 #define BUFFER_SIZE2 (1024 * 5)
+#define CGI_TIMEOUT (10 * 1000)
 
 
 // PATH TO PAGE
@@ -105,5 +108,6 @@ extern int kq;
 #define NOT_ALLOWED "./pages_html/405.html"
 #define DEL_SUCCESS "./delete_successful.html"
 #define INTERNAL_SERVER_ERROR "./pages_html/500.html"
+#define REQUEST_TIMEOUT "./pages_html/408.html"
 
 #endif
