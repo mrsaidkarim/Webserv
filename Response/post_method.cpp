@@ -86,9 +86,12 @@ void HttpResponse::post_method() const {
     // CRLF not exist in body so I can safely add body to file
     if (pos_crlf == string::npos) {
         cout << "writing in file 1\n";
-        cout << BOLD_BLUE << body << "\n" << RESET;
-        if (body.empty() || body.size() < BUFFER_SIZE2)
+        // cout << BOLD_BLUE << body << "\n" << RESET;
+        if (body.size() < BUFFER_SIZE2 && request->get_is_cgi()) {
+            cout << body << "\n";
             request->set_is_complete_post(true);
+            cerr << BOLD_RED << "post ended here\n" << RESET;
+        }
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else

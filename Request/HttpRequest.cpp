@@ -534,10 +534,11 @@ void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	read_content_length += byte_read;
 	// cout << header.find("content-length")->second << "\n";
 	// if (read_content_length >= stoi((header.find("content-length")->second))) {
+	// 	is_complete_post = true;
 	// 	// is_complete = true;
-	// 	cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
-	// 	cout << read_content_length << "\n";
-	// 	cout << header.find("content-length")->second << "\n";
+	// 	// cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
+	// 	// cout << read_content_length << "\n";
+	// 	// cout << header.find("content-length")->second << "\n";
 	// }
 	body += slice;	
 }

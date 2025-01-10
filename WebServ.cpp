@@ -151,7 +151,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
 {
     string serv_request_buffer = string(BUFFER_SIZE2, 0);
     ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
-    cout << BOLD_YELLOW << serv_request_buffer << RESET << "\n";
+    // cout << BOLD_YELLOW << serv_request_buffer << RESET << "\n";
     if (bytes_read > 0) { // process the request
         serv_request_buffer.resize(bytes_read);
         if (client_responses.find(fd) == client_responses.end()){ // new request
@@ -203,6 +203,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             }
         }
         else { // case of post_method continuation of reading the request body
+            struct kevent change;
             HttpResponse *response = client_responses[fd];
             HttpRequest *request = response->get_request();
             request->add_to_body(serv_request_buffer, bytes_read);
@@ -216,22 +217,24 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 // for (auto x : request->get_header())
                 //     cout << x.first << ", " << x.second << "\n";
                 // cout << RESET;
-                if (response->get_request()->get_method() == "POST") {
-                    response->get_request()->set_method("GET");
-                    response->get_request()->set_is_chunked(true);
-                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
-                }
+                response->get_request()->set_method("GET");
+                response->get_request()->set_is_chunked(true);
 
                 cerr << BG_GREEN << "from post to get" << RESET<< "\n";
-                struct kevent change;
-
-                EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                    perror("Error: Failed to re-register client socket for writing");
-                    close(fd);
-                    delete request;
-                    client_responses.erase(fd);
-                }        
+                if (response->get_request()->get_is_cgi()) {
+                        response->serv();
+                        // response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                        // response->get_request()->set_is_cgi(false);
+                } else {
+                    response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                        perror("Error: Failed to re-register client socket for writing");
+                        close(fd);
+                        delete request;
+                        client_responses.erase(fd);
+                    }
+                }  
             }
         }
     } else { // client disconnected
