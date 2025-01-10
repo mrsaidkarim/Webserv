@@ -26,7 +26,7 @@ class WebServ
     private:
         vector<Server> servers;
         map<int, vector<Server>> socket_servers;
-        unordered_map<pid_t, const HttpResponse*> pid_childs;
+        unordered_map<pid_t, pair<const HttpResponse*, int> > pid_childs;
         unordered_map<pid_t, string> file_paths;
 
     public:
@@ -37,7 +37,7 @@ class WebServ
         void close_sockets();
         void handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response);
 
-        const unordered_map<pid_t, const HttpResponse*>& get_pid_childs() const;
+        const unordered_map<pid_t, pair<const HttpResponse*, int> >& get_pid_childs() const;
         const unordered_map<pid_t, string>& get_file_paths() const;
         const map<int, vector<Server>> &get_socket_servers() const;
 };

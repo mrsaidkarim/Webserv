@@ -56,6 +56,8 @@ class HttpResponse {
 
         string generate_file_name() const;
         void    handle_timeout(pid_t pid, const string& file_path) const;
+
+        void    set_cgi_in_process(bool);
 };
 
 #endif

@@ -155,7 +155,7 @@ void HttpResponse::serv_autoindex(const string& path) const {
 }
 
 
-void HttpResponse::send_response() const {
+void HttpResponse::send_response() const{
     cout << BOLD_GREEN << "in send response\n" << RESET;
     if (is_cgi()) {
         cout << BOLD_RED << "is cgi\n" << RESET;
@@ -166,6 +166,12 @@ void HttpResponse::send_response() const {
     if (request->get_file_offset() == 0) {
         cout << "here >>>>>>> 1000\n";
         string path = request->get_file_path();
+        // if already file opened close it
+        if (request->get_file_stream() && request->get_file_stream()->is_open()) {
+            request->get_file_stream()->close();
+            delete request->get_file_stream();
+            request->set_file_stream(NULL);
+        }
         fstream *file = new fstream(path.c_str(), ios::in);
         if (!file->is_open()) {
             serv_404();

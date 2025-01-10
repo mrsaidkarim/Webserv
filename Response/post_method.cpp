@@ -66,8 +66,6 @@ static string addPrefixBeforeCRLF(const string &input) {
 
 
 void HttpResponse::post_method() const {
-    // request->set_is_complete(true);
-    // return;
     string body = request->get_body(); // get body from request
     cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 
@@ -89,8 +87,8 @@ void HttpResponse::post_method() const {
     if (pos_crlf == string::npos) {
         cout << "writing in file 1\n";
         cout << BOLD_BLUE << body << "\n" << RESET;
-        if (body.empty())
-            request->set_is_complete(true);
+        if (body.empty() || body.size() < BUFFER_SIZE2)
+            request->set_is_complete_post(true);
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else
@@ -170,7 +168,7 @@ void HttpResponse::post_method() const {
             if (!file->is_open()) {
                 cerr << "Couldn't create the new file\n";
                 perror("why?");
-                request->set_is_complete(true);
+                request->set_is_complete_post(true); // set internal server error
                 cout << BOLD_GREEN << "we read all 2\n\n";
                 delete file;
                 file = NULL;
@@ -199,7 +197,7 @@ void HttpResponse::post_method() const {
                 slice = body.substr(0, pos_bound_end);
                 if (!file) {
                     cerr << BOLD_RED << "can't write in file in post_method() func 2\n" << RESET;
-                    request->set_is_complete(true);
+                    request->set_is_complete_post(true); // set internal server error
                     cout << BOLD_GREEN << "we read all 3\n\n";
                 }
                 else {
@@ -208,7 +206,7 @@ void HttpResponse::post_method() const {
                 }
 
                 request->set_body("");
-                request->set_is_complete(true); // this task is done
+                request->set_is_complete_post(true); // this task is done
                 // cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
             } else {

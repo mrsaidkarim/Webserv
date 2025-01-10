@@ -12,6 +12,7 @@
 
 #include "HttpRequest.hpp"
 #include <cstddef>
+#include <cstdio>
 
 // ! NOTES
 // ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
@@ -48,11 +49,14 @@ HttpRequest::HttpRequest(const string& _request) {
 	vector<string>	start_line;
 	size_t			index;
 
+	was_cgi = false;
 	read_content_length = 0;
 	file_offset = 0;
 	is_chunked = false;
 	is_complete = false;
+	is_complete_post = false;
 	is_cgi = false;
+	cgi_in_process = false;
 	is_unlink_file_path = false;
 	file_stream = NULL;
 	index = _request.find(CRLF_2);
@@ -131,6 +135,9 @@ HttpRequest::~HttpRequest() {
 		file_stream->close();
 		delete file_stream;
 	}
+	if (was_cgi)
+		remove(get_file_path().c_str());
+	remove(cgi_path_post.c_str());
 	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
@@ -538,12 +545,12 @@ void HttpRequest::add_to_body(const string &slice, int byte_read) {
 bool HttpRequest::set_boundary_key(void) {
 	map<string, string>::iterator it = header.find("content-type");
 	if (it == header.end()) {
-		cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
+		// cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
 		return (false);
 	}
 	size_t pos = it->second.find("boundary=");
 	if (pos == string::npos) {
-		cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
+		// cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
 		return (false);
 	}
 	boundary_key = it->second.substr(pos + 9); // 9 is length("boundary=")
@@ -595,4 +602,28 @@ void HttpRequest::set_is_unlink_file_path(bool is_unlink) {
 
 const string& HttpRequest::get_cgi_path_post() const {
 	return cgi_path_post;
+}
+
+void HttpRequest::set_cgi_in_process(bool _cgi_in_process) {
+	cgi_in_process = _cgi_in_process;
+}
+
+bool HttpRequest::get_cgi_in_process(void) const {
+	return cgi_in_process;
+}
+
+bool HttpRequest::get_is_complete_post(void) const {
+	return is_complete_post;
+}
+
+void HttpRequest::set_is_complete_post(bool _is_complete_post) {
+	is_complete_post = _is_complete_post;
+}
+
+bool HttpRequest::get_was_cgi(void) const {
+	return was_cgi;
+}
+
+void HttpRequest::set_was_cgi(bool _was_cgi) {
+	was_cgi = _was_cgi;
 }

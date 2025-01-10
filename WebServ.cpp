@@ -10,6 +10,7 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <sys/wait.h>
 int kq;
 #include "WebServ.hpp"
 #include "Configuration/Server.hpp"
@@ -58,11 +59,11 @@ bool configure_socket(int &server_socket, int port)
     server_addr.sin_port = htons(port);
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
 
-    // if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
-    //     cerr << "Error: failed to set server socket as non blocking\n";
-    //     close(server_socket);
-    //     return (false);
-    // }
+    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+        cerr << "Error: failed to set server socket as non blocking\n";
+        close(server_socket);
+        return (false);
+    }
 
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
@@ -154,6 +155,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
     if (bytes_read > 0) { // process the request
         serv_request_buffer.resize(bytes_read);
         if (client_responses.find(fd) == client_responses.end()){ // new request
+            cerr << BOLD_GREEN << "ADD SOCKET  >> :" << fd << "\n" << RESET;
             HttpRequest *request = new HttpRequest(serv_request_buffer);
             int server_socket = client_server[fd];
             Server server = host_server_name(servers , server_socket, request);
@@ -162,17 +164,40 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             HttpResponse *response = new HttpResponse(request, webserv);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
-            if (request->get_method() != "POST" )
+            if (request->get_method() == "POST" ) {
                 response->serv();
-            if (request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
+                cerr << BG_BLUE << "in it" << "\n" << RESET;
+            } 
+            if (response->get_request()->get_is_complete_post() || request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
             {
+                cerr << BG_GREEN << "in it 2" << "\n" << RESET;
                 struct kevent change;
-                EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                    perror("Error: Failed to re-register client socket for writing");
-                    close(fd);
-                    // delete request;
-                    client_responses.erase(fd);
+                if (response->get_request()->get_method() == "POST") {
+                    response->get_request()->set_method("GET");
+                    response->get_request()->set_is_chunked(true);
+                    // response->get_request()->set_is_cgi(false);
+                    if (response->get_request()->get_is_cgi()) {
+                        response->serv();
+                        // response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                        // response->get_request()->set_is_cgi(false);
+                    } else {
+                        response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                        if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                            perror("Error: Failed to re-register client socket for writing");
+                            close(fd);
+                            delete request;
+                            client_responses.erase(fd);
+                        }
+                    }
+                } else {
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                        perror("Error: Failed to re-register client socket for writing");
+                        close(fd);
+                        delete request;
+                        client_responses.erase(fd);
+                    }
                 }
                 return ;
             }
@@ -183,24 +208,30 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             request->add_to_body(serv_request_buffer, bytes_read);
             response->serv();
             // request->append_to_body(serv_request_buffer);
-            if (request->get_is_complete())
+            cerr << BG_BLUE << "in ittt" << "\n" << RESET;
+            if (response->get_request()->get_is_complete_post())
             {
                 // cout << BG_RED << "request completed\n" << RESET;
                 // cout << BG_RED;
                 // for (auto x : request->get_header())
                 //     cout << x.first << ", " << x.second << "\n";
                 // cout << RESET;
-                // cout << BG_GREEN << addPrefixBeforeCRLF(request->get_body()) << RESET<< "\n";
+                if (response->get_request()->get_method() == "POST") {
+                    response->get_request()->set_method("GET");
+                    response->get_request()->set_is_chunked(true);
+                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                }
+
+                cerr << BG_GREEN << "from post to get" << RESET<< "\n";
                 struct kevent change;
 
                 EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     perror("Error: Failed to re-register client socket for writing");
                     close(fd);
-                    // delete request;
+                    delete request;
                     client_responses.erase(fd);
-                }
-                
+                }        
             }
         }
     } else { // client disconnected
@@ -244,7 +275,8 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
         return;
     }
 
-    pid_childs[pid] = response;
+    cout << "---> " << response->get_request()->get_client_socket() << " " << pid << endl;
+    pid_childs[pid] = make_pair(response, response->get_request()->get_client_socket());
     file_paths[pid] = file_path;
 }
 
@@ -292,31 +324,39 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 response->serv();
                 if (response->get_request()->get_is_complete()) {
                     response->send_response();
-                    // delete response->get_request();
-                    // delete response;
+                    delete response->get_request();
+                    delete response;
                     close(fd);
                     client_responses.erase(fd);
                     struct kevent change;
+                    // cerr << BOLD_YELLOW << response->is_cgi() << endl << RESET;
                     EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                    cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
                     kevent(kq, &change, 1, nullptr, 0, nullptr);
                 }
             } else if (event_list[i].filter == EVFILT_PROC) {
+                cout << BOLD_RED <<  "CHILD exit\n" << RESET;
                 // Child process exit event
                 pid_t child_pid = event_list[i].ident; // The pid of the child that triggered the event
-                unordered_map<pid_t, const HttpResponse*>::const_iterator it = webserv->get_pid_childs().find(child_pid);
+                unordered_map<pid_t, pair<const HttpResponse*, int> >::const_iterator it = webserv->get_pid_childs().find(child_pid);
                 unordered_map<pid_t, string>::const_iterator it2 = webserv->get_file_paths().find(child_pid);
-                const HttpResponse *response = it->second;
-                if (!response || !response->get_request()) {
-                    close(fd);
-                    continue;
-                }
-                int status = event_list[i].data; // The exit status data
+                const HttpResponse *response = it->second.first;
+                // if (!response || !response->get_request()) { // 
+                //     close(fd);
+                //     continue;
+                // }
+                cerr << BG_GREEN << "this file return: " << it2->second << "\n" << RESET; 
+                // int status = event_list[i].data; // The exit status data
+                int status  = -1;
+                waitpid(child_pid, &status, WNOHANG);
+                cerr << status << "*******\n";
 
                 if (WIFEXITED(status)) {
                     int exit_status = WEXITSTATUS(status);
-                    cout << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
+                    cerr << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
 
                     if (exit_status == 0) {
+                        cerr << BG_GREEN << "this file return: >>>>>>  " << it2->second << "\n" << RESET;
                         response->get_request()->set_file_path(it2->second); // Successful CGI execution
                     } else {
                         cerr << "CGI process exited with error status: " << exit_status << "\n";
@@ -336,8 +376,20 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 struct kevent change;
                 struct kevent timeout_event;
 
-                response->get_request()->set_is_cgi(false);
+                response->get_request()->set_is_cgi(false); // ok
+                response->get_request()->set_method("GET");
+                response->get_request()->set_is_chunked(true);
                 response->send_response();
+                // update client socket to write mode
+                // check for errors
+                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    perror("Error: Failed to re-register client socket for writing!!!!!!!!");
+                    close(it->second.second);
+                    // delete response->get_request(); /// check error
+                    client_responses.erase(it->second.second);
+                }
+
                 EV_SET(&change, child_pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove child process monitoring\n";
@@ -349,21 +401,34 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     cerr << "Failed to remove timeout event\n";
                 }
             } else if (event_list[i].filter == EVFILT_TIMER) {
+                cout << BOLD_RED << "CHILD exit timeout \n" << RESET;
                 pid_t child_pid = event_list[i].ident; // The pid of the child that triggered the event
-                unordered_map<pid_t, const HttpResponse*>::const_iterator it = webserv->get_pid_childs().find(child_pid);
-                const HttpResponse *response = it->second;
-                if (!response) {
-                    close(fd);
-                    continue;
-                }
+                unordered_map<pid_t, pair<const HttpResponse*, int> >::const_iterator it = webserv->get_pid_childs().find(child_pid);
+                const HttpResponse *response = it->second.first;
+                // if (!response) {
+                //     close(fd);
+                //     continue;
+                // }
                 // Timeout event triggered (if CGI process takes too long)
                 cerr << "CGI process exceeded timeout\n";
                 kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
                 response->get_request()->set_file_path(REQUEST_TIMEOUT);
-                response->send_response();
-                response->get_request()->set_is_complete(true);
                 struct kevent change;
                 struct kevent timeout_event;
+
+                response->get_request()->set_is_cgi(false); // ok
+                response->get_request()->set_method("GET");
+                response->get_request()->set_is_chunked(true);
+                // response->send_response();
+                // update client socket to write mode
+                // check for errors
+                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    perror("Error: Failed to re-register client socket for writing");
+                    close(it->second.second);
+                    delete response->get_request(); /// check error
+                    client_responses.erase(it->second.second);
+                }
 
                 EV_SET(&change, event_list[i].ident, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
@@ -603,7 +668,7 @@ const map<int, vector<Server>> &WebServ::get_socket_servers() const
     return socket_servers;
 }
 
-const unordered_map<pid_t, const HttpResponse*>& WebServ::get_pid_childs() const {
+const unordered_map<pid_t, pair<const HttpResponse*, int> >& WebServ::get_pid_childs() const {
     return (pid_childs);
 }
 
