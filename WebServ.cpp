@@ -181,7 +181,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                         // response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
                         // response->get_request()->set_is_cgi(false);
                     } else {
-                        response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
+                        // response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
                         EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                         if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                             perror("Error: Failed to re-register client socket for writing");
@@ -226,7 +226,6 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                         // response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
                         // response->get_request()->set_is_cgi(false);
                 } else {
-                    response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                         perror("Error: Failed to re-register client socket for writing");

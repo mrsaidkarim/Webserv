@@ -62,6 +62,15 @@ void HttpResponse::handle_file(const string& path) const {
 }
 
 // check delete method is allowed or not 
+bool	HttpResponse::is_allowed(int index_location, string method) const {
+	map<string, bool> methods;
+	methods = request->get_server().get_locations()[index_location].get_methods();
+	if (methods[method])
+		return (true);
+	return (false);
+}
+
+// zelabbas remove this
 bool	HttpResponse::is_allowed(int index_location) const {
 	map<string, bool> methods;
 	methods = request->get_server().get_locations()[index_location].get_methods();

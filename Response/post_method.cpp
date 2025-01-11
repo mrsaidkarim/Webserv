@@ -66,6 +66,7 @@ static string addPrefixBeforeCRLF(const string &input) {
 
 
 void HttpResponse::post_method() const {
+    if (request->get_is_complete_post()) return;
     string body = request->get_body(); // get body from request
     cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 

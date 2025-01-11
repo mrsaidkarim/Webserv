@@ -98,6 +98,8 @@ HttpRequest::HttpRequest(const string& _request) {
 	if (this->get_method() == "POST") {
 		// set_boundary_key it looks for boundary key :) in header map
 		// if boundary key founded it return true , false otherwise
+		// life is good untile a problem happend
+		set_file_path(UPLOAD_SUCCESSFUL);
 		if (this->header.find("content-type")->second == "application/x-www-form-urlencoded") {
 			this->is_cgi = true;
 			cgi_path_post = generate_file_name();
@@ -106,7 +108,6 @@ HttpRequest::HttpRequest(const string& _request) {
 			if (!file_stream || !file_stream->is_open()) {
 				cerr << "can't open the file\n";
 			}
-			*file_stream << "testing\n";
 		} else {
 			// I add crlf before body because it was removed before
 		 	// update body
@@ -135,8 +136,8 @@ HttpRequest::~HttpRequest() {
 		file_stream->close();
 		delete file_stream;
 	}
-	if (was_cgi)
-		remove(get_file_path().c_str());
+	// if (was_cgi)
+	// 	remove(cgi_output_file.c_str());
 	remove(cgi_path_post.c_str());
 	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
@@ -627,4 +628,8 @@ bool HttpRequest::get_was_cgi(void) const {
 
 void HttpRequest::set_was_cgi(bool _was_cgi) {
 	was_cgi = _was_cgi;
+}
+
+void HttpRequest::set_cgi_file_path(const string& _file_path) {
+	cgi_output_file = _file_path;
 }

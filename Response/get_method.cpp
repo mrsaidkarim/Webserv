@@ -165,6 +165,7 @@ void HttpResponse::send_response() const{
 
     if (request->get_file_offset() == 0) {
         cout << "here >>>>>>> 1000\n";
+        cout << request->get_file_path() << "\n";
         string path = request->get_file_path();
         // if already file opened close it
         if (request->get_file_stream() && request->get_file_stream()->is_open()) {
@@ -241,11 +242,11 @@ void HttpResponse::send_response() const{
 
 pair<int, int> HttpResponse::longest_common_location() const{
     vector<string> route = request->get_url();
-    // cout << "splited_route -->";
-    // for (int i = 0; i < route.size();i++) {
-    //     cout << " " << route[i];
-    // }
-    // cout << endl;
+    cout << "splited_route -->";
+    for (int i = 0; i < route.size();i++) {
+        cout << " " << route[i];
+    }
+    cout << endl;
     int best_i = -1;
     int best_j;
 

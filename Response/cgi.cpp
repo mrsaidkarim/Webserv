@@ -176,6 +176,8 @@ void HttpResponse::print_env(char **env) const {
 // }
 
 
+
+
 void HttpResponse::cgi() const{
     // get env
     cout << BG_BLUE << "here >> " << request->get_cgi_in_process() << RESET;
@@ -186,10 +188,11 @@ void HttpResponse::cgi() const{
 
     char **env = header_to_env();
     print_env(env);
+    string file_path = generate_file_name();
     request->set_is_cgi(false);
     request->set_cgi_in_process(true);
     request->set_was_cgi(true);
-    string file_path = generate_file_name();
+    request->set_cgi_file_path(file_path);
     request->set_is_unlink_file_path(true);
     cout << "output file for cgi: " << file_path << "\n";
     
@@ -204,8 +207,8 @@ void HttpResponse::cgi() const{
     } else if (pid == 0) {
         //child
         close(kq);
-        size_t pos = request->get_file_path().rfind(".");
-        string extension = request->get_file_path().substr(pos + 1);
+        // size_t pos = request->get_file_path().rfind(".");
+        // string extension = request->get_file_path().substr(pos + 1);
 
         // int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -216,12 +219,23 @@ void HttpResponse::cgi() const{
         char *args[3];
         cerr << BOLD_YELLOW << request->get_method() << "\n" << RESET;
         if (!request->get_cgi_path_post().empty()) {
+            
             // location matching
             // run secript
             cerr << "now we should handle this1111\n";
             request->get_file_stream()->close();
-            args[0] = const_cast<char *>("/usr/bin/python3");
-            args[1] = const_cast<char *>(CGI_POST_SCRIPT);
+            // args[0] = const_cast<char *>("/usr/bin/python3");
+            // args[1] = const_cast<char *>(CGI_POST_SCRIPT);
+            // args[2] = NULL;
+            string script_file_path = get_script_path();
+            size_t pos = script_file_path.rfind(".");
+            string extension = script_file_path.substr(pos + 1);
+            cerr << "script_file_path: " << script_file_path << "\n";
+            cerr << request->get_server().get_locations()[index_location].get_path_cgi(extension) << "\n";
+            args[0] = const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str());
+            
+            // args[0] = const_cast<char *>("/usr/bin/python3");
+            args[1] = const_cast<char *>(script_file_path.c_str());
             args[2] = NULL;
 
             cerr << BG_RED << "this is input file: " << request->get_cgi_path_post() << "\n" <<RESET << "\n";
@@ -232,6 +246,8 @@ void HttpResponse::cgi() const{
                 _exit(1);
             }
         } else {
+            size_t pos = request->get_file_path().rfind(".");
+            string extension = request->get_file_path().substr(pos + 1);
             cout  << "here >>> " << index_location << "\n";
             args[0] = const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str());
             args[1] = const_cast<char *>(request->get_file_path().c_str());

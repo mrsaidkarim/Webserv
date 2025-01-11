@@ -35,7 +35,7 @@ Server server_init1() {
         {"js", ""}
     };
     map<string, string> cgi4 = {
-        {"php", "/usr/bin/zelabasss"}, {"py", "/usr/bin/python3"}, {"js", ""}
+        {"php", "/usr/bin/zelabasss"}, {"py", "/usr/bin/python3"}, {"js", "/usr/local/bin/node"}
     };
     pair<string, string> redirections = {"301", "www.youtube.com"};
 
@@ -67,7 +67,7 @@ Server server_init1() {
         true,
         "/Volumes/TOSHIBA/www/",
         {{"GET", true},
-        {"POST", false},
+        {"POST", true},
         {"DELETE", false}}, // it was false
         {}, cgi4
     );

@@ -10,14 +10,50 @@ HttpResponse::~HttpResponse() {
 
 }
 
+
+void HttpResponse::check_post_location() {
+    index_location = longest_common_location().first;
+    cerr << BOLD_RED << index_location << "\n";
+    // location not found
+    if (index_location == -1) {
+        request->set_is_complete_post(true);
+        request->set_file_path(NOT_FOUND);
+        return;
+    }
+    // method not allowed
+    if (!is_allowed(index_location, "POST")) {
+        request->set_is_complete_post(true);
+        request->set_file_path(NOT_ALLOWED);
+        return;
+    }
+    // request->get_server().get_locations()[index_location].print_lacation_info();
+}
+
+string HttpResponse::get_script_path() const{
+    vector<string> route = request->get_url();
+    // check for root
+    string path = request->get_server().get_locations()[index_location].get_root();
+    // if not root for this location use global root
+    if (path.empty())
+        path = request->get_server().get_global_root();
+    for (int i = 0; i < route.size(); i++) {
+        if (i > 0)
+            path += "/";
+        path += route[i];
+    }
+    return path;
+}
+
 void    HttpResponse::serv() {
 
     // check if it is a cgi
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
     if (request->get_method() == "GET")
         get_method();
-    else if (request->get_method() == "POST")
+    else if (request->get_method() == "POST") {
+        check_post_location();
         post_method();
+    }
     else if (request->get_method() == "DELETE")
         delete_method();
 }

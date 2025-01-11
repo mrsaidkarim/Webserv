@@ -43,6 +43,7 @@ class HttpResponse {
 
         // delete method help functions
 		bool	is_allowed(int index_location) const;
+        bool    is_allowed(int index_location, string method) const;
 		void	handle_file(const string& path) const;
 		bool	does_not_exist(const string& path) const;
 		bool	is_a_file(const string& path) const;
@@ -58,6 +59,8 @@ class HttpResponse {
         void    handle_timeout(pid_t pid, const string& file_path) const;
 
         void    set_cgi_in_process(bool);
+        void    check_post_location();
+        string  get_script_path() const;
 };
 
 #endif
