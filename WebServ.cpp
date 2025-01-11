@@ -171,7 +171,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             HttpResponse *response = new HttpResponse(request);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
-            if (request->get_method() != "POST" )
+            if (request->get_method() == "POST" )
                 response->serv();
             if (request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
             {

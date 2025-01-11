@@ -92,7 +92,7 @@ void normalize_chunked_data(string &s) {
             pos += crlf.size(); // Move past CRLF if no valid chunk size is found
         }
     }
-    cout << BOLD_BLUE << pos << "normalized\n" << RESET;
+    // cout << BOLD_BLUE << pos << "normalized\n" << RESET;
 }
 
 
@@ -122,12 +122,17 @@ static string addPrefixBeforeCRLF(const string &input) {
 
     return result;
 }
+
 void HttpResponse::post_method() const {
     string body = request->get_body();
+    // cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
 
+    // cout << BG_YELLOW << "===================== current body before ============================\n";
+    // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
+    // cout << "===============================================================\n" << RESET;
     if (request->get_is_chunked())
         normalize_chunked_data(body);
-    // cout << BG_GREEN << "===================== current body ============================\n";
+    // cout << BG_BLUE << "===================== current body after ============================\n";
     // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
     // cout << "===============================================================\n" << RESET;
     fstream *file = request->get_file_stream(); // get file from request
@@ -139,16 +144,19 @@ void HttpResponse::post_method() const {
     string info;
     string new_file_name;
     
-    if (request->get_is_complete()) {
-        cout << BG_GREEN << "completed here\n" << RESET;
-        // cout << body << "\n" << RESET;
-    }
+    // if (request->get_is_complete()) {
+    //     cout << BG_GREEN << "completed here\n" << RESET;
+    //     // cout << body << "\n" << RESET;
+    // }
     if (pos_crlf == string::npos) {
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
-        else
+        else {
             *file << body;
+            cout << "here\n";
+        }
         request->set_body(""); // clear previous body
+        // cout << BG_BLUE << "reh treseta lbody\n" << RESET;
         return ;
     }
     
@@ -161,8 +169,10 @@ void HttpResponse::post_method() const {
             // cout << "=================slice ==========================\n";
             // cout << slice << "\n";
             // cout << "=================================================\n"; 
-            if (file)
-                *file << slice;
+            if (file) {
+                *file << addPrefixBeforeCRLF(slice);
+                cout << "here\n";
+            }
             body = body.substr(pos_bound_begin);
             // cout << "==================== body becomes 1 ================\n";
             // cout << body << "\n";
@@ -226,24 +236,51 @@ void HttpResponse::post_method() const {
                     request->set_is_complete(true);
                     cout << BOLD_GREEN << "we read all 3\n\n";
                 }
-                else
-                    *file << slice;
+                else {
+                    *file << addPrefixBeforeCRLF(slice);
+                    cout << "here\n";
+                }
 
                 request->set_body("");
                 request->set_is_complete(true); // this task is done
                 cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
-            } else {
+            // } else {
+            //     *file << body;
+            //     request->set_body("");
+            //     break;
+            // }
+            }
+            else {
+                size_t last = body.rfind(CRLF);
+                // if (body.rfind("\r") != string::npos && last != string::npos)
+                //     last = (last > body.rfind("\r")) ? last : body.rfind("\r");
+                // // if (last == string::npos && !body.empty()) {
+                //     *file << addPrefixBeforeCRLF(body); // Write remaining body
+                //     request->set_body("");
+                // }
+                if (last != string::npos && body.length() - last < 500)
+                {
+                    // cout << BOLD_GREEN << "lbody li t7at: " <<  addPrefixBeforeCRLF(body.substr(0, last)) << endl << RESET;
+                    *file << body.substr(0, last);
+                    request->set_body(body.substr(last));
+                    // cout << BOLD_RED << "*************: " << endl << RESET;
+                    // << addPrefixBeforeCRLF(body.substr(last)) << endl << RESET;
+                }
+                else
+                {
+                    *file << body;
+                    request->set_body("");
+                    // cout << BG_RED << 
+                }
+                // cout << BOLD_CYAN << "hedshi thal flfile: " << addPrefixBeforeCRLF(body.substr(0, pos_crlf)) << endl << RESET;
+                // body = body.substr(pos_crlf + 2);
+                
+                // cout << BOLD_RED << "hedshi wela how lbody: " << addPrefixBeforeCRLF(request->get_body()) << endl << RESET;
                 break;
             }
             cout << "ba9in fi loop\n";
         }
         pos_crlf = body.find(CRLF);
     }
-    if (request->get_is_complete())
-        cout << BOLD_GREEN << "we read all 5\n\n" << RESET;
-    cout << BOLD_GREEN << "we read all 6\n\n" << RESET;
 }
-
-// void HttpResponse::post_method() const {
-// }
