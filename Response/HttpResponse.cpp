@@ -44,10 +44,23 @@ const string& HttpResponse::get_script_path() const{
     return request->get_cgi_input_file();
 }
 
+
 void    HttpResponse::serv() {
 
     // check if it is a cgi
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
+    if (request->get_header().find("cookie") != request->get_header().end() && request->get_url().size() == 1
+        && request->get_url()[0] == "cookie") {
+        int pos = request->get_header().find("cookie")->second.find("session_id=");
+        if (pos != string::npos) {
+            string session_path = request->get_header().find("cookie")->second.substr(pos + 11);
+            if (is_a_file(SESSION_MANAGEMENT + session_path)) {
+                request->set_file_path(SESSION_MANAGEMENT + session_path);
+                request->set_is_chunked(true);
+            }
+            cout << BG_GREEN << "("  << session_path << ")" << "\n";
+        }
+    }
     if (request->get_method() == "GET")
         get_method();
     else if (request->get_method() == "POST") {

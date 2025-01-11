@@ -63,7 +63,7 @@ string HttpResponse::get_content_type(const string &path) const {
             return (extensions[extension]);
         }
     }
-    return ("text/plain");
+    return ("text/html");
 }
 
 //priority: 1 (redirection)
