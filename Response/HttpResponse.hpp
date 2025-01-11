@@ -60,7 +60,7 @@ class HttpResponse {
 
         void    set_cgi_in_process(bool);
         void    check_post_location();
-        string  get_script_path() const;
+        const string&  get_script_path() const;
 };
 
 #endif

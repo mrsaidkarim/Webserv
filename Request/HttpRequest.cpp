@@ -666,3 +666,11 @@ void HttpRequest::set_session_id(const string& _session_id) {
 const string& HttpRequest::get_session_id(void) const{
 	return(session_id);
 }
+
+void HttpRequest::set_cgi_input_file(const string& _cgi_file_input) {
+	cgi_input_file = _cgi_file_input;
+}
+
+const string& HttpRequest::get_cgi_input_file(void) const {
+	return (cgi_input_file);
+}

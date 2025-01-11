@@ -28,6 +28,7 @@ HEADERS = 	Configuration/Location.hpp\
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
+	@mkdir -p ./Session_Management/
 
 %.o: %.cpp $(HEADERS)
 	$(CPP) $(FLAGS) -c $< -o $@

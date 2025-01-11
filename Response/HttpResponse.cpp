@@ -29,19 +29,19 @@ void HttpResponse::check_post_location() {
     // request->get_server().get_locations()[index_location].print_lacation_info();
 }
 
-string HttpResponse::get_script_path() const{
+const string& HttpResponse::get_script_path() const{
     vector<string> route = request->get_url();
     // check for root
-    string path = request->get_server().get_locations()[index_location].get_root();
+    request->set_cgi_input_file(request->get_server().get_locations()[index_location].get_root());
     // if not root for this location use global root
-    if (path.empty())
-        path = request->get_server().get_global_root();
+    if (request->get_cgi_input_file().empty())
+     request->set_cgi_input_file(request->get_server().get_global_root());
     for (int i = 0; i < route.size(); i++) {
         if (i > 0)
-            path += "/";
-        path += route[i];
+            request->set_cgi_input_file( request->get_cgi_input_file() + "/");
+        request->set_cgi_input_file( request->get_cgi_input_file() + route[i]);
     }
-    return path;
+    return request->get_cgi_input_file();
 }
 
 void    HttpResponse::serv() {

@@ -227,15 +227,16 @@ void HttpResponse::cgi() const{
             // args[0] = const_cast<char *>("/usr/bin/python3");
             // args[1] = const_cast<char *>(CGI_POST_SCRIPT);
             // args[2] = NULL;
-            string *script_file_path = new string(get_script_path());
-            size_t pos = script_file_path->rfind(".");
-            string extension = script_file_path->substr(pos + 1);
+            // string *script_file_path = new string(get_script_path()); // here
+            string script_file_path = get_script_path();
+            size_t pos = script_file_path.rfind(".");
+            string extension = script_file_path.substr(pos + 1);
             cerr << "script_file_path: " << script_file_path << "\n";
             cerr << request->get_server().get_locations()[index_location].get_path_cgi(extension) << "\n";
             args[0] = const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str());
             
             // args[0] = const_cast<char *>("/usr/bin/python3");
-            args[1] = const_cast<char *>(script_file_path->c_str());
+            args[1] = const_cast<char *>(get_script_path().c_str());
             args[2] = NULL;
             cerr << BOLD_RED << request->get_server().get_locations()[index_location].get_path_cgi(extension) << RESET << endl;
             cerr << BG_RED << "this is input file: " << request->get_cgi_path_post() << "\n" <<RESET << "\n";
