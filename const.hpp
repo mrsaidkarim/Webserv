@@ -39,6 +39,8 @@ extern int kq;
 #define left std::left
 #define make_pair std::make_pair
 #define fstream std::fstream
+#define ofstream std::ofstream
+#define ifstream std::ifstream
 #define ios std::ios
 #define getline std::getline
 #define to_string std::to_string
@@ -110,5 +112,5 @@ extern int kq;
 #define INTERNAL_SERVER_ERROR "./pages_html/500.html"
 #define REQUEST_TIMEOUT "./pages_html/408.html"
 #define UPLOAD_SUCCESSFUL "./pages_html/upload_successful.html"
-
+#define SESSION_MANAGEMENT "./Session_Management/"
 #endif

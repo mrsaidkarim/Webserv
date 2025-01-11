@@ -155,6 +155,7 @@ void HttpResponse::serv_autoindex(const string& path) const {
 }
 
 
+
 void HttpResponse::send_response() const{
     cout << BOLD_GREEN << "in send response\n" << RESET;
     if (is_cgi()) {
@@ -185,8 +186,11 @@ void HttpResponse::send_response() const{
             "HTTP/1.1 200 OK\r\n"      // 200 not everytime!!!!!!!!!!!!!!!!!!!!!!!!!
             "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
-            "connection: keep-alive\r\n"
-            "\r\n";
+            "connection: keep-alive\r\n";
+
+        if (!request->get_session_id().empty())
+            http_response_header += "Set-Cookie: session_id=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
+        http_response_header += "\r\n";
         if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0)) {
             // perror("send failed in send_response()");
             // request->set_is_complete(true);

@@ -2,7 +2,7 @@ NAME = webserv
 
 CPP = c++
 
-FLAGS =  -std=c++17 #-g -fsanitize=address  #-Wall -Wextra -Werror
+FLAGS =  -std=c++17 -g -fsanitize=address  #-Wall -Wextra -Werror
 
 RM = rm -f
 

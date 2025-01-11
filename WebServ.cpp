@@ -253,6 +253,30 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
     and don't forget to remover response for leaks
 */
 
+static string generate_session_id(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
+    
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
+
+    // Create the formatted string
+    ostringstream oss;
+    oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+        << (timeInfo->tm_mon + 1) << "_"           // Month
+        << timeInfo->tm_mday << "_"               // Day
+        << timeInfo->tm_hour << "_"               // Hours
+        << timeInfo->tm_min << "_"                // Minutes
+        << timeInfo->tm_sec << "_"                // Seconds
+        << microseconds;               // Microseconds
+
+    return oss.str();
+}
+
 void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response) {
     struct kevent change;
 
@@ -280,6 +304,31 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     cout << "---> " << response->get_request()->get_client_socket() << " " << pid << endl;
     pid_childs[pid] = make_pair(response, response->get_request()->get_client_socket());
     file_paths[pid] = file_path;
+}
+
+bool copy_file(const string& sourcePath, const string& destinationPath) {
+    // Open the source file for reading in binary mode
+    ifstream sourceFile(sourcePath.c_str(), ios::binary);
+    if (!sourceFile) {
+        cerr << "Error: Could not open source file: " << sourcePath << endl;
+        return false;
+    }
+
+    // Open the destination file for writing in binary mode
+    ofstream destinationFile(destinationPath.c_str(), ios::binary);
+    if (!destinationFile) {
+        cerr << "Error: Could not open destination file: " << destinationPath << endl;
+        return false;
+    }
+
+    // Copy contents from source to destination
+    destinationFile << sourceFile.rdbuf();
+
+    // Close the files
+    sourceFile.close();
+    destinationFile.close();
+
+    return true;
 }
 
 void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, WebServ* webserv)
@@ -357,7 +406,12 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     int exit_status = WEXITSTATUS(status);
                     cerr << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
 
-                    if (exit_status == 0) {
+                    if (exit_status == 0 || exit_status == 10) {
+                        if (exit_status == 0) {
+                            response->get_request()->set_session_id(generate_session_id());
+                            copy_file(it2->second, SESSION_MANAGEMENT + response->get_request()->get_session_id());
+                        }
+
                         cerr << BG_GREEN << "this file return: >>>>>>  " << it2->second << "\n" << RESET;
                         response->get_request()->set_file_path(it2->second); // Successful CGI execution
                     } else {

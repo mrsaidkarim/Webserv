@@ -42,14 +42,14 @@ Server server_init1() {
     // Create a Location object
     Location loc1(route, indexes, auto_index, root, methods, redirections, cgi1);
     Location loc2(
-        {"A2", "B2", "C2"},
-        {"home.html", "index.html"},
-        true,
-        "/Users/zelabbas/OurWebserver/dir", // it was something /Volumes/Toshiba.....
+        {"cookie"},
+        {"send_form.html"},
+        false,
+        "/Volumes/TOSHIBA/www/", // it was something /Volumes/Toshiba.....
         {{"GET", true},
-        {"POST", false},
-        {"DELETE", true}}, // it was false
-        {}, cgi2
+        {"POST", true},
+        {"DELETE", false}}, // it was false
+        {}, cgi4
     );
     Location loc3(
         {"A3", "B3", "C3"},

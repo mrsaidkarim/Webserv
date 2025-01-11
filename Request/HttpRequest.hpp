@@ -47,6 +47,7 @@ class HttpRequest
 		bool    			cgi_in_process;
 		bool				was_cgi;
 		string				cgi_output_file;
+		string				session_id;
 	
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -86,6 +87,7 @@ class HttpRequest
 		void set_is_complete_post(bool _is_complete_post);
 		void set_was_cgi(bool _was_cgi);
 		void set_cgi_file_path(const string& _file_path);
+		void set_session_id(const string& _session_id);
 		// GETTERS:
 		const string& get_status_code(void) const;
 		const string& get_method(void) const;
@@ -110,6 +112,7 @@ class HttpRequest
 		bool get_cgi_in_process(void) const;
 		bool get_is_complete_post(void) const;
 		bool get_was_cgi(void) const;
+		const string& get_session_id(void) const;
 
 		// for post method
 

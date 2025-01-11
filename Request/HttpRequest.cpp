@@ -42,6 +42,30 @@ static string generate_file_name(void) {
     return oss.str();
 }
 
+static string generate_session_id(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
+    
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
+
+    // Create the formatted string
+    ostringstream oss;
+    oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+        << (timeInfo->tm_mon + 1) << "_"           // Month
+        << timeInfo->tm_mday << "_"               // Day
+        << timeInfo->tm_hour << "_"               // Hours
+        << timeInfo->tm_min << "_"                // Minutes
+        << timeInfo->tm_sec << "_"                // Seconds
+        << microseconds;               // Microseconds
+
+    return oss.str();
+}
+
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
 	string			header;
@@ -61,6 +85,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	file_stream = NULL;
 	index = _request.find(CRLF_2);
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
+	cout << BOLD_YELLOW << _request << RESET << "\n";
 
 	if (index == string::npos) {
 		this->set_status_code("400");
@@ -632,4 +657,12 @@ void HttpRequest::set_was_cgi(bool _was_cgi) {
 
 void HttpRequest::set_cgi_file_path(const string& _file_path) {
 	cgi_output_file = _file_path;
+}
+
+void HttpRequest::set_session_id(const string& _session_id) {
+	session_id = _session_id;
+}
+
+const string& HttpRequest::get_session_id(void) const{
+	return(session_id);
 }
