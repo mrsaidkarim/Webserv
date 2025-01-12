@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <sys/unistd.h>
 
 
 HttpResponse::HttpResponse(HttpRequest *_request, WebServ *_webserv) {
@@ -49,14 +50,16 @@ void    HttpResponse::serv() {
 
     // check if it is a cgi
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
-    if (request->get_header().find("cookie") != request->get_header().end() && request->get_url().size() == 1
+    if (request->get_header().find("cookie") != request->get_header().end() && request->get_url().size() >= 1
         && request->get_url()[0] == "cookie") {
         int pos = request->get_header().find("cookie")->second.find("session_id=");
         if (pos != string::npos) {
-            string session_path = request->get_header().find("cookie")->second.substr(pos + 11);
-            if (is_a_file(SESSION_MANAGEMENT + session_path)) {
-                request->set_file_path(SESSION_MANAGEMENT + session_path);
+            string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 11);
+            if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
+                request->set_file_path(session_path);
                 request->set_is_chunked(true);
+                request->set_is_complete_post(true);
+                request->set_is_cgi(false);
             }
             cout << BG_GREEN << "("  << session_path << ")" << "\n";
         }

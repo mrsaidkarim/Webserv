@@ -205,6 +205,11 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
         else { // case of post_method continuation of reading the request body
             struct kevent change;
             HttpResponse *response = client_responses[fd];
+            if (!response || !response->get_request())
+            {
+                close(fd);
+                return ;
+            }
             HttpRequest *request = response->get_request();
             request->add_to_body(serv_request_buffer, bytes_read);
             response->serv();
