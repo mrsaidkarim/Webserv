@@ -412,7 +412,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     cerr << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
 
                     if (exit_status == 0 || exit_status == 10) {
-                        if (exit_status == 0) {
+                        if (exit_status == 0 && response->get_request()->get_cookie() != 2) {
                             ///  add condition when we should add session_id
                             response->get_request()->set_session_id(generate_session_id());
                             copy_file(it2->second, SESSION_MANAGEMENT + response->get_request()->get_session_id());

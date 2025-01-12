@@ -188,8 +188,13 @@ void HttpResponse::send_response() const{
             "Transfer-Encoding: chunked\r\n"
             "connection: keep-alive\r\n";
 
-        if (!request->get_session_id().empty())
+
+        if (!request->get_session_id().empty()) {
             http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
+            cout << "here (!request->get_session_id().empty())\n\n\n";
+            cout << request->get_session_id() << "\n\n\n";
+        
+        }
         http_response_header += "\r\n";
         if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0)) {
             // perror("send failed in send_response()");

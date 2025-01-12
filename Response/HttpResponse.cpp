@@ -97,14 +97,44 @@ void    HttpResponse::serv() {
 
     // hangle cookie2
     cout << "we are in serv\n";
-    if (request->get_url().size() >= 1 &&  request->get_url()[0] == "cookie2" 
-        && request->get_cookie() == 0) {
-        request->set_session_id(generate_session_id());
-        request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
-        fstream file = fstream(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
-        file.write("mode=light&&lang=ar", 19);
-        file.close();
-        request->set_cookie(2);
+    if ( request->get_cookie() == 0  && request->get_url().size() >= 1 &&  request->get_url()[0] == "cookie2" ) {
+        bool flag = false;
+        if (request->get_header().find("cookie") != request->get_header().end()) {
+            int pos = request->get_header().find("cookie")->second.find("session_id_2=");
+            if (pos != string::npos) {
+                string session_path = request->get_header().find("cookie")->second.substr(pos + 13);
+                session_path = session_path.substr(0, session_path.find(";"));
+                request->set_session_id(session_path);
+                session_path = SESSION_MANAGEMENT + session_path;
+                if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
+                    request->set_file_path(session_path);
+                    cout << "&&&&&&&&&     ###" << request->get_is_cgi() << endl;
+                    request->set_cgi_path_post(session_path);
+                    cout << request->get_body() << "@@@@@@@@$$$$$\n";
+                    if (request->get_method() == "POST") {
+                        request->set_is_complete_post(true);
+                        request->set_is_chunked(true);
+                        // request->set_cgi_path_post(session_path); // here we shoul remove input_file.txt was created before
+                        fstream file = fstream(request->get_file_path(), ios::out | ios::trunc);
+                        file.write(request->get_body().c_str(), request->get_body().size());
+                        file.close();
+                        flag = true;
+                    }
+                    request->set_cookie(2);
+                }
+            }
+            cout << "already cookie exist\n";
+        }
+        if (request->get_cookie() == 0 && !flag) {
+            request->set_session_id(generate_session_id());
+            cout << "in request->get_cookie() == 0 && !flag\n\n\n";
+            cout << request->get_session_id() << "\n\n\n";
+            request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
+            fstream file = fstream(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
+            file.write("mode=light&lang=ar", 19);
+            file.close();
+            request->set_cookie(2);
+        }
     }
     if (request->get_method() == "GET")
         get_method();

@@ -233,6 +233,7 @@ void HttpResponse::cgi() const{
             size_t pos = script_file_path.rfind(".");
             string extension = script_file_path.substr(pos + 1);
             cerr << "script_file_path: " << script_file_path << "\n";
+            cerr << "input_file_path: " << request->get_cgi_path_post() << "\n";
             cerr << request->get_server().get_locations()[index_location].get_path_cgi(extension) << "\n";
             args[0] = const_cast<char *>(request->get_server().get_locations()[index_location].get_path_cgi(extension).c_str());
             

@@ -164,8 +164,8 @@ HttpRequest::~HttpRequest() {
 	}
 	// if (was_cgi)
 	// 	remove(cgi_output_file.c_str());
-	if (!cookie)
-		remove(cgi_path_post.c_str());
+	// if (!cookie)
+	// 	remove(cgi_path_post.c_str());
 	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
