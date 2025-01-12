@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/24 15:07:51 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/12 10:06:45 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ class HttpRequest
 		map<string, string>	header;
 		map<string, char>	encoding_symbols;
 		fstream				*file_stream; // file stream
+		bool				is_binary_post;// for post binary case
 		string			    file_path; // request file path 
 		streampos			file_offset; // file offset
 		bool 				is_chunked; // is chunked response
@@ -72,6 +73,7 @@ class HttpRequest
 		void set_file_stream(fstream* _file_stream);
 		void set_file_offset(streampos _file_offset);
 		bool set_boundary_key(void);
+		void set_is_binary_post(bool is_binary_post);
 		
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -91,7 +93,7 @@ class HttpRequest
 		streampos get_file_offset(void) const;
 		const string& get_boundary_key_begin(void) const;
 		const string& get_boundary_key_end(void) const;
-
+		bool get_is_binary_post(void) const;
 		// for post method
 
 		void	add_to_body(const string &, int );

@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 12:54:20 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/25 15:27:19 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/12 12:35:23 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,15 +126,19 @@ static string addPrefixBeforeCRLF(const string &input) {
 void HttpResponse::post_method() const {
     string body = request->get_body();
     // cout << BOLD_RED << "we are in post method function" << "\n"; // to remove
-
+    auto header = request->get_header();
+    cout << BOLD_RED;
+    for(auto element = header.begin(); element != header.end(); element++)
+        cout << element->first << ": " << element->second << "\n";
+    cout << RESET;
     // cout << BG_YELLOW << "===================== current body before ============================\n";
     // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
     // cout << "===============================================================\n" << RESET;
     if (request->get_is_chunked())
         normalize_chunked_data(body);
-    // cout << BG_BLUE << "===================== current body after ============================\n";
-    // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
-    // cout << "===============================================================\n" << RESET;
+    cout << BG_BLUE << "===================== current body after ============================\n";
+    cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
+    cout << "===============================================================\n" << RESET;
     fstream *file = request->get_file_stream(); // get file from request
     string slice;
     size_t pos_crlf = body.find(CRLF);
@@ -144,7 +148,7 @@ void HttpResponse::post_method() const {
     string info;
     string new_file_name;
     
-    // if (request->get_is_complete()) {
+    // if (request->get_is_complete ()) {
     //     cout << BG_GREEN << "completed here\n" << RESET;
     //     // cout << body << "\n" << RESET;
     // }
@@ -159,24 +163,19 @@ void HttpResponse::post_method() const {
         // cout << BG_BLUE << "reh treseta lbody\n" << RESET;
         return ;
     }
-    
+    cout << BG_BLUE << "ymken makynash " << RESET;
     while (pos_crlf != string::npos) {
+        cout << BG_CYAN << "keyn am3alem " << RESET;
         pos_bound_begin = body.find(request->get_boundary_key_begin());
-        if (pos_bound_begin != string::npos) {
-            // cout << "-----------------------> found boundary begin key\n";
+        if (!request->get_boundary_key_begin().empty() && pos_bound_begin != string::npos) {
+            cout << BG_GREEN << "keyn boundary_key_begin" << RESET;
             // every thing befor this pos_bound_begin should be added in the file
             slice = body.substr(0, pos_bound_begin);
-            // cout << "=================slice ==========================\n";
-            // cout << slice << "\n";
-            // cout << "=================================================\n"; 
             if (file) {
                 *file << addPrefixBeforeCRLF(slice);
                 cout << "here\n";
             }
             body = body.substr(pos_bound_begin);
-            // cout << "==================== body becomes 1 ================\n";
-            // cout << body << "\n";
-            // cout << "====================================================\n";
             // now I should find five CRLF 
             if (!is_crlf_exist_more_than_five_times(body)) {
                 // not founded means i need more shanks to complete this task
@@ -185,16 +184,11 @@ void HttpResponse::post_method() const {
             }
             // erase boundary_key_begin
             body = body.substr(request->get_boundary_key_begin().size());
-            // cout << "==================== body becomes 2 ================\n";
-            // cout << body << "\n";
-            // cout << "====================================================\n";
             // search for CRLF after Content-Disposition
             pos_info = body.find(CRLF);
             info = body.substr(0, pos_info);
-            // cout << "<<<<" << info << ">>>>>" << "\n";
             // get name of new file
             new_file_name = extract_new_file_name(info);
-            // cout << "file name: <<<<" << new_file_name << ">>>>\n";
             if (file) {
                 file->close();
                 delete file;
@@ -211,8 +205,9 @@ void HttpResponse::post_method() const {
                 file = NULL;
                 return;
             }
-            // cout << BG_MAGENTA << file << (POST_PATH + new_file_name).c_str() << "\n" << RESET;
-            request->set_file_stream(file); // update file stream
+            request->set_file_stream(file);
+            request->set_is_binary_post(false); // update file stream
+            cout << BG_GREEN << "rja3 false    \n" << RESET;
             // now just move Content-Type + CRLF CRLF
             pos_info = body.find(CRLF_2);
             if (pos_info == string::npos) {
@@ -226,9 +221,10 @@ void HttpResponse::post_method() const {
             request->set_body(body);
         }
         else {
+            cout << BG_YELLOW << "keyn boundary_key_end" << RESET;
             pos_bound_end = body.find(request->get_boundary_key_end());
             // we are done
-            if (pos_bound_end != string::npos) {
+            if (!request->get_boundary_key_end().empty() && pos_bound_end != string::npos) {
                 // cout << "---------------> found boundary key end \n";
                 slice = body.substr(0, pos_bound_end);
                 if (!file) {
@@ -252,6 +248,13 @@ void HttpResponse::post_method() const {
             // }
             }
             else {
+                cout << BG_GREEN << "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh\n" << RESET;
+                if (request->get_is_binary_post())
+                {
+                    
+                    cout << BG_RED << "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhh" << endl << RESET;
+                    exit(1);
+                }
                 size_t last = body.rfind(CRLF);
                 // if (body.rfind("\r") != string::npos && last != string::npos)
                 //     last = (last > body.rfind("\r")) ? last : body.rfind("\r");
@@ -282,5 +285,48 @@ void HttpResponse::post_method() const {
             cout << "ba9in fi loop\n";
         }
         pos_crlf = body.find(CRLF);
+    }
+    cout << BG_BLUE << "CRLF" << RESET;
+
+}
+
+
+static string generate_file_name(const string &extension) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
+    
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
+
+    // Create the formatted string
+    ostringstream oss;
+    oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+        << (timeInfo->tm_mon + 1) << "_"           // Month
+        << timeInfo->tm_mday << "_"               // Day
+        << timeInfo->tm_hour << "_"               // Hours
+        << timeInfo->tm_min << "_"                // Minutes
+        << timeInfo->tm_sec << "_"                // Seconds
+        << microseconds << "." << extension;               // Microseconds
+
+    return oss.str();
+}
+
+void HttpResponse::binary_post_case()
+{
+    string content_type = request->get_header().find("content-type");
+    string generated_binary_file = generate_file_name(content_type.substr(content_type.find("/")));
+    fstream *file = new fstream((generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
+    if (!file->is_open()) {
+        cerr << "Couldn't create the new file\n";
+        perror("why?");
+        request->set_is_complete(true);
+        cout << BOLD_GREEN << "we read all 2\n\n";
+        delete file;
+        file = NULL;
+        return;
     }
 }

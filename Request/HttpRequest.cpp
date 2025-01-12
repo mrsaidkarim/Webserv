@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/24 20:53:30 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/11 17:16:12 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	is_chunked = false;
 	is_complete = false;
 	file_stream = NULL;
+	is_binary_post = true;
 	index = _request.find(CRLF_2);
 
 	if (index == string::npos) {
@@ -554,4 +555,14 @@ void HttpRequest::append_to_body(const string &data)
 	}
 	else
 		body.append(data);
+}
+
+bool HttpRequest::get_is_binary_post(void) const
+{
+	return (this->is_binary_post);
+}
+
+void HttpRequest::set_is_binary_post(bool is_binary_post)
+{
+	this->is_binary_post = is_binary_post;
 }

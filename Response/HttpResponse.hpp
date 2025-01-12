@@ -33,8 +33,7 @@ class HttpResponse {
         pair<int, int> longest_common_location() const;
         HttpRequest *get_request() const;
         // post method help functions
-
-
+        void binary_post_case();
         // delete method help functions
 
 };
