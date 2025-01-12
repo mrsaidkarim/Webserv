@@ -189,7 +189,7 @@ void HttpResponse::send_response() const{
             "connection: keep-alive\r\n";
 
         if (!request->get_session_id().empty())
-            http_response_header += "Set-Cookie: session_id=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
+            http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
         http_response_header += "\r\n";
         if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0)) {
             // perror("send failed in send_response()");

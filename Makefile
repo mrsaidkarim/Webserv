@@ -41,6 +41,7 @@ clean:
 
 fclean: clean
 	$(RM) $(NAME)
+	rm -rf ./Session_Management/
 
 re: fclean all
 

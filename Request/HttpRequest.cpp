@@ -73,6 +73,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	vector<string>	start_line;
 	size_t			index;
 
+	cookie = 0;
 	was_cgi = false;
 	read_content_length = 0;
 	file_offset = 0;
@@ -163,7 +164,8 @@ HttpRequest::~HttpRequest() {
 	}
 	// if (was_cgi)
 	// 	remove(cgi_output_file.c_str());
-	remove(cgi_path_post.c_str());
+	if (!cookie)
+		remove(cgi_path_post.c_str());
 	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
@@ -673,4 +675,16 @@ void HttpRequest::set_cgi_input_file(const string& _cgi_file_input) {
 
 const string& HttpRequest::get_cgi_input_file(void) const {
 	return (cgi_input_file);
+}
+
+void HttpRequest::set_cgi_path_post(const string& _cgi_path_post) {
+	cgi_path_post = _cgi_path_post;
+}
+
+void HttpRequest::set_cookie(int _cookie) {
+	cookie = _cookie;
+}
+
+int HttpRequest::get_cookie(void) const {
+	return (cookie);
 }

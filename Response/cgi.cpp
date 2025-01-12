@@ -222,12 +222,13 @@ void HttpResponse::cgi() const{
             
             // location matching
             // run secript
-            cerr << "now we should handle this1111\n";
-            request->get_file_stream()->close();
+            cout << "now we should handle this1111\n";
+            if (request->get_file_stream())
+                request->get_file_stream()->close();
             // args[0] = const_cast<char *>("/usr/bin/python3");
             // args[1] = const_cast<char *>(CGI_POST_SCRIPT);
             // args[2] = NULL;
-            // string *script_file_path = new string(get_script_path()); // here
+            // string *script_file_path = new string(get_script_path()); // here)
             string script_file_path = get_script_path();
             size_t pos = script_file_path.rfind(".");
             string extension = script_file_path.substr(pos + 1);
@@ -244,7 +245,7 @@ void HttpResponse::cgi() const{
             if (dup2(fd_read, 0) < 0) {
                 cerr << "2) dup2 failed in child\n";
                 close(fd_write);
-                _exit(1);
+                _exit(2);
             }
         } else {
             size_t pos = request->get_file_path().rfind(".");
@@ -257,13 +258,13 @@ void HttpResponse::cgi() const{
         if (dup2(fd_write, 1) < 0) {
             cerr << "1) dup2 failed in child\n";
             close(fd_write);
-            _exit(1);
+            _exit(3);
         }
         execve(args[0], args, env);
         cerr << BOLD_RED << "execve failed\n" << RESET;
         close(fd_write);
         // sleep(5);
-        _exit(1);
+        _exit(4);
     
     } else {
         // int exit_ = -1 ;

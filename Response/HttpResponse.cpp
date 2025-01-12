@@ -36,33 +36,75 @@ const string& HttpResponse::get_script_path() const{
     request->set_cgi_input_file(request->get_server().get_locations()[index_location].get_root());
     // if not root for this location use global root
     if (request->get_cgi_input_file().empty())
-     request->set_cgi_input_file(request->get_server().get_global_root());
+        request->set_cgi_input_file(request->get_server().get_global_root());
     for (int i = 0; i < route.size(); i++) {
         if (i > 0)
             request->set_cgi_input_file( request->get_cgi_input_file() + "/");
         request->set_cgi_input_file( request->get_cgi_input_file() + route[i]);
     }
+    if (request->get_cookie() == 2) {
+        request->set_cgi_input_file(request->get_cgi_input_file() + "/" + COOKIE2_SCRIPT_NAME);
+    }
     return request->get_cgi_input_file();
 }
 
+static string generate_session_id(void) {
+    struct timeval tv;
+    gettimeofday(&tv, NULL);
+    
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
+    
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
+
+    // Create the formatted string
+    ostringstream oss;
+    oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+        << (timeInfo->tm_mon + 1) << "_"           // Month
+        << timeInfo->tm_mday << "_"               // Day
+        << timeInfo->tm_hour << "_"               // Hours
+        << timeInfo->tm_min << "_"                // Minutes
+        << timeInfo->tm_sec << "_"                // Seconds
+        << microseconds;               // Microseconds
+
+    return oss.str();
+}
 
 void    HttpResponse::serv() {
 
     // check if it is a cgi
 	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
-    if (request->get_header().find("cookie") != request->get_header().end() && request->get_url().size() >= 1
-        && request->get_url()[0] == "cookie") {
-        int pos = request->get_header().find("cookie")->second.find("session_id=");
-        if (pos != string::npos) {
-            string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 11);
-            if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
-                request->set_file_path(session_path);
-                request->set_is_chunked(true);
-                request->set_is_complete_post(true);
-                request->set_is_cgi(false);
+    // handle cookie1
+    if ( request->get_url().size() >= 1 && request->get_url()[0] == "cookie") {
+        if (request->get_header().find("cookie") != request->get_header().end()) {
+            int pos = request->get_header().find("cookie")->second.find("session_id_1=");
+            if (pos != string::npos) {
+                string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 13);
+                session_path = session_path.substr(0, session_path.find(";"));
+                if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
+                    request->set_file_path(session_path);
+                    request->set_is_chunked(true);
+                    request->set_is_complete_post(true);
+                    request->set_is_cgi(false);
+                }
+                cout << BG_GREEN << "("  << session_path << ")" << "\n";
             }
-            cout << BG_GREEN << "("  << session_path << ")" << "\n";
         }
+        request->set_cookie(1);
+    }
+
+    // hangle cookie2
+    cout << "we are in serv\n";
+    if (request->get_url().size() >= 1 &&  request->get_url()[0] == "cookie2" 
+        && request->get_cookie() == 0) {
+        request->set_session_id(generate_session_id());
+        request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
+        fstream file = fstream(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
+        file.write("mode=light&&lang=ar", 19);
+        file.close();
+        request->set_cookie(2);
     }
     if (request->get_method() == "GET")
         get_method();

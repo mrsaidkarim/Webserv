@@ -49,6 +49,7 @@ class HttpRequest
 		string				cgi_output_file;
 		string				session_id;
 		string 				cgi_input_file;
+		int					cookie;
 	
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -90,6 +91,8 @@ class HttpRequest
 		void set_cgi_file_path(const string& _file_path);
 		void set_session_id(const string& _session_id);
 		void set_cgi_input_file(const string& _cgi_file_input);
+		void set_cgi_path_post(const string& _cgi_path_post);
+		void set_cookie(int _cookie);
 		// GETTERS:
 		const string& get_status_code(void) const;
 		const string& get_method(void) const;
@@ -116,6 +119,7 @@ class HttpRequest
 		bool get_was_cgi(void) const;
 		const string& get_session_id(void) const;
 		const string& get_cgi_input_file(void) const;
+		int get_cookie(void) const;
 
 		// for post method
 

@@ -63,8 +63,8 @@ extern int kq;
 #define	CRLF_2 "\r\n\r\n"
 #define POST_PATH "/Users/zech-chi/goinfre/upload_store/"
 #define CGI_PATH "/tmp/"
-#define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test.py"
-
+#define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test2.py"
+#define COOKIE2_SCRIPT_NAME "cookie2.py"
 
 // Reset Color
 #define RESET "\033[0m"

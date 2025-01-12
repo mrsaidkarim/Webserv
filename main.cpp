@@ -52,14 +52,14 @@ Server server_init1() {
         {}, cgi4
     );
     Location loc3(
-        {"A3", "B3", "C3"},
-        {"index.html"},
+        {"cookie2"},
+        {"cookie2.py"},
         false,
-        "/Volumes/TOSHIBA/www/a3/",
+        "/Volumes/TOSHIBA/www/",
         {{"GET", true},
-        {"POST", false},
+        {"POST", true},
         {"DELETE", false}}, // it was false
-        {}, cgi3
+        {}, cgi4
     );
     Location loc4(
         {"cgi-tiriri"},
