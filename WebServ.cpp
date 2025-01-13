@@ -737,3 +737,7 @@ const unordered_map<pid_t, pair<const HttpResponse*, int> >& WebServ::get_pid_ch
 const unordered_map<pid_t, string>& WebServ::get_file_paths() const {
     return (file_paths);
 }
+
+void WebServ::set_servers(Server& server) {
+	servers.push_back(server);
+}

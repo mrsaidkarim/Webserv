@@ -131,7 +131,7 @@ void    HttpResponse::serv() {
             cout << request->get_session_id() << "\n\n\n";
             request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
             fstream file = fstream(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
-            file.write("mode=light&lang=ar", 19);
+            file.write("mode=light&lang=ar", 18);
             file.close();
             request->set_cookie(2);
         }

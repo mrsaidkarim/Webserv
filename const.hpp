@@ -23,11 +23,13 @@
 #include <sys/time.h>
 #include <cstdio> 
 #include <signal.h>
+#include <stack>
 
 
 extern int kq;
 #define vector std::vector
 #define string std::string
+#define stack std::stack
 #define map std::map
 #define pair std::pair
 #define cout std::cout
@@ -61,7 +63,7 @@ extern int kq;
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
-#define POST_PATH "/Users/zech-chi/goinfre/upload_store/"
+#define POST_PATH "/Users/zelabbas/goinfre/upload_store/"
 #define CGI_PATH "/tmp/"
 #define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test2.py"
 #define COOKIE2_SCRIPT_NAME "cookie2.py"

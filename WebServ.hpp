@@ -41,6 +41,7 @@ class WebServ
         const unordered_map<pid_t, pair<const HttpResponse*, int> >& get_pid_childs() const;
         const unordered_map<pid_t, string>& get_file_paths() const;
         const map<int, vector<Server>> &get_socket_servers() const;
+        void	set_servers(Server& server);
 };
 
 #endif

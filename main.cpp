@@ -1,3 +1,5 @@
+// 
+#include "ParseConfigFile/ParserConfig.hpp"
 #include "WebServ.hpp"
 #include "Configuration/Location.hpp"
 #include "Response/HttpResponse.hpp"
@@ -9,95 +11,78 @@
 // with some dummy data
 // this is just for testing purposes
 // all those data should be read from the config file
-Server server_init1() {
-    vector<string> route = {"youtube"};
-    vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
-    bool auto_index = false;
-    string root = "";
-    map<string, bool> methods = {
-        {"GET", true},
-        {"POST", true},
-        {"DELETE", true}
-    };
-    map<string, string> cgi1 = {
-        {"php", ""},
-        {"py", ""},
-        {"js", ""}
-    };
-    map<string, string> cgi2 = {
-        {"php", ""},
-        {"py", ""},
-        {"js", ""}
-    };
-    map<string, string> cgi3 = {
-        {"php", ""},
-        {"py", ""},
-        {"js", ""}
-    };
-    map<string, string> cgi4 = {
-        {"php", "/usr/bin/zelabasss"}, {"py", "/usr/bin/python3"}, {"js", "/usr/local/bin/node"}
-    };
-    pair<string, string> redirections = {"301", "www.youtube.com"};
+// Server server_init1() {
+//     vector<string> route = {"youtube"};
+//     vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
+//     bool auto_index = false;
+//     string root = "";
+//     map<string, bool> methods = {
+//         {"GET", true},
+//         {"POST", true},
+//         {"DELETE", true}
+//     };
+//     pair<string, string> redirections = {"301", "www.youtube.com"};
 
-    // Create a Location object
-    Location loc1(route, indexes, auto_index, root, methods, redirections, cgi1);
-    Location loc2(
-        {"cookie"},
-        {"send_form.html"},
-        false,
-        "/Volumes/TOSHIBA/www/", // it was something /Volumes/Toshiba.....
-        {{"GET", true},
-        {"POST", true},
-        {"DELETE", false}}, // it was false
-        {}, cgi4
-    );
-    Location loc3(
-        {"cookie2"},
-        {"cookie2.py"},
-        false,
-        "/Volumes/TOSHIBA/www/",
-        {{"GET", true},
-        {"POST", true},
-        {"DELETE", false}}, // it was false
-        {}, cgi4
-    );
-    Location loc4(
-        {"cgi-tiriri"},
-        {"index.html"},
-        true,
-        "/Volumes/TOSHIBA/www/",
-        {{"GET", true},
-        {"POST", true},
-        {"DELETE", false}}, // it was false
-        {}, cgi4
-    );
-    // Location.print_lacation_info();
+//     // Create a Location object
+//     Location loc1(route, indexes, auto_index, root, methods, redirections);
+//     Location loc2(
+//         {"A2", "B2", "C2"},
+//         {"home.html", "index.html"},
+//         true,
+//         "/Users/zelabbas/OurWebserver/dir", // it was something /Volumes/Toshiba.....
+//         {{"GET", true},
+//         {"POST", false},
+//         {"DELETE", true}}, // it was false
+//         {}
+//     );
+//     Location loc3(
+//         {"A3", "B3", "C3"},
+//         {"index.html"},
+//         false,
+//         "/Volumes/TOSHIBA/www/a3/",
+//         {{"GET", true},
+//         {"POST", false},
+//         {"DELETE", false}}, // it was false
+//         {}
+//     );
+//     Location loc4(
+//         {"A4", "B4", "C4"},
+//         {"index.html"},
+//         true,
+//         "/Volumes/TOSHIBA/www/a4/",
+//         {{"GET", true},
+//         {"POST", false},
+//         {"DELETE", false}}, // it was false
+//         {}
+//     );
+//     // Location.print_lacation_info();
 
-    vector<int> ports = {8080};
-    vector<string> server_names = {"zechi.com", "www.nigro.com"};
-    long long client_max_body_size = -1;
-    vector<Location> locations = {loc1, loc2, loc3, loc4};
-    string global_root = "/Volumes/TOSHIBA/www/";
-    // pair<string, string> redirection = {"301", "https://auth.42.fr"};
-    pair<string, string> redirection = {"", ""};
-    vector<string> indexes2 = {"index.html"};
-    bool autoindex2 = true;
-    vector<string> error_pages = {"404.html", "500.html", "403.html"};
+//     vector<int> ports = {8080};
+//     vector<string> server_names = {"zechi.com", "www.nigro.com"};
+//     long long client_max_body_size = -1;
+//     vector<Location> locations = {loc1, loc2, loc3, loc4};
+//     string global_root = "/Volumes/TOSHIBA/www/";
+//     // pair<string, string> redirection = {"301", "https://auth.42.fr"};
+//     pair<string, string> redirection = {"", ""};
+//     vector<string> indexes2 = {"index.html"};
+//     bool autoindex2 = true;
+//     map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
+
     
-    Server server(
-        ports,
-        server_names,
-        client_max_body_size,
-        locations,
-        global_root,
-        redirection,
-        indexes2,
-        autoindex2,
-        error_pages
-    );
+//     Server server(
+//         ports,
+//         server_names,
+//         client_max_body_size,
+//         locations,
+//         global_root,
+//         redirection,
+//         indexes2,
+//         autoindex2,
+//         error_pages
+//     );
 
-    return (server);
-}
+//     return (server);
+// }
 // Server server_init2() {
 //     vector<string> route = {"youtube"};
 //     vector<string> indexes = {"index.html"}; // always have index.html in the end of indexes
@@ -153,7 +138,7 @@ Server server_init1() {
 //     pair<string, string> redirection = {"", ""};
 //     vector<string> indexes2 = {"video1.mp4"};
 //     bool autoindex2 = true;
-//     vector<string> error_pages = {"404.html", "500.html", "403.html"};
+//      map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
     
 //     Server server(
 //         ports,
@@ -224,7 +209,7 @@ Server server_init1() {
 //     pair<string, string> redirection = {"", ""};
 //     vector<string> indexes2 = {"book.pdf"};
 //     bool autoindex2 = true;
-//     vector<string> error_pages = {"404.html", "500.html", "403.html"};
+//      map<string, string> error_pages; // {"404.html", "500.html", "403.html"};
     
 //     Server server(
 //         ports,
@@ -242,19 +227,29 @@ Server server_init1() {
 // }
 
 
-int main() {
+int main(int ac, char** av) {
     signal (SIGPIPE, SIG_IGN); // ignore broken pipe signal from client
     cout.setf(ios::unitbuf); // flushes the buffer after every output operation
     // create servers objects
-    Server server1 = server_init1();
-    Server server2 = server_init1();
-    Server server3 = server_init1();
+	if (ac != 2) {
+		cerr << BOLD_YELLOW << "Error Usage: ./webserv path_to_config_file\n" << RESET;
+		return (1);
+	}
+	WebServ web_serv;
+	ParserConfig Parser(av[1], web_serv);
+	if (!Parser.is_good_config())
+		return (1);
+	
+    // Server server1 = server_init1();
+    // Server server2 = server_init2();
+    // Server server3 = server_init3();
 
-    vector<Server> servers = {server1};
+    // vector<Server> servers = {server1};
 
     // create WebServ object
-    WebServ webserv(servers);
+    // WebServ webserv(servers);
 
     // run the servers
-    webserv.run_servers();
+    // webserv.run_servers();
+	web_serv.run_servers();
 }
