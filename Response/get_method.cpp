@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <cstddef>
 #include <sys/stat.h>
 
 string to_hex(int number) {
@@ -81,6 +82,8 @@ void HttpResponse::serv_redirection() const{
     request->set_is_complete(true);
 }
 
+
+
 void HttpResponse::serv_autoindex(const string& path) const {
         string body_content =
             "<!DOCTYPE html>"
@@ -110,7 +113,7 @@ void HttpResponse::serv_autoindex(const string& path) const {
         body_content += "<h1>Error: Unable to open directory</h1>";
     } else {
         struct dirent* entry;
-        while ((entry = readdir(dir)) != nullptr) {
+        while ((entry = readdir(dir)) != NULL) {
             string name = entry->d_name;
 
             // Skip "." and ".."
@@ -121,7 +124,7 @@ void HttpResponse::serv_autoindex(const string& path) const {
             string fullPath = path + "/" + name;
 
             string url;
-            for (int i = 0; i < request->get_url().size(); i++) {
+            for (size_t i = 0; i < request->get_url().size(); i++) {
                 url += "/";
                 url += request->get_url()[i];
             }
@@ -176,6 +179,8 @@ void HttpResponse::send_response() const{
         }
         fstream *file = new fstream(path.c_str(), ios::in);
         if (!file->is_open()) {
+            delete file;
+            request->set_file_stream(NULL);
             serv_404();
             return;
         }
@@ -186,7 +191,8 @@ void HttpResponse::send_response() const{
             "HTTP/1.1 200 OK\r\n"      // 200 not everytime!!!!!!!!!!!!!!!!!!!!!!!!!
             "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
-            "connection: keep-alive\r\n";
+            "connection: keep-alive\r\n"
+            "Accept-Ranges: none\r\n";
 
 
         if (!request->get_session_id().empty()) {
@@ -196,9 +202,15 @@ void HttpResponse::send_response() const{
         
         }
         http_response_header += "\r\n";
-        if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0)) {
-            // perror("send failed in send_response()");
-            // request->set_is_complete(true);
+        if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0) < 0) {
+            perror("1) send failed in send_response()");
+            request->set_is_complete(true);
+            if (file->is_open()) {
+                file->close();
+            }
+            delete file;
+            request->set_file_stream(NULL);
+            return;
         }
         request->set_is_chunked(true);
 
@@ -219,22 +231,40 @@ void HttpResponse::send_response() const{
 
         // Write chunk size
         if (send(request->get_client_socket(), chunk_size.c_str(), chunk_size.size(), 0) < 0) {
-            // perror("send failed in send_response()");
-            // request->set_is_complete(true);
+            perror("2) send failed in send_response()");
+            request->set_is_complete(true);
+            if (file && file->is_open()) {
+                file->close();
+            }
+            delete file;
+            request->set_file_stream(NULL);
+            return;
         }
         // Write actual chunk data
-        if (send(request->get_client_socket(), buffer, bytes_read, 0)) {
-            // perror("send failed in send_response()");
-            // request->set_is_complete(true);
+        if (send(request->get_client_socket(), buffer, bytes_read, 0) < 0) {
+            perror("3) send failed in send_response()");
+            request->set_is_complete(true);
+            if (file->is_open()) {
+                file->close();
+            }
+            delete file;
+            request->set_file_stream(NULL);
+            return ;
         }
         // End of chunk
         // write(request->get_client_socket(), "\r\n", 2);
-        if (send(request->get_client_socket(), "\r\n", 2, 0)) {
-            // perror("send failed in send_response()");
-            // request->set_is_complete(true);
+        if (send(request->get_client_socket(), "\r\n", 2, 0) < 0) {
+            perror("4) send failed in send_response()");
+            request->set_is_complete(true);
+            if (file->is_open()) {
+                file->close();
+            }
+            delete file;
+            request->set_file_stream(NULL);
+            return ;
         }
     }
-    cout << "hello >>>>>>2222000000\n";
+    // cout << "hello >>>>>>2222000000\n";
     request->set_file_offset(file->tellg());
     // cout << BOLD_YELLOW << "cur offset: " << request->get_file_offset() << RESET << endl;
     // Check if we have reached the end of the file
@@ -242,25 +272,26 @@ void HttpResponse::send_response() const{
         // Final chunk with 0 size
         send(request->get_client_socket(), "0\r\n\r\n",5 , 0);  // Ends the chunked response
         request->set_is_complete(true);
-
-        // file->close();
-        // delete file;
-        // request->set_file_stream(nullptr);
+        if (file->is_open()) {
+            file->close();
+        }
+        delete file;
+        request->set_file_stream(NULL);
     }
 }
 
 pair<int, int> HttpResponse::longest_common_location() const{
     vector<string> route = request->get_url();
     cout << "splited_route -->";
-    for (int i = 0; i < route.size();i++) {
+    for (size_t i = 0; i < route.size();i++) {
         cout << " " << route[i];
     }
     cout << endl;
     int best_i = -1;
     int best_j;
 
-    for (int i = 0; i < request->get_server().get_locations().size(); i++) {
-        int j = 0;
+    for (size_t i = 0; i < request->get_server().get_locations().size(); i++) {
+        size_t j = 0;
         while (j < request->get_server().get_locations()[i].get_route().size() && j < route.size()) {
             if (request->get_server().get_locations()[i].get_route()[j] != route[j])
                 break;
@@ -268,7 +299,7 @@ pair<int, int> HttpResponse::longest_common_location() const{
         }
 
         if (j > 0) {
-            if (best_i == -1 || best_j < j) {
+            if (best_i == -1 || best_j < (int)j) {
                 best_i = i;
                 best_j = j;
             }
@@ -299,7 +330,6 @@ void HttpResponse::get_method() {
         index_location = longest.first;
         cout << "location should handle this shit\n";
         int x = longest.first;
-        int y = longest.second;
 
         vector<string> route = request->get_url();
 
@@ -311,7 +341,7 @@ void HttpResponse::get_method() {
         
         cout << BOLD_GREEN << path << RESET << endl;
         // join the url with root
-        for (int i = 0; i < route.size(); i++) {
+        for (size_t i = 0; i < route.size(); i++) {
             if (i > 0)
                 path += "/";
             path += route[i];
@@ -332,7 +362,7 @@ void HttpResponse::get_method() {
         } else if (S_ISDIR(path_status.st_mode)) {
             string index_path;
             // cout << "this is directory : " << path << "\n";
-            for (int i = 0; i < request->get_server().get_locations()[x].get_indexes().size(); i++) {
+            for (size_t i = 0; i < request->get_server().get_locations()[x].get_indexes().size(); i++) {
                 string index = request->get_server().get_locations()[x].get_indexes()[i];
                 index_path = path + "/" + index;
                 if (stat(index_path.c_str(), &path_status) == 0) {
@@ -391,7 +421,7 @@ void HttpResponse::get_method() {
         string path = request->get_server().get_global_root();
         string index;
         struct stat file_stat;
-        for (int i = 0; i < request->get_server().get_indexes().size(); i++) {
+        for (size_t i = 0; i < request->get_server().get_indexes().size(); i++) {
             // cout << "hna\n";
             index = request->get_server().get_indexes()[i];
             index = path + "/" + index;

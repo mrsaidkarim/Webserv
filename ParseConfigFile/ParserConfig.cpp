@@ -1,4 +1,5 @@
 #include "ParserConfig.hpp"
+#include <cstddef>
 
 ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 {
@@ -96,7 +97,7 @@ bool ParserConfig::open_file(const string& path) {
 }
 
 bool ParserConfig::is_valid_extension(const string& path) {
-	int pos;
+	size_t pos;
 
 	pos = path.rfind('.');
 	if (pos != string::npos) {
@@ -134,7 +135,7 @@ bool ParserConfig::check_start_location(const vector<string>& vec) {
 		return (false);
 	if (vec[vec.size() - 1] != "{")
 		return (false);
-	for (int i = 1; i < vec.size() - 1; i++)
+	for (size_t i = 1; i < vec.size() - 1; i++)
 	{
 		if ((vec[i].find('{') != string::npos) || 
 			(vec[i].find('}') != string::npos) || (vec[i].find(';') != string::npos))
@@ -146,7 +147,7 @@ bool ParserConfig::check_start_location(const vector<string>& vec) {
 }
 
 bool ParserConfig::parse_line(string& line) {
-	int pos;
+	size_t pos;
 	if (line.empty())
 		return (true);
 	if (line[0] == ';')
@@ -158,7 +159,7 @@ bool ParserConfig::parse_line(string& line) {
 		if (line.empty())
 			return (true);
 	}
-	for (int i = 0; i < line.length(); i++)
+	for (size_t i = 0; i < line.length(); i++)
 	{
 		if (line[i] == '}') {
 			if (stack_brackets.empty())
@@ -266,7 +267,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 }
 
 bool ParserConfig::check_line_server(string& line) {
-	int pos;
+	size_t pos;
 	if (line.empty() || line == "}")
 		return (true);
 	if ((line.find("location ") != string::npos) || (line.find("server ") != string::npos)) {
@@ -446,7 +447,7 @@ bool ParserConfig::check_allow_methods(const vector<string>& vec) {
 	methods["GET"] = true;
 	methods["POST"] = false;
 	methods["DELETE"] = false;
-	for (int i = 1; i < vec.size(); i++)
+	for (size_t i = 1; i < vec.size(); i++)
 	{
 		if (vec[i] != "GET" && vec[i] != "POST" && vec[i] != "DELETE") 
 			return (false);
@@ -459,7 +460,7 @@ bool ParserConfig::check_allow_methods(const vector<string>& vec) {
 }
 
 bool ParserConfig::is_path(const string& path) {
-	for (int i = 0; i < path.size(); i++)
+	for (size_t i = 0; i < path.size(); i++)
 	{
 		if (!isdigit(path[i]))
 			return (true);
@@ -468,11 +469,11 @@ bool ParserConfig::is_path(const string& path) {
 }
 
 bool ParserConfig::check_error_pages_and_set(const vector<string>& vec, Server& server) {
-	int	status_code;
+	// int	status_code;
 	int	value;
 	if ((vec.size() < 3) || !is_path(vec[vec.size() - 1]))
 		return (false);
-	for (int i = 1; i < vec.size() - 1; i++)
+	for (size_t i = 1; i < vec.size() - 1; i++)
 	{
 		stringStream ss(vec[i]);
 		ss >> value;
@@ -493,13 +494,13 @@ bool ParserConfig::check_error_pages_and_set(const vector<string>& vec, Server& 
 
 
 bool ParserConfig::check_line_location(string& line) {
-	int pos;
+	// int pos;
 	if (line.empty()  || line == "}")
 		return (true);
 	if (line[line.length() - 1] != ';')
 		return (false);
 	line = line.substr(0, line.length() - 1);
-	for (int i = 0; i < line.length(); i++)
+	for (size_t i = 0; i < line.length(); i++)
 	{
 		if (line[i] == '{' || line[i] == '}')
 			return (false);
@@ -524,7 +525,7 @@ void ParserConfig::trim_line(string& line) {
 vector<string> ParserConfig::split(const string& str, char delimiter1, char delimiter2) {
 	vector<string> words;
 	string word;
-	for (int i = 0; i < str.size(); i++) {
+	for (size_t i = 0; i < str.size(); i++) {
 		if (str[i] == delimiter1 || str[i] == delimiter2) {
 			if (!word.empty()) {
 				words.push_back(word);

@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <cstddef>
 #include <sys/unistd.h>
 
 
@@ -37,7 +38,7 @@ const string& HttpResponse::get_script_path() const{
     // if not root for this location use global root
     if (request->get_cgi_input_file().empty())
         request->set_cgi_input_file(request->get_server().get_global_root());
-    for (int i = 0; i < route.size(); i++) {
+    for (size_t i = 0; i < route.size(); i++) {
         if (i > 0)
             request->set_cgi_input_file( request->get_cgi_input_file() + "/");
         request->set_cgi_input_file( request->get_cgi_input_file() + route[i]);
@@ -79,7 +80,7 @@ void    HttpResponse::serv() {
     // handle cookie1
     if ( request->get_url().size() >= 1 && request->get_url()[0] == "cookie") {
         if (request->get_header().find("cookie") != request->get_header().end()) {
-            int pos = request->get_header().find("cookie")->second.find("session_id_1=");
+            size_t pos = request->get_header().find("cookie")->second.find("session_id_1=");
             if (pos != string::npos) {
                 string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 13);
                 session_path = session_path.substr(0, session_path.find(";"));
@@ -100,7 +101,7 @@ void    HttpResponse::serv() {
     if ( request->get_cookie() == 0  && request->get_url().size() >= 1 &&  request->get_url()[0] == "cookie2" ) {
         bool flag = false;
         if (request->get_header().find("cookie") != request->get_header().end()) {
-            int pos = request->get_header().find("cookie")->second.find("session_id_2=");
+            size_t pos = request->get_header().find("cookie")->second.find("session_id_2=");
             if (pos != string::npos) {
                 string session_path = request->get_header().find("cookie")->second.substr(pos + 13);
                 session_path = session_path.substr(0, session_path.find(";"));

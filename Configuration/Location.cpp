@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Location.hpp"
+#include <cstddef>
 
 Location::Location()
 {
@@ -26,18 +27,18 @@ Location::Location()
 	cout << "constructor location\n";
 }
 
-Location::Location(const vector<string> &route, const vector<string> &indexes, bool auto_index,
-                const string &root, const map<string, bool> &methods,
-                const pair<string, string> &redirections, const map<string, string> &cgi): route(route), indexes(indexes), auto_index(auto_index), root(root), methods(methods), redirections(redirections), cgi_extension(cgi)
-{
-    auto_index = auto_index;
-    methods_set = false;
-    auto_index_set = false;
-    // cgi_extension["php"] = "";
-    // cgi_extension["py"] = "/usr/bin/python3";
-    // cgi_extension["js"] = "";
-    cout << "constructor location\n";
-}
+// Location::Location(const vector<string> &route, const vector<string> &indexes, bool _auto_index,
+//                 const string &root, const map<string, bool> &methods,
+//                 const pair<string, string> &redirections, const map<string, string> &cgi): route(route), indexes(indexes), auto_index(_auto_index), root(root), methods(methods), redirections(redirections), cgi_extension(cgi)
+// {
+//     auto_index = _auto_index;
+//     methods_set = false;
+//     auto_index_set = false;
+//     // cgi_extension["php"] = "";
+//     // cgi_extension["py"] = "/usr/bin/python3";
+//     // cgi_extension["js"] = "";
+//     cout << "constructor location\n";
+// }
         // Location(string file_path); here do your shit alparser nigro o zid setters;
 Location::~Location()
 {
@@ -82,7 +83,7 @@ bool Location::set_route(const vector<string> &route)
 {
 	// if (!this->route.empty())
 	// 	return (false);
-	for (int i = 0; i < route.size(); i++)
+	for (size_t i = 0; i < route.size(); i++)
 	{
 		this->route.push_back(route[i]);
 	}
@@ -95,7 +96,7 @@ bool Location::set_indexes(const vector<string> &indexes)
 	// this mean duplicate in config file
 	if (!this->indexes.empty())
 		return (false);
-	for (int i = 1; i < indexes.size(); i++)
+	for (size_t i = 1; i < indexes.size(); i++)
 	{
 		this->indexes.push_back(indexes[i]);
 	}

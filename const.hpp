@@ -22,15 +22,15 @@
 #include <algorithm>
 #include <sys/time.h>
 #include <cstdio> 
-#include <signal.h>
 #include <stack>
+#include <signal.h>
 
 
 extern int kq;
 #define vector std::vector
 #define string std::string
-#define stack std::stack
 #define map std::map
+#define stack std::stack
 #define pair std::pair
 #define cout std::cout
 #define cerr std::cerr
@@ -101,7 +101,7 @@ extern int kq;
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
 
-#define BUFFER_SIZE (1024 * 5)
+#define BUFFER_SIZE (1024 * 1)
 #define BUFFER_SIZE2 (1024 * 5)
 #define CGI_TIMEOUT (10 * 1000)
 
@@ -114,5 +114,6 @@ extern int kq;
 #define INTERNAL_SERVER_ERROR "./pages_html/500.html"
 #define REQUEST_TIMEOUT "./pages_html/408.html"
 #define UPLOAD_SUCCESSFUL "./pages_html/upload_successful.html"
+#define UPLOAD_FAILED "./pages_html/upload_failed.html"
 #define SESSION_MANAGEMENT "./Session_Management/"
 #endif

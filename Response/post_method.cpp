@@ -50,19 +50,19 @@ string extract_new_file_name(const string &info) {
 }
 
 
-static string addPrefixBeforeCRLF(const string &input) {
-    const string word = "\r\n";
-    const string prefix = "{$$$$}";
-    string result = input;
-    size_t pos = 0;
+// static string addPrefixBeforeCRLF(const string &input) {
+//     const string word = "\r\n";
+//     const string prefix = "{$$$$}";
+//     string result = input;
+//     size_t pos = 0;
 
-    while ((pos = result.find(word, pos)) != string::npos) {
-        result.insert(pos, prefix);
-        pos += prefix.size() + word.size(); // Move past the added prefix and word
-    }
+//     while ((pos = result.find(word, pos)) != string::npos) {
+//         result.insert(pos, prefix);
+//         pos += prefix.size() + word.size(); // Move past the added prefix and word
+//     }
 
-    return result;
-}
+//     return result;
+// }
 
 
 void HttpResponse::post_method() const {

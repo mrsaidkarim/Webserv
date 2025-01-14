@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Server.hpp"
+#include <cstddef>
 
 Server::Server() {
     
@@ -93,7 +94,7 @@ bool Server::set_server_names(const vector<string>& vec) {
 	// this is check duplicate in config file!
 	if (!this->server_names.empty())
 		return (false);
-	for (int i = 1; i < vec.size(); i++)
+	for (size_t i = 1; i < vec.size(); i++)
 	{
 		this->server_names.push_back(vec[i]);
 	}
@@ -124,7 +125,7 @@ bool Server::set_indexes(const vector<string>& vec) {
 	// this is check duplicate in config file!
 	if (!this->indexes.empty())
 		return (false);
-	for (int i = 1; i < vec.size(); i++)
+	for (size_t i = 1; i < vec.size(); i++)
 	{
 		this->indexes.push_back(vec[i]);
 	}
@@ -219,7 +220,7 @@ bool Server::check_attributes_server() {
 	// 		return (false);
 	// }
 	// check each location!
-	for (int i = 0; i < locations.size(); i++)
+	for (size_t i = 0; i < locations.size(); i++)
 	{
 		if (!locations[i].get_root().empty()) {
 			// locations[i].set_location_upload_store(global_root + global_upload_store);
@@ -250,7 +251,7 @@ void Server::print_server_info(void) const {
     cout << BG_BLACK;
 
     cout << BOLD_BLUE << left << setw(20) << "ports " << ": " << BOLD_WHITE << "[";
-    for (int i = 0; i < ports.size(); i++) {
+    for (size_t i = 0; i < ports.size(); i++) {
         if (i > 0)
             cout << ", ";
         cout << ports[i];
@@ -258,7 +259,7 @@ void Server::print_server_info(void) const {
     cout << "]" << endl;
 
     cout << BOLD_BLUE << left << setw(20) << "server names " << ": " << BOLD_WHITE << "[";
-    for (int i = 0; i < server_names.size(); i++) {
+    for (size_t i = 0; i < server_names.size(); i++) {
         if (i > 0)
             cout << ", ";
         cout << server_names[i];
@@ -266,7 +267,7 @@ void Server::print_server_info(void) const {
     cout << "]" << endl;
 
     cout << BOLD_BLUE << left << setw(20) << "indexes " << ": " << BOLD_WHITE << "[";
-    for (int i = 0; i < indexes.size(); i++) {
+    for (size_t i = 0; i < indexes.size(); i++) {
         if (i > 0)
             cout << ", ";
         cout << indexes[i];
@@ -295,7 +296,7 @@ void Server::print_server_info(void) const {
     if (autoindex) cout << "on" << endl;
     else cout << "off" << endl;
 
-    for (int i = 0; i < locations.size(); i++) {
+    for (size_t i = 0; i < locations.size(); i++) {
         cout << BOLD_BLUE << left << setw(20) << "location "  << ": " << BOLD_WHITE << i + 1 << "\n";
         locations[i].print_lacation_info();
     }

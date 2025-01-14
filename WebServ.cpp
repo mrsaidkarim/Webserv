@@ -10,6 +10,8 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <cstddef>
+#include <cstdlib>
 #include <sys/wait.h>
 int kq;
 #include "WebServ.hpp"
@@ -121,10 +123,10 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     string host = request->get_header().find("host")->second; // update here from zak from key = Host to host
     bool found = false;
 
-    for (int i = 0; i < it->second.size(); i++) {
+    for (size_t i = 0; i < it->second.size(); i++) {
         // server_names is a vector of server names for current server in the vector of servers
         vector<string> server_names = it->second[i].get_server_names();
-        for (int j = 0; j < server_names.size(); j++) {
+        for (size_t j = 0; j < server_names.size(); j++) {
             if (server_names[j] == host) {
                 server = it->second[i];
                 found = true;
@@ -164,11 +166,11 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             HttpResponse *response = new HttpResponse(request, webserv);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
-            if (request->get_method() == "POST" ) {
+            if (request->get_method() == "POST" ) { // i should guarantee that the POST body is not empty to call serv, and in this scope the body may be is gonna empty
                 response->serv();
                 cerr << BG_BLUE << "in it" << "\n" << RESET;
             } 
-            if (response->get_request()->get_is_complete_post() || request->get_method() == "GET" || request->get_body().size() >= stoi(header["content-length"]))
+            if (response->get_request()->get_is_complete_post() || request->get_method() == "GET") // || request->get_body().size() >= stoi(header["content-length"]))
             {
                 cerr << BG_GREEN << "in it 2" << "\n" << RESET;
                 struct kevent change;
@@ -185,18 +187,20 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                         EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                         if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                             perror("Error: Failed to re-register client socket for writing");
-                            close(fd);
-                            delete request;
-                            client_responses.erase(fd);
+                            // here we should delete all resources!
+                            // close(fd);
+                            request->set_is_complete(true);
+                            // client_responses.erase(fd);
                         }
                     }
                 } else {
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                         perror("Error: Failed to re-register client socket for writing");
-                        close(fd);
-                        delete request;
-                        client_responses.erase(fd);
+                        // here we should delete all resources!
+                        // close(fd);
+                        request->set_is_complete(true);
+                        // client_responses.erase(fd);
                     }
                 }
                 return ;
@@ -234,17 +238,45 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                         perror("Error: Failed to re-register client socket for writing");
-                        close(fd);
-                        delete request;
-                        client_responses.erase(fd);
+                        // here we should delete all resources!
+                        // close(fd);
+                        request->set_is_complete(true);
+                        // delete request;
+                        // client_responses.erase(fd);
                     }
                 }  
             }
         }
-    } else { // client disconnected
-        close(fd);
-        client_responses.erase(fd);
-        client_server.erase(fd);
+    } else if (bytes_read == 0) {
+        cerr << "failed to upload\n\n\n\n";
+        if (client_responses.find(fd) != client_responses.end())
+            cerr << "init\n\n";
+        HttpResponse *response = client_responses[fd];
+        if (!response || !response->get_request())
+        {
+            close(fd);
+            return ;
+        }
+        if (response->get_request()->get_method() == "POST") {
+            if (response->get_request()->get_file_stream())
+                response->get_request()->get_file_stream()->close();
+            delete response->get_request();
+            delete response;
+            struct kevent change;
+            EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+            if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                cerr << "Failed to remove timeout event\n";
+            }
+            client_responses.erase(fd);
+            client_server.erase(fd);
+            close(fd);
+        }
+        // response->get_request()->set_is_complete_post(true);
+        // response->get_request()->set_method("GET");
+        // response->get_request()->set_is_chunked(true);
+        // response->get_request()->set_is_complete(true);
+        // response->get_request()->set_file_path(UPLOAD_FAILED);
+        
     }
 }
 
@@ -379,7 +411,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 }
                 response->serv();
                 if (response->get_request()->get_is_complete()) {
-                    response->send_response();
+                    // response->send_response();
                     delete response->get_request();
                     delete response;
                     close(fd);
@@ -689,7 +721,7 @@ void WebServ::run_servers()
     for(Server server : this->servers)
     {
         const vector<int> &ports = server.get_ports();
-        const vector<string> &server_names = server.get_server_names();
+        // const vector<string> &server_names = server.get_server_names();
         for(int port: ports)
         {
             sockets_created[port].push_back(server);

@@ -186,8 +186,8 @@ void HttpResponse::cgi() const{
         return;
     }
 
-    char **env = header_to_env();
-    print_env(env);
+    // char **env = header_to_env();
+    // print_env(env);
     string file_path = generate_file_name();
     request->set_is_cgi(false);
     request->set_cgi_in_process(true);
@@ -197,7 +197,6 @@ void HttpResponse::cgi() const{
     cout << "output file for cgi: " << file_path << "\n";
     
     pid_t pid = fork();
-    int exit_status;
 
     if (pid < 0) {
         cerr << "failed fork"; // try catch
@@ -207,6 +206,8 @@ void HttpResponse::cgi() const{
     } else if (pid == 0) {
         //child
         close(kq);
+        char **env = header_to_env();
+        print_env(env);
         // size_t pos = request->get_file_path().rfind(".");
         // string extension = request->get_file_path().substr(pos + 1);
 
@@ -214,6 +215,7 @@ void HttpResponse::cgi() const{
         int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (fd_write < 0) {
             cerr << "can't open file in child\n";
+            delete [] env;
             exit(1);
         }
         char *args[3];
@@ -246,6 +248,7 @@ void HttpResponse::cgi() const{
             if (dup2(fd_read, 0) < 0) {
                 cerr << "2) dup2 failed in child\n";
                 close(fd_write);
+                delete [] env;
                 _exit(2);
             }
         } else {
@@ -259,12 +262,14 @@ void HttpResponse::cgi() const{
         if (dup2(fd_write, 1) < 0) {
             cerr << "1) dup2 failed in child\n";
             close(fd_write);
+            delete [] env;
             _exit(3);
         }
         execve(args[0], args, env);
         cerr << BOLD_RED << "execve failed\n" << RESET;
         close(fd_write);
         // sleep(5);
+        delete [] env;
         _exit(4);
     
     } else {

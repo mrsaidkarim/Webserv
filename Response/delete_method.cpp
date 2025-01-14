@@ -1,4 +1,5 @@
 #include "HttpResponse.hpp"
+#include <cstddef>
 #include <sys/stat.h>
 
 // start delete method!
@@ -112,7 +113,7 @@ void HttpResponse::delete_method() const {
 			path = request->get_server().get_global_root();
 
 		// join the url with the root location 
-		for (int i = 0; i < url.size(); i++)
+		for (size_t i = 0; i < url.size(); i++)
 		{
 			// if (i > 0) // TO Discuss 
 			path += "/";
@@ -135,7 +136,7 @@ void HttpResponse::delete_method() const {
 		}
 
 		// join the url with the global root
-		for (int i = 0; i < url.size(); i++)
+		for (size_t i = 0; i < url.size(); i++)
 		{
 			// if (i > 0) // TO Discuss 
 			path += "/";

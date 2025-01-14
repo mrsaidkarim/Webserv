@@ -42,29 +42,29 @@ static string generate_file_name(void) {
     return oss.str();
 }
 
-static string generate_session_id(void) {
-    struct timeval tv;
-    gettimeofday(&tv, NULL);
+// static string generate_session_id(void) {
+//     struct timeval tv;
+//     gettimeofday(&tv, NULL);
     
-    // Extract seconds and microseconds
-    time_t rawTime = tv.tv_sec;
-    int microseconds = tv.tv_usec;
+//     // Extract seconds and microseconds
+//     time_t rawTime = tv.tv_sec;
+//     int microseconds = tv.tv_usec;
     
-    // Convert to local time
-    struct tm *timeInfo = localtime(&rawTime);
+//     // Convert to local time
+//     struct tm *timeInfo = localtime(&rawTime);
 
-    // Create the formatted string
-    ostringstream oss;
-    oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
-        << (timeInfo->tm_mon + 1) << "_"           // Month
-        << timeInfo->tm_mday << "_"               // Day
-        << timeInfo->tm_hour << "_"               // Hours
-        << timeInfo->tm_min << "_"                // Minutes
-        << timeInfo->tm_sec << "_"                // Seconds
-        << microseconds;               // Microseconds
+//     // Create the formatted string
+//     ostringstream oss;
+//     oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
+//         << (timeInfo->tm_mon + 1) << "_"           // Month
+//         << timeInfo->tm_mday << "_"               // Day
+//         << timeInfo->tm_hour << "_"               // Hours
+//         << timeInfo->tm_min << "_"                // Minutes
+//         << timeInfo->tm_sec << "_"                // Seconds
+//         << microseconds;               // Microseconds
 
-    return oss.str();
-}
+//     return oss.str();
+// }
 
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
@@ -197,7 +197,7 @@ bool HttpRequest::set_url(const string& _url) {
 	size_t query_pos, fragment_pos, path_end;
 	if (_url[0] != '/' || !check_url_characters(update_url))
 		return (this->set_status_code("400"), false);
-	for (int i = 0; i < _url.length(); i++)
+	for (size_t i = 0; i < _url.length(); i++)
 	{
 		if (update_url[i] == '%') {
 			key = update_url.substr(i, 3);
@@ -350,7 +350,7 @@ bool HttpRequest::is_valid_header_request(const string& _header) {
 vector<string> HttpRequest::split(const string& str, char delimiter) {
 	vector<string> words;
 	string word;
-	for (int i = 0; i < str.size(); i++) {
+	for (size_t i = 0; i < str.size(); i++) {
 		if (str[i] == delimiter) {
 			if (!word.empty()) {
 				words.push_back(word);
@@ -385,14 +385,14 @@ bool HttpRequest::is_start_with_space(const string& str) {
 }
 
 void HttpRequest::upper_to_lower(string& str) {
-	for (int i = 0; i < str.length(); i++)
+	for (size_t i = 0; i < str.length(); i++)
 	{
 		str[i] = tolower(str[i]);
 	}
 }
 
 bool HttpRequest::is_valid_characters(const string& str) {
-	for (int i = 0; i < str.length(); i++)
+	for (size_t i = 0; i < str.length(); i++)
 	{
 		// if (str[i] == '\t')
 		if (str[i] >= 9 && str[i] <= 13)
@@ -403,7 +403,7 @@ bool HttpRequest::is_valid_characters(const string& str) {
 
 bool HttpRequest::check_url_characters(const string& _url) {
 	string valid_characters = "!\"#$%&\'()*+,-./:;<=>?@[\\]^_`{|}~";
-	for (int i = 0; i < _url.length(); i++)
+	for (size_t i = 0; i < _url.length(); i++)
 	{
 		if ((valid_characters.find(_url[i]) == string::npos) && !isalnum(_url[i]))
 			return (false);
@@ -413,7 +413,7 @@ bool HttpRequest::check_url_characters(const string& _url) {
 
 bool HttpRequest::is_valid_value(const string& _value) {
 	stringStream	str(_value);
-	int 			value;
+	long long 			value;
 	if (_value.empty())
 		return (this->set_status_code("400"), false);
 	str >> value;
@@ -456,7 +456,7 @@ string add_dollars_before_CRLF(const string &input) {
 // display the Request: info
 void HttpRequest::display_request() {
 	string _url;
-	for (int i = 0; i < this->url.size(); i++)
+	for (size_t i = 0; i < this->url.size(); i++)
 	{
 		_url += "/" + url[i];
 	}
