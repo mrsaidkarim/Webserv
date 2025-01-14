@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/11 17:16:12 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/14 19:39:14 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,17 +58,20 @@ HttpRequest::HttpRequest(const string& _request) {
 	index = header.find(CRLF);
 	if (index == string::npos) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	first_line = header.substr(0,index);
 	header = header.substr(index + 2);
 	if (is_start_with_space(first_line) || !is_valid_characters(first_line) || is_start_with_space(header)) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	start_line = split(first_line, ' ');
 	if (start_line.size() != 3) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	if (!this->set_method(start_line[0]) || !this->set_url(start_line[1]) || !this->set_version(start_line[2]))
@@ -76,8 +79,9 @@ HttpRequest::HttpRequest(const string& _request) {
 	
 	// start parse header
 	if (!is_valid_header_request(header) || !check_header_elements())
+	{
 		goto error;
-
+	}
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
 		check_chunked();
@@ -89,7 +93,7 @@ HttpRequest::HttpRequest(const string& _request) {
 		// set_boundary_key it looks for boundary key :) in header map
 		// if boundary key founded it return true , false otherwise
 		set_boundary_key();
-		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
+		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end() && this->header.find("content-type") == this->header.end()) {
 			this->set_status_code("411");
 			goto error;
 		}
@@ -100,6 +104,7 @@ HttpRequest::HttpRequest(const string& _request) {
 	// cout << BOLD_YELLOW << header << "\n" << RESET;
 	// cout << BOLD_BLUE << body << RESET;
 	// print the result
+	content_length = stol(this->header["content-length"]);
 	return ;
 	error :
 		cout << RED << "Error: Malformed request detected\n" << RESET;
@@ -357,7 +362,7 @@ bool HttpRequest::check_url_characters(const string& _url) {
 
 bool HttpRequest::is_valid_value(const string& _value) {
 	stringStream	str(_value);
-	int 			value;
+	long			value;
 	if (_value.empty())
 		return (this->set_status_code("400"), false);
 	str >> value;
@@ -374,7 +379,7 @@ bool HttpRequest::check_header_elements() {
 	if (header.find("content-length") != header.end() && !is_valid_value(this->header["content-length"]))
 		return (this->set_status_code("400"),false);
 	if (header.find("transfer-encoding") != header.end() && (header["transfer-encoding"] != "chunked"))
-		return (this->set_status_code("501"), false);
+		return (this->set_status_code("400"),false);
 	return (true);
 }
 
@@ -565,4 +570,14 @@ bool HttpRequest::get_is_binary_post(void) const
 void HttpRequest::set_is_binary_post(bool is_binary_post)
 {
 	this->is_binary_post = is_binary_post;
+}
+
+void HttpRequest::set_content_length(long content_length)
+{
+	this->content_length = content_length;
+}
+
+long HttpRequest::get_content_length(void) const
+{
+	return (content_length);
 }

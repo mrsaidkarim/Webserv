@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/12 10:06:45 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/14 19:03:29 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,7 @@ class HttpRequest
 		string				boundary_key; // for post method
 		string 				boundary_key_begin;
 		string				boundary_key_end;
+		long 				content_length;
 
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -74,6 +75,7 @@ class HttpRequest
 		void set_file_offset(streampos _file_offset);
 		bool set_boundary_key(void);
 		void set_is_binary_post(bool is_binary_post);
+		void set_content_length(long content_length);
 		
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -94,6 +96,7 @@ class HttpRequest
 		const string& get_boundary_key_begin(void) const;
 		const string& get_boundary_key_end(void) const;
 		bool get_is_binary_post(void) const;
+		long get_content_length(void) const;
 		// for post method
 
 		void	add_to_body(const string &, int );
