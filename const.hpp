@@ -44,6 +44,7 @@
 #define streampos std::streampos
 #define unordered_map std::unordered_map
 #define to_string std::to_string
+#define stol std::stol
 
 // newline characters 
 #define CR "\r"
