@@ -14,7 +14,7 @@
 #include <cstddef>
 
 Server::Server() {
-    
+    client_max_body_size = -1;
 }
 
 Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
