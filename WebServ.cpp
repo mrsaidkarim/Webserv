@@ -170,7 +170,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 response->serv();
                 cerr << BG_BLUE << "in it" << "\n" << RESET;
             } 
-            if (response->get_request()->get_is_complete_post() || request->get_method() == "GET") // || request->get_body().size() >= stoi(header["content-length"]))
+            if (response->get_request()->get_is_complete_post() || request->get_method() == "GET" || request->get_method() == "DELETE") // || request->get_body().size() >= stoi(header["content-length"]))
             {
                 cerr << BG_GREEN << "in it 2" << "\n" << RESET;
                 struct kevent change;

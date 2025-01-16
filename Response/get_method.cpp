@@ -415,7 +415,7 @@ void HttpResponse::get_method() {
         }
         return;
     }
-
+   
     //priority: 3 (index)
     if (!request->get_server().get_indexes().empty()) {
         string path = request->get_server().get_global_root();
@@ -432,7 +432,6 @@ void HttpResponse::get_method() {
             }        
         }
     }
-
     //priority: 4 (autoindex)
     if (request->get_server().get_autoindex()) {
         serv_autoindex(request->get_server().get_global_root());

@@ -110,7 +110,7 @@ extern int kq;
 #define FORBIDDEN  "./pages_html/403.html"
 #define NOT_FOUND "./pages_html/404.html"
 #define NOT_ALLOWED "./pages_html/405.html"
-#define DEL_SUCCESS "./delete_successful.html"
+#define DEL_SUCCESS "./pages_html/delete_successful.html"
 #define INTERNAL_SERVER_ERROR "./pages_html/500.html"
 #define REQUEST_TIMEOUT "./pages_html/408.html"
 #define UPLOAD_SUCCESSFUL "./pages_html/upload_successful.html"

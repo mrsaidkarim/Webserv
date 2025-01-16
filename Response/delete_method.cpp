@@ -21,7 +21,7 @@ bool HttpResponse::is_a_file(const string& path) const {
 bool HttpResponse::delete_file(const string& filepath) const {
 	if (unlink(filepath.c_str()) == 0) {
 		cout << "File deleted successfully: " << filepath << "\n"; // TO REMOVE
-		request->set_file_path(DEL_SUCCESS);
+		request->set_file_path(DEL_SUCCESS); // UPDTE THE path IN CONST.H
 		send_response();
 		return (true);
 	} else {
@@ -104,6 +104,7 @@ void HttpResponse::delete_method() const {
 			cout << request->get_server().get_global_root() << "\n";
 			request->set_file_path(NOT_ALLOWED);
 			send_response();
+			request->set_is_complete(true); // update
 			return ;
 		}
 
