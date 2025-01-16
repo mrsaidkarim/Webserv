@@ -25,8 +25,7 @@
 #include <stack>
 #include <signal.h>
 
-
-extern int kq;
+// extern int kq;
 #define vector std::vector
 #define string std::string
 #define map std::map
@@ -57,16 +56,18 @@ extern int kq;
 #define transform std::transform
 #define copy std::copy
 
+#define stol std::stol
 
 // newline characters 
 #define CR "\r"
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
-#define POST_PATH "/Users/zelabbas/goinfre/upload_store/"
+#define POST_PATH "/Users/skarim/goinfre/upload_store/"
 #define CGI_PATH "/tmp/"
 #define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test2.py"
 #define COOKIE2_SCRIPT_NAME "cookie2.py"
+// #define POST_PATH "/Users/skarim/goinfre/"//"/Users/skarim/Desktop/uploads"
 
 // Reset Color
 #define RESET "\033[0m"
@@ -101,13 +102,14 @@ extern int kq;
 #define BG_CYAN "\033[46m"
 #define BG_WHITE "\033[47m"
 
-#define BUFFER_SIZE (1024 * 1)
+#define BUFFER_SIZE (1024)
 #define BUFFER_SIZE2 (1024 * 5)
 #define CGI_TIMEOUT (10 * 1000)
 
 
 // PATH TO PAGE
 #define FORBIDDEN  "./pages_html/403.html"
+#define TOO_LARGE  "./pages_html/413.html"
 #define NOT_FOUND "./pages_html/404.html"
 #define NOT_ALLOWED "./pages_html/405.html"
 #define DEL_SUCCESS "./pages_html/delete_successful.html"
@@ -115,5 +117,6 @@ extern int kq;
 #define REQUEST_TIMEOUT "./pages_html/408.html"
 #define UPLOAD_SUCCESSFUL "./pages_html/upload_successful.html"
 #define UPLOAD_FAILED "./pages_html/upload_failed.html"
+#define BAD_REQUEST "./pages_html/400.html"
 #define SESSION_MANAGEMENT "./Session_Management/"
 #endif

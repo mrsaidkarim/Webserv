@@ -21,7 +21,7 @@ class HttpResponse {
         ~HttpResponse();
 
         void get_method();
-        void post_method() const;
+        void post_method();
         void delete_method() const;
 
         void    serv();
@@ -39,8 +39,7 @@ class HttpResponse {
         pair<int, int> longest_common_location() const;
         HttpRequest *get_request() const;
         // post method help functions
-
-
+        fstream *binary_post_case();
         // delete method help functions
 		bool	is_allowed(int index_location) const;
         bool    is_allowed(int index_location, string method) const;

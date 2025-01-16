@@ -205,7 +205,8 @@ void HttpResponse::cgi() const{
         return;
     } else if (pid == 0) {
         //child
-        close(kq);
+        webserv->close_kq();
+        // close(kq);
         char **env = header_to_env();
         print_env(env);
         // size_t pos = request->get_file_path().rfind(".");

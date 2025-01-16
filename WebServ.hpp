@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 15:23:39 by skarim            #+#    #+#             */
-/*   Updated: 2024/12/10 18:17:42 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/16 19:19:50 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ class WebServ
         map<int, vector<Server>> socket_servers;
         unordered_map<pid_t, pair<const HttpResponse*, int> > pid_childs;
         unordered_map<pid_t, string> file_paths;
-
+        int kq;
 
     public:
         WebServ();
@@ -36,6 +36,7 @@ class WebServ
         ~WebServ();
         void run_servers(); // Run All Servers
         void close_sockets();
+        void close_kq();
         void handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response);
 
         const unordered_map<pid_t, pair<const HttpResponse*, int> >& get_pid_childs() const;

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/15 14:46:34 by zelabbas         ###   ########.fr       */
+/*   Updated: 2025/01/16 21:40:36 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,19 @@ static string generate_file_name(void) {
 //     return oss.str();
 // }
 
+// static string addPrefixBeforeCRLF(const string &input) {
+//     const string word = "\r\n";
+//     const string prefix = "{$$$$}";
+//     string result = input;
+//     size_t pos = 0;
+
+//     while ((pos = result.find(word, pos)) != string::npos) {
+//         result.insert(pos, prefix);
+//         pos += prefix.size() + word.size(); // Move past the added prefix and word
+//     }
+
+//     return result;
+// }
 HttpRequest::HttpRequest(const string& _request) {
 	string			first_line;
 	string			header;
@@ -85,8 +98,11 @@ HttpRequest::HttpRequest(const string& _request) {
 	is_unlink_file_path = false;
 	file_stream = NULL;
 	index = _request.find(CRLF_2);
+	is_binary_post = true;
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
 	cout << BOLD_YELLOW << _request << RESET << "\n";
+    cout << BOLD_GREEN << "*************: <<<" <<this->get_is_binary_post() <<">>>>" << endl << RESET;
+
 
 	if (index == string::npos) {
 		this->set_status_code("400");
@@ -100,17 +116,20 @@ HttpRequest::HttpRequest(const string& _request) {
 	index = header.find(CRLF);
 	if (index == string::npos) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	first_line = header.substr(0,index);
 	header = header.substr(index + 2);
 	if (is_start_with_space(first_line) || !is_valid_characters(first_line) || is_start_with_space(header)) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	start_line = split(first_line, ' ');
 	if (start_line.size() != 3) {
 		this->set_status_code("400");
+
 		goto error;
 	}
 	if (!this->set_method(start_line[0]) || !this->set_url(start_line[1]) || !this->set_version(start_line[2]))
@@ -119,14 +138,17 @@ HttpRequest::HttpRequest(const string& _request) {
 	// start parse header
 	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
+		
 
 	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
 		// set_boundary_key it looks for boundary key :) in header map
 		// if boundary key founded it return true , false otherwise
 		// life is good untile a problem happend
-		set_file_path(UPLOAD_SUCCESSFUL);
+		// cout << BOLD_CYAN << "Daz men hna%%%%%%%%%%%\n" << "\n";
+	
 		if (this->header.find("content-type")->second == "application/x-www-form-urlencoded") {
+			// set_is_complete_post(true);
 			this->is_cgi = true;
 			cgi_path_post = generate_file_name();
 			cout << BOLD_RED << cgi_path_post << "\n" << RESET;
@@ -134,12 +156,17 @@ HttpRequest::HttpRequest(const string& _request) {
 			if (!file_stream || !file_stream->is_open()) {
 				cerr << "can't open the file\n";
 			}
+			// is_binary_post = false;
 		} else {
 			// I add crlf before body because it was removed before
 		 	// update body
 			body = "\r\n" + body;
-			set_body(body);
 		}
+		check_chunked();
+		set_file_path(UPLOAD_SUCCESSFUL);
+		if (this->is_chunked)
+			body = "\r\n" + body;
+		set_body(body);
 		set_boundary_key(); 
 		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
 			this->set_status_code("411");
@@ -152,6 +179,35 @@ HttpRequest::HttpRequest(const string& _request) {
 	// cout << BOLD_YELLOW << header << "\n" << RESET;
 	// cout << BOLD_BLUE << body << RESET;
 	// print the result
+	content_length = 0;
+	// if (this->header.find("content-length") != this->header.end() )
+	// {
+	// 	stringStream ss(this->header["content-length"]);
+	// 	ss << content_length;
+	// 	if (!ss.fail()){// || (content_length > server.get_client_max_body_size() && server.get_client_max_body_size() > -1)) {
+	// 		this->set_is_complete_post(true);
+	// 		this->set_file_path(TOO_LARGE);
+	// 		this->set_status_code("411");
+	// 		goto error;
+			
+	// 	}
+	// 	// else
+			
+	// }
+	if (this->header.find("content-length") != this->header.end() )
+	{
+		stringStream ss(this->header["content-length"]);
+		ss >> content_length;
+		if (ss.fail() || (server.get_client_max_body_size() > -1 && content_length > server.get_client_max_body_size()))
+		{
+			this->set_is_complete_post(true);
+			this->set_file_path(TOO_LARGE);
+			this->set_status_code("411");
+			goto error;
+		}
+	}
+	else
+		content_length = -1;
 	return ;
 	error :
 		cout << RED << "Error: Malformed request detected\n" << RESET;
@@ -189,6 +245,20 @@ bool HttpRequest::set_method(const string& _method) {
 		return (this->set_status_code("501"), false);
 	this->method = _method;
 	return (true);
+}
+
+void HttpRequest::set_path_info(string& _url) {
+    const char* extensions[] = {".py", ".php", ".js"};
+    size_t num_extensions = sizeof(extensions) / sizeof(extensions[0]);
+
+    for (size_t i = 0; i < num_extensions; ++i) {
+        size_t pos = _url.find(extensions[i]);
+        if (pos != string::npos) {
+            path_info = _url.substr(pos + strlen(extensions[i]));
+            _url = _url.substr(0, pos + strlen(extensions[i]));
+            return;
+        }
+    }
 }
 
 bool HttpRequest::set_url(const string& _url) {
@@ -554,20 +624,10 @@ streampos HttpRequest::get_file_offset(void) const {
 	return (this->file_offset);
 }
 
-
-
 // for post method
 
 void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	read_content_length += byte_read;
-	// cout << header.find("content-length")->second << "\n";
-	// if (read_content_length >= stoi((header.find("content-length")->second))) {
-	// 	is_complete_post = true;
-	// 	// is_complete = true;
-	// 	// cout << BOLD_MAGENTA << "add_to_body set is_complete = true\n";
-	// 	// cout << read_content_length << "\n";
-	// 	// cout << header.find("content-length")->second << "\n";
-	// }
 	body += slice;	
 }
 
@@ -599,10 +659,17 @@ bool HttpRequest::set_boundary_key(void) {
 	boundary_key_end += "--";
 	boundary_key_end += CRLF;
 
-
-	cout << BOLD_GREEN << boundary_key << "\n" << RESET;
+	// cout << BOLD_GREEN << boundary_key << "\n" << RESET;
 	return (true);
 }
+
+void HttpRequest::check_chunked()
+{
+	map<string, string>::iterator it = header.find("transfer-encoding");
+	if (it != header.end() && it->second == "chunked")
+		this->is_chunked = true;
+}
+
 
 
 const string& HttpRequest::get_boundary_key_begin(void) const {
@@ -687,4 +754,42 @@ void HttpRequest::set_cookie(int _cookie) {
 
 int HttpRequest::get_cookie(void) const {
 	return (cookie);
+}
+
+// void HttpRequest::append_to_body(const string &data)
+// {
+// 	std::istringstream iss(header["content-length"]);
+// 	size_t c_length;
+// 	iss >> c_length;
+// 	if (data.size() + body.size() >= c_length)
+// 	{
+// 		body.append(data, 0, c_length - body.size());
+// 		this->is_complete = true;
+// 	}
+// 	else
+// 		body.append(data);
+// }
+
+bool HttpRequest::get_is_binary_post(void) const
+{
+	return (this->is_binary_post);
+}
+
+void HttpRequest::set_is_binary_post(bool is_binary_post)
+{
+	this->is_binary_post = is_binary_post;
+}
+
+void HttpRequest::set_content_length(long content_length)
+{
+	this->content_length = content_length;
+}
+
+long HttpRequest::get_content_length(void) const
+{
+	return (content_length);
+}
+
+const string& HttpRequest::get_path_info(void) const {
+	return (path_info);
 }

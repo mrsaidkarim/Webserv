@@ -63,6 +63,12 @@
     "type_traits": "cpp",
     "typeinfo": "cpp",
     "unordered_map": "cpp",
+<<<<<<< HEAD
     "fstream": "cpp"
+=======
+    "deque": "cpp",
+    "fstream": "cpp",
+    "stack": "cpp"
+>>>>>>> origin/post_method_chunked_case
   }
 }

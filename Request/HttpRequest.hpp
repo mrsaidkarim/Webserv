@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: zelabbas <zelabbas@student.42.fr>          +#+  +:+       +#+        */
+/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2024/12/13 15:36:24 by zelabbas         ###   ########.fr       */
+/*   Updated: 2025/01/16 17:22:50 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ class HttpRequest
 		map<string, string>	header;
 		map<string, char>	encoding_symbols;
 		fstream				*file_stream; // file stream
+		bool				is_binary_post;// for post binary case
 		string			    file_path; // request file path 
 		streampos			file_offset; // file offset
 		bool 				is_chunked; // is chunked response
@@ -50,7 +51,9 @@ class HttpRequest
 		string				session_id;
 		string 				cgi_input_file;
 		int					cookie;
-	
+		string              path_info;
+		long long			content_length;
+
 	protected:
 		vector<string>	split(const string& str, char delimiter);
 		string			trim_string(const string& str);
@@ -93,6 +96,10 @@ class HttpRequest
 		void set_cgi_input_file(const string& _cgi_file_input);
 		void set_cgi_path_post(const string& _cgi_path_post);
 		void set_cookie(int _cookie);
+		void set_is_binary_post(bool is_binary_post);
+		void set_content_length(long content_length);
+		void set_path_info(string& _url);
+		
 		// GETTERS:
 		const string& get_status_code(void) const;
 		const string& get_method(void) const;
@@ -120,13 +127,19 @@ class HttpRequest
 		const string& get_session_id(void) const;
 		const string& get_cgi_input_file(void) const;
 		int get_cookie(void) const;
+		const string& get_path_info(void) const;
 
 		// for post method
 
 		void	add_to_body(const string &, int );
+		bool get_is_binary_post(void) const;
+		long get_content_length(void) const;
+		// for post method
 
-
+		void check_chunked();
+		
 		void  display_request(); // TO REMOVE
+		// void append_to_body(const string &data);
 };
 
 #endif
