@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/14 16:25:39 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/16 10:24:18 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
 {
     string serv_request_buffer = string(BUFFER_SIZE2, 0);
     ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
-    if (bytes_read > 0) { // process the request klsdjjsiodjviojp============================================
+    if (bytes_read >= 0) { // process the request klsdjjsiodjviojp============================================
         serv_request_buffer.resize(bytes_read);
         if (client_responses.find(fd) == client_responses.end()){ // new request
             HttpRequest *request = new HttpRequest(serv_request_buffer);
@@ -173,7 +173,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             map<string, string>	header = request->get_header();
             if (request->get_method() == "POST" )
                 response->serv();
-            if (request->get_method() == "GET")// || request->get_body().size() >= stoi(header["content-length"]))
+            if (request->get_method() == "GET" || request->get_is_complete())// || request->get_body().size() >= stoi(header["content-length"]))
             {
                 struct kevent change;
                 EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
