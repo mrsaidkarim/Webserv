@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 12:54:20 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/16 22:50:39 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/16 23:05:51 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -323,8 +323,8 @@ void HttpResponse::post_method() {
                     request->set_file_stream(file);
                 }
                 size_t last = body.rfind(CRLF);
-                if (last != string::npos && body.length() - last < 500)
-                // if (last != string::npos && body.length() - last < 500 && header["content-type"] != "application/x-www-form-urlencoded") // protect content-type
+                // if (last != string::npos && body.length() - last < 500)
+                if (last != string::npos && body.length() - last < 500 && header["content-type"] != "application/x-www-form-urlencoded") // protect content-type
                 {
                     // cout << BOLD_RED << "*************: " << addPrefixBeforeCRLF(body.substr(0, last)) << endl << RESET;//
                     // cout << BOLD_GREEN << "lbody li t7at: " <<  addPrefixBeforeCRLF(body.substr(0, last)) << endl << RESET;
@@ -334,7 +334,7 @@ void HttpResponse::post_method() {
                     if (request->get_is_binary_post())
                         request->set_content_length(request->get_content_length() - last);
                         // request->content_length -= last;
-                    cout << BOLD_RED << "*************: " << request->get_content_length() << "|||||" << body.size()<< endl << RESET;
+                    // cout << BOLD_RED << "*************: " << request->get_content_length() << "|||||" << body.size()<< endl << RESET;
                     // cout << BOLD_YELLOW << "lbody li b9a: " << addPrefixBeforeCRLF(body.substr(last)) << endl << RESET;
                 }
                 else
@@ -345,8 +345,8 @@ void HttpResponse::post_method() {
                     // cout << BOLD_RED << "*************: " << request->get_content_length() << "$$$$$$" << body.size()<< endl << RESET;
                     // else
                     // {
-                        // if (header["content-type"] != "application/x-www-form-urlencoded")
-                        //     body = body.substr(0, request->get_content_length());
+                        if (header["content-type"] != "application/x-www-form-urlencoded")
+                            body = body.substr(0, request->get_content_length());
                         *file << body;
                         // cout << BOLD_RED << "*************:>>>" << addPrefixBeforeCRLF(body) << "<<<" << endl << RESET;
                         // file->flush();
@@ -355,7 +355,7 @@ void HttpResponse::post_method() {
                 }
                 if (request->get_is_binary_post() && request->get_content_length() <= 0)
                 {
-                    // cout << BOLD_CYAN<< "*************: " << request->get_content_length() << endl << RESET; 
+                    cout << BOLD_CYAN<< "*************: " << body << endl << RESET; 
                     request->set_is_complete_post(true);
                     // cerr << BOLD_RED << "###########   : 6\n" << RESET;
                     
