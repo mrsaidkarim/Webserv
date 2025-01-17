@@ -803,42 +803,73 @@ string HttpRequest::get_status_line() {
     if (statusCode.empty()) {
         return "HTTP/1.1 200 OK\r\n";
     }
-    else if (statusCode == "400") {
-		set_file_path(BAD_REQUEST);
+	map<string, string>::const_iterator it = server.get_error_pages().find(statusCode);
+    if (statusCode == "400") {
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(BAD_REQUEST);
         return "HTTP/1.1 400 Bad Request\r\n";
     }
     else if (statusCode == "403") {
-		set_file_path(FORBIDDEN);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(FORBIDDEN);
         return "HTTP/1.1 403 Forbidden\r\n";
     }
     else if (statusCode == "404") {
-		set_file_path(NOT_FOUND);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(NOT_FOUND);
         return "HTTP/1.1 404 Not Found\r\n";
     }
     else if (statusCode == "405") {
-		set_file_path(NOT_ALLOWED);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(NOT_ALLOWED);
         return "HTTP/1.1 405 Method Not Allowed\r\n";
     }
     else if (statusCode == "408") {
-		set_file_path(REQUEST_TIMEOUT);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(REQUEST_TIMEOUT);
         return "HTTP/1.1 408 Request Timeout\r\n";
     }
     else if (statusCode == "411") {
-		set_file_path(LENGTH_REQUIRED);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(LENGTH_REQUIRED);
         return "HTTP/1.1 411 Length Required\r\n";
     }
     else if (statusCode == "413") {
-		set_file_path(TOO_LARGE);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(TOO_LARGE);
         return "HTTP/1.1 413 Payload Too Large\r\n";
     }
     else if (statusCode == "501") {
-		set_file_path(NOT_IMPLEMENTED);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(NOT_IMPLEMENTED);
         return "HTTP/1.1 501 Not Implemented\r\n";
     }
     else if (statusCode == "505") {
-		set_file_path(VERSION_NOT_SUPPORTED);
+		if (it != server.get_error_pages().end())
+			set_file_path(server.get_global_root() + it->second);
+		else
+			set_file_path(VERSION_NOT_SUPPORTED);
         return "HTTP/1.1 505 HTTP Version Not Supported\r\n";
     }
-	set_file_path(INTERNAL_SERVER_ERROR);
+	if (it != server.get_error_pages().end())
+		set_file_path(server.get_global_root() + it->second);
+	else
+		set_file_path(INTERNAL_SERVER_ERROR);
     return "HTTP/1.1 500 Internal Server Error\r\n";
 }

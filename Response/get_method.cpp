@@ -357,7 +357,8 @@ void HttpResponse::get_method() {
         if (stat(path.c_str(), &path_status) == -1) {
             // not found
             cerr << "stat failed\n";
-            serv_404();
+            request->set_status_code("404");
+            send_response();
             return ;
 
         } else if (S_ISDIR(path_status.st_mode)) {
@@ -384,13 +385,15 @@ void HttpResponse::get_method() {
                 serv_autoindex(path);
                 return ;
             }
-            serv_404();
+            request->set_status_code("404");
+            send_response();
         } else if (S_ISREG(path_status.st_mode)) {
             request->set_file_path(path);
             send_response();
             return ;
         } else {
-            serv_404();
+            request->set_status_code("404");
+            send_response();
             return ;
         }
     }
@@ -398,7 +401,8 @@ void HttpResponse::get_method() {
 
     // there is no location block
     if (request->get_url().size() > 1) {
-        serv_404();
+        request->set_status_code("404");
+        send_response();
         return;
     }
 
@@ -409,7 +413,8 @@ void HttpResponse::get_method() {
         string path = request->get_server().get_global_root() + "/" + request->get_url()[0];
         cout << BOLD_GREEN << path << RESET << endl;
         if (stat(path.c_str(), &file_stat) < 0) {
-            serv_404();
+            request->set_status_code("404");
+            send_response();
         } else {
             request->set_file_path(path);
             send_response();
@@ -439,5 +444,6 @@ void HttpResponse::get_method() {
         return;
     }
 
-    serv_404();
+    request->set_status_code("404");
+    send_response();
 }
