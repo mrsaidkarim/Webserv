@@ -145,7 +145,9 @@ fstream *HttpResponse::binary_post_case()
         extention = "/octet-stream";
     string generated_binary_file = generate_file_with_ext(get_file_extension(extention));
     // cout << BOLD_MAGENTA << "content-type:" << content_type << " ==> the extension: " << get_file_extension(extention) << endl << RESET;
-    fstream *file = new fstream((POST_PATH + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
+    // fstream *file = new fstream((POST_PATH + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
+    fstream *file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
+     + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
     if (!file->is_open()) {
         cerr << "Couldn't create the new file\n";
         perror("why?");
@@ -245,7 +247,9 @@ void HttpResponse::post_method() {
                 request->set_file_stream(NULL);
             }
             // fill new information;
-            file = new fstream((POST_PATH + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
+            // file = new fstream((POST_PATH + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
+            file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
+             + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
             if (!file->is_open()) {
                 // cerr << "Couldn't create the new file\n";
                 perror("why?");
