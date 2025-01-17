@@ -198,16 +198,16 @@ void HttpResponse::post_method() {
     if (pos_crlf == string::npos && !request->get_is_binary_post()) { //
         // cout << "dkhal hneyaaaaaaaaaa\n";
         if (body.size() < BUFFER_SIZE2 && request->get_is_cgi()) {
-            cout << body << "\n";
+            // cout << body << "\n";
             request->set_is_complete_post(true);
-            cerr << BOLD_RED << "###########   : 2\n" << RESET;
-            cerr << BOLD_RED << "post ended here\n" << RESET;
+            // cerr << BOLD_RED << "###########   : 2\n" << RESET;
+            // cerr << BOLD_RED << "post ended here\n" << RESET;
         }
         if (!file)
             cerr << BOLD_RED << "can't write in file in post_method() func 1\n" << RESET;
         else {
             *file << body;
-            cout << "hereeeee\n";
+            // cout << "hereeeee\n";
         }
         request->set_body(""); // clear previous body
         // cout << BG_BLUE << "reh treseta lbody\n" << RESET;
@@ -223,7 +223,7 @@ void HttpResponse::post_method() {
             slice = body.substr(0, pos_bound_begin);
             if (file) {
                 *file << addPrefixBeforeCRLF(slice);
-                cout << "here\n";
+                // cout << "here\n";
             }
             body = body.substr(pos_bound_begin);
             // now I should find five CRLF 
@@ -247,12 +247,12 @@ void HttpResponse::post_method() {
             // fill new information;
             file = new fstream((POST_PATH + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
             if (!file->is_open()) {
-                cerr << "Couldn't create the new file\n";
+                // cerr << "Couldn't create the new file\n";
                 perror("why?");
                 request->set_is_complete_post(true);
                 request->set_file_path(BAD_REQUEST);
-                cerr << BOLD_RED << "###########   : 3\n" << RESET;
-                cout << BOLD_GREEN << "we read all 2\n\n";
+                // cerr << BOLD_RED << "###########   : 3\n" << RESET;
+                // cout << BOLD_GREEN << "we read all 2\n\n";
                 delete file;
                 file = NULL;
                 return;
@@ -263,7 +263,7 @@ void HttpResponse::post_method() {
             // now just move Content-Type + CRLF CRLF
             pos_info = body.find(CRLF_2);
             if (pos_info == string::npos) {
-                cerr << BOLD_RED << "something wrong we couldn't find Content-Type\n" << RESET;
+                // cerr << BOLD_RED << "something wrong we couldn't find Content-Type\n" << RESET;
                 return ;
             }
             body = body.substr(pos_info + 4);
@@ -280,20 +280,20 @@ void HttpResponse::post_method() {
                 // cout << "---------------> found boundary key end \n";
                 slice = body.substr(0, pos_bound_end);
                 if (!file) {
-                    cerr << BOLD_RED << "can't write in file in post_method() func 2\n" << RESET;
+                    // cerr << BOLD_RED << "can't write in file in post_method() func 2\n" << RESET;
                     request->set_is_complete_post(true);
-                    cerr << BOLD_RED << "###########   : 4\n" << RESET;
-                    cout << BOLD_GREEN << "we read all 3\n\n";
+                    // cerr << BOLD_RED << "###########   : 4\n" << RESET;
+                    // cout << BOLD_GREEN << "we read all 3\n\n";
                 }
                 else {
                     *file << slice;
                     // file->flush();
-                    cout << "here\n";
+                    // cout << "here\n";
                 }
 
                 request->set_body("");
                 request->set_is_complete_post(true);
-                cerr << BOLD_RED << "###########   : 5\n" << RESET; // this task is done
+                // cerr << BOLD_RED << "###########   : 5\n" << RESET; // this task is done
                 // cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
             // } else {
@@ -355,7 +355,7 @@ void HttpResponse::post_method() {
                 }
                 if (request->get_is_binary_post() && request->get_content_length() <= 0)
                 {
-                    cout << BOLD_CYAN<< "*************: " << body << endl << RESET; 
+                    // cout << BOLD_CYAN<< "*************: " << body << endl << RESET; 
                     request->set_is_complete_post(true);
                     // cerr << BOLD_RED << "###########   : 6\n" << RESET;
                     

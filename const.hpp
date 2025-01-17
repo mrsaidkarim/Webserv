@@ -63,7 +63,7 @@
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
-#define POST_PATH "/Users/skarim/goinfre/upload_store/"
+#define POST_PATH "/Users/zech-chi/goinfre/upload_store/"
 #define CGI_PATH "/tmp/"
 #define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test2.py"
 #define COOKIE2_SCRIPT_NAME "cookie2.py"

@@ -20,12 +20,14 @@ void HttpResponse::check_post_location() {
     if (index_location == -1) {
         request->set_is_complete_post(true);
         request->set_file_path(NOT_FOUND);
+        request->set_status_code("404");
         return;
     }
     // method not allowed
     if (!is_allowed(index_location, "POST")) {
         request->set_is_complete_post(true);
         request->set_file_path(NOT_ALLOWED);
+        request->set_status_code("405");
         return;
     }
     // request->get_server().get_locations()[index_location].print_lacation_info();
@@ -73,11 +75,7 @@ static string generate_session_id(void) {
     return oss.str();
 }
 
-void    HttpResponse::serv() {
-
-    // check if it is a cgi
-	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
-    // handle cookie1
+void    HttpResponse::handle_cookie1() {
     if ( request->get_url().size() >= 1 && request->get_url()[0] == "cookie") {
         if (request->get_header().find("cookie") != request->get_header().end()) {
             size_t pos = request->get_header().find("cookie")->second.find("session_id_1=");
@@ -95,9 +93,9 @@ void    HttpResponse::serv() {
         }
         request->set_cookie(1);
     }
+}
 
-    // hangle cookie2
-    cout << "we are in serv\n";
+void    HttpResponse::handle_cookie2() {
     if ( request->get_cookie() == 0  && request->get_url().size() >= 1 &&  request->get_url()[0] == "cookie2" ) {
         bool flag = false;
         if (request->get_header().find("cookie") != request->get_header().end()) {
@@ -137,6 +135,19 @@ void    HttpResponse::serv() {
             request->set_cookie(2);
         }
     }
+}
+
+
+void    HttpResponse::serv() {
+
+    cout << "we are in serv\n";
+    // check if it is a cgi
+	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
+    // handle cookie1
+    handle_cookie1();
+    // hangle cookie2
+    handle_cookie2();
+     
     if (request->get_method() == "GET")
         get_method();
     else if (request->get_method() == "POST") {

@@ -60,6 +60,11 @@ class HttpResponse {
         void    set_cgi_in_process(bool);
         void    check_post_location();
         const string&  get_script_path() const;
+
+
+        // cookies 
+        void handle_cookie1();
+        void handle_cookie2();
 };
 
 #endif

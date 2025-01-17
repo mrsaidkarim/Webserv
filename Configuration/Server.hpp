@@ -19,7 +19,7 @@
 class Server
 {
     private:
-       vector<int> ports;
+        vector<int> ports;
 		vector<string> server_names;
 		long long client_max_body_size;
 		vector<Location> locations;
