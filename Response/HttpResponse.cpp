@@ -19,14 +19,12 @@ void HttpResponse::check_post_location() {
     // location not found
     if (index_location == -1) {
         request->set_is_complete_post(true);
-        request->set_file_path(NOT_FOUND);
         request->set_status_code("404");
         return;
     }
     // method not allowed
     if (!is_allowed(index_location, "POST")) {
         request->set_is_complete_post(true);
-        request->set_file_path(NOT_ALLOWED);
         request->set_status_code("405");
         return;
     }

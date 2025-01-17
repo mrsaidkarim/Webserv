@@ -251,5 +251,6 @@ int main(int ac, char** av) {
 
     // run the servers
     // webserv.run_servers();
+    web_serv.print_all_servers();
 	web_serv.run_servers();
 }

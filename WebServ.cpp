@@ -142,7 +142,6 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     if (!found) {
         server = it->second[0];
     }
-
     return (server);
 }
 
@@ -169,6 +168,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             request->set_client_socket(fd);
             request->set_server(server);
             HttpResponse *response = new HttpResponse(request, webserv);
+            request->http_request_init();
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
             if (request->get_method() == "POST" ) { // i should guarantee that the POST body is not empty to call serv, and in this scope the body may be is gonna empty
@@ -317,7 +317,7 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
         cerr << "Failed to monitor child process\n";
         kill(pid, SIGKILL);
-        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+        response->get_request()->set_status_code("500");
         response->send_response();
         return;
     }
@@ -328,7 +328,7 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
         cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
         kill(pid, SIGKILL);
-        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+        response->get_request()->set_status_code("500");
         response->send_response();
         return;
     }
@@ -449,15 +449,15 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                         response->get_request()->set_file_path(it2->second); // Successful CGI execution
                     } else {
                         cerr << "CGI process exited with error status: " << exit_status << "\n";
-                        response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                        response->get_request()->set_status_code("500");
                     }
                 } else if (WIFSIGNALED(status)) {
                     int signal_num = WTERMSIG(status);
                     cerr << "Child process " << child_pid << " was terminated by signal: " << signal_num << "\n";
-                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                    response->get_request()->set_status_code("500");
                 } else {
                     cerr << "Unexpected child process exit status\n";
-                    response->get_request()->set_file_path(INTERNAL_SERVER_ERROR);
+                    response->get_request()->set_status_code("500");
                 }
 
                 // Mark request as complete and send response
@@ -501,10 +501,11 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 // Timeout event triggered (if CGI process takes too long)
                 cerr << "CGI process exceeded timeout\n";
                 kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
-                response->get_request()->set_file_path(REQUEST_TIMEOUT);
                 struct kevent change;
                 struct kevent timeout_event;
 
+                response->get_request()->set_status_code("408");
+                response->get_request()->set_file_path(REQUEST_TIMEOUT);
                 response->get_request()->set_is_cgi(false); // ok
                 response->get_request()->set_method("GET");
                 response->get_request()->set_is_chunked(true);
@@ -601,4 +602,12 @@ const unordered_map<pid_t, string>& WebServ::get_file_paths() const {
 
 void WebServ::set_servers(Server& server) {
 	servers.push_back(server);
+}
+
+void WebServ::print_all_servers() {
+  for(size_t i = 0; i < servers.size(); i++) {
+    servers[i].print_server_info();
+
+    cout << BOLD_RED << "end server!" << RESET;
+  }
 }

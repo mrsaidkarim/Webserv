@@ -79,7 +79,8 @@ static string generate_file_name(void) {
 
 //     return result;
 // }
-HttpRequest::HttpRequest(const string& _request) {
+
+void HttpRequest::http_request_init() {
 	string			first_line;
 	string			header;
 	string			body;
@@ -97,39 +98,35 @@ HttpRequest::HttpRequest(const string& _request) {
 	cgi_in_process = false;
 	is_unlink_file_path = false;
 	file_stream = NULL;
-	index = _request.find(CRLF_2);
+	index = request.find(CRLF_2);
 	is_binary_post = true;
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
-	cout << BOLD_YELLOW << _request << RESET << "\n";
+	cout << BOLD_YELLOW << request << RESET << "\n";
     cout << BOLD_GREEN << "*************: <<<" <<this->get_is_binary_post() <<">>>>" << endl << RESET;
 
 
 	if (index == string::npos) {
 		this->set_status_code("400");
-		cout << "here!\n";
 		goto error;
 	}
-	header = _request.substr(0,index);
-	body = _request.substr(index + 4);
+	header = request.substr(0,index);
+	body = request.substr(index + 4);
 	this->set_encoding_symbols();
 	this->set_body(body);
 	index = header.find(CRLF);
 	if (index == string::npos) {
 		this->set_status_code("400");
-
 		goto error;
 	}
 	first_line = header.substr(0,index);
 	header = header.substr(index + 2);
 	if (is_start_with_space(first_line) || !is_valid_characters(first_line) || is_start_with_space(header)) {
 		this->set_status_code("400");
-
 		goto error;
 	}
 	start_line = split(first_line, ' ');
 	if (start_line.size() != 3) {
 		this->set_status_code("400");
-
 		goto error;
 	}
 	if (!this->set_method(start_line[0]) || !this->set_url(start_line[1]) || !this->set_version(start_line[2]))
@@ -196,13 +193,13 @@ HttpRequest::HttpRequest(const string& _request) {
 	// }
 	if (this->header.find("content-length") != this->header.end() )
 	{
+		cerr << "content length tooooo largeeeee111 \n";
+		cerr << this->header["content-length"] << " =? " << server.get_client_max_body_size() << "\n";
 		stringStream ss(this->header["content-length"]);
 		ss >> content_length;
 		if (ss.fail() || (server.get_client_max_body_size() > -1 && content_length > server.get_client_max_body_size()))
 		{
-			this->set_is_complete_post(true);
-			this->set_file_path(TOO_LARGE);
-			this->set_status_code("411");
+			this->set_status_code("413");
 			goto error;
 		}
 	}
@@ -211,6 +208,13 @@ HttpRequest::HttpRequest(const string& _request) {
 	return ;
 	error :
 		cout << RED << "Error: Malformed request detected\n" << RESET;
+		set_is_cgi(false);
+		set_is_complete_post(true);
+	cout << statusCode << "@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
+}
+
+HttpRequest::HttpRequest(const string& _request) {
+	request = _request;
 }
 
 HttpRequest::~HttpRequest() {
@@ -792,4 +796,49 @@ long HttpRequest::get_content_length(void) const
 
 const string& HttpRequest::get_path_info(void) const {
 	return (path_info);
+}
+
+
+string HttpRequest::get_status_line() {
+    if (statusCode.empty()) {
+        return "HTTP/1.1 200 OK\r\n";
+    }
+    else if (statusCode == "400") {
+		set_file_path(BAD_REQUEST);
+        return "HTTP/1.1 400 Bad Request\r\n";
+    }
+    else if (statusCode == "403") {
+		set_file_path(FORBIDDEN);
+        return "HTTP/1.1 403 Forbidden\r\n";
+    }
+    else if (statusCode == "404") {
+		set_file_path(NOT_FOUND);
+        return "HTTP/1.1 404 Not Found\r\n";
+    }
+    else if (statusCode == "405") {
+		set_file_path(NOT_ALLOWED);
+        return "HTTP/1.1 405 Method Not Allowed\r\n";
+    }
+    else if (statusCode == "408") {
+		set_file_path(REQUEST_TIMEOUT);
+        return "HTTP/1.1 408 Request Timeout\r\n";
+    }
+    else if (statusCode == "411") {
+		set_file_path(LENGTH_REQUIRED);
+        return "HTTP/1.1 411 Length Required\r\n";
+    }
+    else if (statusCode == "413") {
+		set_file_path(TOO_LARGE);
+        return "HTTP/1.1 413 Payload Too Large\r\n";
+    }
+    else if (statusCode == "501") {
+		set_file_path(NOT_IMPLEMENTED);
+        return "HTTP/1.1 501 Not Implemented\r\n";
+    }
+    else if (statusCode == "505") {
+		set_file_path(VERSION_NOT_SUPPORTED);
+        return "HTTP/1.1 505 HTTP Version Not Supported\r\n";
+    }
+	set_file_path(INTERNAL_SERVER_ERROR);
+    return "HTTP/1.1 500 Internal Server Error\r\n";
 }

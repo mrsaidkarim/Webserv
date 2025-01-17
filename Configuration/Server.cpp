@@ -14,19 +14,44 @@
 #include <cstddef>
 
 Server::Server() {
+	cout << BOLD_CYAN << "new server"<< RESET;
     client_max_body_size = -1;
 	autoindex_set = false;
 	autoindex = false;
 }
 
-Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
-                const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
-                const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages) :
-                ports(ports), server_names(server_names), client_max_body_size(client_max_body_size),
-                locations(locations), global_root(global_root), redirection(redirection), indexes(indexes), autoindex(autoindex), 
-                error_pages(error_pages)
-{
+Server::Server(const Server& _server) {
+	cout << BOLD_CYAN << "copy server"<< RESET;
+	if (this != &_server)
+		*this = _server;
 }
+
+Server&	Server::operator=(const Server& _server) {
+
+	cout << BOLD_CYAN << "ASSIGNEMT server"<< RESET;
+	if (this != &_server) {
+		this->global_root = _server.global_root;
+		this->ports = _server.ports;
+		this->server_names = _server.server_names;
+		this->client_max_body_size = _server.client_max_body_size;
+		this->locations = _server.locations;
+		this->redirection = _server.redirection;
+		this->indexes = _server.indexes;
+		this->autoindex = _server.autoindex;
+		this->error_pages = _server.error_pages;
+		this->autoindex_set = _server.autoindex_set;
+	}
+	return (*this);
+}
+
+// Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
+//                 const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
+//                 const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages) :
+//                 ports(ports), server_names(server_names), client_max_body_size(client_max_body_size),
+//                 locations(locations), global_root(global_root), redirection(redirection), indexes(indexes), autoindex(autoindex), 
+//                 error_pages(error_pages)
+// {
+// }
 
 const vector<int> &Server::get_ports(void) const
 {
@@ -40,6 +65,7 @@ const vector<string> &Server::get_server_names(void) const
 
 const long long &Server::get_client_max_body_size(void) const
 {
+	cout << "here from get method!!! >>>>> " << client_max_body_size;
     return (client_max_body_size);
 }
 

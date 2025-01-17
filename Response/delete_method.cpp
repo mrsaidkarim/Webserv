@@ -35,28 +35,28 @@ void HttpResponse::handle_file(const string& path) const {
 
 	if (does_not_exist(path)) {
 		cout << "error the file does not exist!\n"; // TO REMOVE
-		request->set_file_path(NOT_FOUND);
+		request->set_status_code("404");
 		send_response();
 		return ;
 	}
 	if (is_a_file(path)) {
 		if (access(path.c_str(), W_OK) != 0) {
 			cout << "You don't have the write permission for: " << path << "\n"; // TO REMOVE
-			request->set_file_path(FORBIDDEN);
+			request->set_status_code("403");
 			send_response();
 			return ;
 		}
 		else {
 			if (!delete_file(path)) {
 				cout << "error : can't delete the file!\n"; // TO REMOVE
-				request->set_file_path(FORBIDDEN);
+				request->set_status_code("403");
 				send_response();
 				return ;
 			}
 		}
 	} else {
 		cout << path << " is a directory\n"; // TO REMOVE
-		request->set_file_path(FORBIDDEN);
+		request->set_status_code("403");
 		send_response();
 		return ;
 	}
@@ -102,7 +102,7 @@ void HttpResponse::delete_method() const {
 		if (!is_allowed(x)) {
 			cout << request->get_server().get_locations()[x].get_root() << "\n";
 			cout << request->get_server().get_global_root() << "\n";
-			request->set_file_path(NOT_ALLOWED);
+			request->set_status_code("405");
 			send_response();
 			request->set_is_complete(true); // update
 			return ;
@@ -131,7 +131,7 @@ void HttpResponse::delete_method() const {
 
 		// if the global root is empty so not found.
 		if (path.empty()) {
-			request->set_file_path(NOT_FOUND);
+			request->set_status_code("404");
 			send_response();
 			return ;
 		}

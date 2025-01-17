@@ -56,7 +56,6 @@ string HttpResponse::get_content_type(const string &path) const {
     extensions.insert(make_pair("deb", "application/x-deb"));
     extensions.insert(make_pair("rpm", "application/x-rpm"));
 
-
     size_t pos = path.rfind('.');
     if (pos != string::npos) {
         string extension = path.substr(pos + 1);
@@ -166,10 +165,10 @@ void HttpResponse::send_response() const{
         cgi();
         return;
     }
-
     if (request->get_file_offset() == 0) {
         cout << "here >>>>>>> 1000\n";
         cout << request->get_file_path() << "\n";
+        string status_line = request->get_status_line();
         string path = request->get_file_path();
         // if already file opened close it
         if (request->get_file_stream() && request->get_file_stream()->is_open()) {
@@ -177,6 +176,8 @@ void HttpResponse::send_response() const{
             delete request->get_file_stream();
             request->set_file_stream(NULL);
         }
+
+        
         fstream *file = new fstream(path.c_str(), ios::in);
         if (!file->is_open()) {
             delete file;
@@ -188,12 +189,12 @@ void HttpResponse::send_response() const{
         request->set_file_stream(file);
         string content_type = get_content_type(path);
         string http_response_header =
-            "HTTP/1.1 200 OK\r\n"      // 200 not everytime!!!!!!!!!!!!!!!!!!!!!!!!!
             "Content-Type: " + content_type + "\r\n"
             "Transfer-Encoding: chunked\r\n"
             "connection: keep-alive\r\n"
             "Accept-Ranges: none\r\n";
 
+        http_response_header = status_line + http_response_header;
 
         if (!request->get_session_id().empty()) {
             http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";

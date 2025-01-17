@@ -32,9 +32,12 @@ class Server
 		bool	autoindex_set;
     public:
         Server();
-        Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
-				const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
-				const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
+		Server(const Server& _server);
+
+		Server& operator=(const Server& _server);
+        // Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
+		// 		const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
+		// 		const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
         
         // GETTERS
 		const vector<int> &get_ports(void) const;

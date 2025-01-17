@@ -42,7 +42,7 @@ bool HttpResponse::is_cgi() const{
         return (false);
     const string path = request->get_server().get_locations()[index_location].get_path_cgi(extension);
     if (path.empty()) {
-        request->set_file_path(FORBIDDEN);
+        request->set_status_code("403");
         return (false);
     }
     return (true); // check extension is matched with cgi

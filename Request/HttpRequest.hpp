@@ -53,6 +53,7 @@ class HttpRequest
 		int					cookie;
 		string              path_info;
 		long long			content_length;
+		string				request;
 
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -67,6 +68,8 @@ class HttpRequest
 	public:
 		HttpRequest(const string& _request);
 		~HttpRequest();
+
+		void http_request_init();
 
 		// SETTERS:
 		void set_encoding_symbols();
@@ -99,6 +102,7 @@ class HttpRequest
 		void set_is_binary_post(bool is_binary_post);
 		void set_content_length(long content_length);
 		void set_path_info(string& _url);
+	
 		
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -140,6 +144,7 @@ class HttpRequest
 		
 		void  display_request(); // TO REMOVE
 		// void append_to_body(const string &data);
+		string get_status_line();
 };
 
 #endif
