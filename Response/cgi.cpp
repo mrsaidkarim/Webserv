@@ -38,7 +38,7 @@ bool HttpResponse::is_cgi() const{
         return (false);
     string extension = request->get_file_path().substr(pos + 1);
     cerr << extension << "\n";
-    if (extension != "py" && extension != "php" && extension != "js")
+    if (extension != "py" && extension != "php") //  && extension != "js"
         return (false);
     const string path = request->get_server().get_locations()[index_location].get_path_cgi(extension);
     if (path.empty()) {

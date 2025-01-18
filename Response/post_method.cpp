@@ -161,6 +161,15 @@ fstream *HttpResponse::binary_post_case()
     return file;
 }
 
+// static bool check(map<string, string> header)
+// {
+//     if (header.find("contnet-type") != header.end())
+//     {
+//         if(header["content-type"] != "application/x-www-form-urlencoded")
+//             return true;
+//     }
+//     return false;
+// }
 void HttpResponse::post_method() {
     string body = request->get_body();
     // cout << BOLD_RED << "we are in post method function \n" << RESET; // to remove
@@ -176,7 +185,7 @@ void HttpResponse::post_method() {
     //     cout << element->first << ": " << element->second << "\n";
     // cout << RESET;
     // cout << BG_YELLOW << "===================== current body before ============================\n";
-    // cout << addPrefixBeforeCRLF(body) << "\n"; // to remove
+    // cout << BOLD_YELLOW << addPrefixBeforeCRLF(body) << "\n" << RESET; // to remove
     // cout << "===============================================================\n" << RESET;
     if (request->get_is_chunked() || request->get_is_complete())
         normalize_chunked_data(body);
@@ -328,7 +337,8 @@ void HttpResponse::post_method() {
                 }
                 size_t last = body.rfind(CRLF);
                 // if (last != string::npos && body.length() - last < 500)
-                if (last != string::npos && body.length() - last < 500 && header["content-type"] != "application/x-www-form-urlencoded") // protect content-type
+                // if (last != string::npos && body.length() - last < 500 && check(header)) // protect content-type
+                if (last != string::npos && body.length() - last < 500 && header["content-type"] != "application/x-www-form-urlencoded")
                 {
                     // cout << BOLD_RED << "*************: " << addPrefixBeforeCRLF(body.substr(0, last)) << endl << RESET;//
                     // cout << BOLD_GREEN << "lbody li t7at: " <<  addPrefixBeforeCRLF(body.substr(0, last)) << endl << RESET;

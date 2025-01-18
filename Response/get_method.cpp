@@ -13,7 +13,7 @@ string HttpResponse::get_content_type(const string &path) const {
 
     extensions.insert(make_pair("html", "text/html"));
     extensions.insert(make_pair("css", "text/css"));
-    extensions.insert(make_pair("js", "text/javascript"));
+    extensions.insert(make_pair("js", "application/javascript"));
     extensions.insert(make_pair("jpg", "image/jpeg"));
     extensions.insert(make_pair("jpeg", "image/jpeg"));
     extensions.insert(make_pair("png", "image/png"));
