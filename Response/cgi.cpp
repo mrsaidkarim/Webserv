@@ -5,10 +5,43 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-char** HttpResponse::header_to_env() const{
-    char** env = new char*[request->get_header().size() + 1];
-    // try catch for new failed
-    int i = 0;
+// char** HttpResponse::header_to_env() const{
+//     char** env = new char*[request->get_header().size() + 1];
+//     // try catch for new failed
+//     int i = 0;
+//     map<string, string>::const_iterator it = request->get_header().begin();
+//     while (it != request->get_header().end()) {
+//         string key = it->first;
+//         string value = it->second;
+//         transform(key.begin(), key.end(), key.begin(), toupper);
+//         std::replace(key.begin(), key.end(), '-', '_');
+//         string sum = "HTTP_" + key + "=" + value; // here nigro sir 9alb ojibo
+//         env[i] = new char[sum.size() + 1];
+//         copy(sum.begin(), sum.end(), env[i]);
+//         env[i][sum.size()] = 0;
+//         it++;
+//         i++;
+//     }
+
+//     env[i] = NULL;
+//     return (env);
+// }
+
+char** HttpResponse::header_to_env() const {
+    // Vector to store environment variables as strings
+    vector<string> env_vars;
+    string script_name;
+    for (size_t i = 0; i < request->get_url().size(); i++) {
+        script_name += "/" + request->get_url()[i];
+    }
+
+    // Add additional fields first
+    env_vars.push_back("QUERY_STRING=" + request->get_query());
+    env_vars.push_back("PATH_INFO=" + request->get_path_info());
+    env_vars.push_back("SCRIPT_NAME=" + script_name); // request->get_url()
+    env_vars.push_back("SERVER_NAME=webserver zsz v1.1");
+    env_vars.push_back("REQUEST_METHOD=" + request->get_method());
+
     map<string, string>::const_iterator it = request->get_header().begin();
     while (it != request->get_header().end()) {
         string key = it->first;
@@ -16,17 +49,40 @@ char** HttpResponse::header_to_env() const{
         transform(key.begin(), key.end(), key.begin(), toupper);
         std::replace(key.begin(), key.end(), '-', '_');
         string sum = "HTTP_" + key + "=" + value; // here nigro sir 9alb ojibo
-        env[i] = new char[sum.size() + 1];
-        copy(sum.begin(), sum.end(), env[i]);
-        env[i][sum.size()] = 0;
+        env_vars.push_back(sum);
         it++;
-        i++;
     }
 
-    env[i] = NULL;
-    return (env);
-}
+    // Allocate memory for env array
+    char** env = NULL;
+    try {
+        env = new char*[env_vars.size() + 1];
+    } catch (const std::bad_alloc& e) {
+        cerr  << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
+        return NULL;
+    }
 
+    // Copy strings from vector to env array
+    try {
+        for (size_t i = 0; i < env_vars.size(); i++) {
+            env[i] = new char[env_vars[i].size() + 1];
+            copy(env_vars[i].begin(), env_vars[i].end(), env[i]);
+            env[i][env_vars[i].size()] = '\0'; // Null-terminate each string
+        }
+        env[env_vars.size()] = NULL;
+    } catch (const std::exception& e) {
+        cerr  << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
+        // Free already allocated memory
+        for (size_t i = 0; i < env_vars.size(); ++i) {
+            if (env[i])
+                delete[] env[i];
+        }
+        delete[] env;
+        return NULL;
+    }
+
+    return env;
+}
 
 bool HttpResponse::is_cgi() const{
     // to remove
@@ -208,6 +264,9 @@ void HttpResponse::cgi() const{
         webserv->close_kq();
         // close(kq);
         char **env = header_to_env();
+        if (!env) {
+            exit(1);
+        }
         print_env(env);
         // size_t pos = request->get_file_path().rfind(".");
         // string extension = request->get_file_path().substr(pos + 1);

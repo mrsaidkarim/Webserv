@@ -289,6 +289,7 @@ bool HttpRequest::set_url(const string& _url) {
 	if (fragment_pos != string::npos)
 		set_fragment(update_url.substr(fragment_pos + 1));
 	update_url = update_url.substr(0, path_end);
+	set_path_info(update_url);
 	this->url = split(update_url, '/');
 	return (true);
 }
