@@ -108,6 +108,7 @@
 
 
 // PATH TO PAGE
+#define DEFAULT_CONFIG_FILE "./ParseConfigFile/default.conf"
 #define FORBIDDEN  "./pages_html/403.html"
 #define TOO_LARGE  "./pages_html/413.html"
 #define NOT_FOUND "./pages_html/404.html"

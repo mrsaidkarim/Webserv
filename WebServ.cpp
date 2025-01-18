@@ -604,6 +604,10 @@ void WebServ::set_servers(Server& server) {
 	servers.push_back(server);
 }
 
+bool WebServ::is_servers_empty() const {
+    return (servers.empty());
+}
+
 void WebServ::print_all_servers() {
   for(size_t i = 0; i < servers.size(); i++) {
     servers[i].print_server_info();

@@ -44,6 +44,8 @@ class WebServ
         const map<int, vector<Server>> &get_socket_servers() const;
         void	set_servers(Server& server);
 
+        bool is_servers_empty() const;
+
 
         // to remove 
         void print_all_servers();

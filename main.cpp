@@ -5,6 +5,7 @@
 #include "Response/HttpResponse.hpp"
 #include "Configuration/Server.hpp"
 #include "Request/HttpRequest.hpp"
+#include "const.hpp"
 
 
 // this function initializes a server object
@@ -231,15 +232,21 @@ int main(int ac, char** av) {
     signal (SIGPIPE, SIG_IGN); // ignore broken pipe signal from client
     cout.setf(ios::unitbuf); // flushes the buffer after every output operation
     // create servers objects
-	if (ac != 2) {
+	if (ac >= 3) {
 		cerr << BOLD_YELLOW << "Error Usage: ./webserv path_to_config_file\n" << RESET;
 		return (1);
 	}
 	WebServ web_serv;
-	ParserConfig Parser(av[1], web_serv);
-	if (!Parser.is_good_config())
-		return (1);
-	
+    if (ac == 2) {
+	    ParserConfig Parser(av[1], web_serv);
+        if (!Parser.is_good_config())
+            return (1);
+    }
+    else {
+	    ParserConfig Parser(DEFAULT_CONFIG_FILE, web_serv);
+        if (!Parser.is_good_config())
+            return (1);
+    }
     // Server server1 = server_init1();
     // Server server2 = server_init2();
     // Server server3 = server_init3();

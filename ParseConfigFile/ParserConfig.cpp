@@ -47,6 +47,11 @@ ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 	// 	cerr << "unexpected brackets\n";
 	// 	goto bad_config;
 	// }
+	if (webserv.is_servers_empty()) {
+		cerr << BOLD_RED << "config file is empty!!!\n" << RESET;
+		good_config = false;
+		goto bad_config;
+	}
 	return ;
 	bad_config:
 		cerr << BOLD_RED << "ERROR! 🤯🤯🤯🤯🤯\n" << RESET;
