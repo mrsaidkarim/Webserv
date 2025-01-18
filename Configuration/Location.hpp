@@ -53,6 +53,7 @@ class Location
         bool	set_redirections(const pair<string, string> &);
 		bool	set_location_upload_store(const string& upload_store);
 		bool	set_cgi_extension(const vector<string>& vec);
+        void    append_index(void);
 
 		bool	does_not_exist(const string& path);
 		bool	is_a_file(const string& path);

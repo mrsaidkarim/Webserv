@@ -1,6 +1,8 @@
 #include "HttpResponse.hpp"
 #include <cstddef>
 #include <sys/stat.h>
+#include <sys/unistd.h>
+#include <unistd.h>
 
 string to_hex(int number) {
     ostringstream oss;
@@ -113,7 +115,9 @@ void HttpResponse::serv_autoindex(const string& path) const {
 
     DIR* dir = opendir(path.c_str());
     if (!dir) {
-        body_content += "<h1>Error: Unable to open directory</h1>";
+        request->set_status_code("403");
+        send_response();
+        return;
     } else {
         struct dirent* entry;
         while ((entry = readdir(dir)) != NULL) {
@@ -368,94 +372,117 @@ void HttpResponse::get_method() {
         struct stat path_status;
 
         // cout << "path : " << path << "\n";
-        if (stat(path.c_str(), &path_status) == -1) {
+        if (stat(path.c_str(), &path_status) == -1) { // check file if exist
             // not found
             cerr << "stat failed\n";
             request->set_status_code("404");
             send_response();
             return ;
 
-        } else if (S_ISDIR(path_status.st_mode)) {
+        } 
+
+        // check if file
+        if (S_ISREG(path_status.st_mode)) {
+            if (access(path.c_str(), R_OK) < 0)
+                request->set_status_code("403");
+            else
+                request->set_file_path(path);
+            send_response();
+            return ;
+        }
+
+        // check if dir
+        if (S_ISDIR(path_status.st_mode)) {
+            // check permission
+            if (access(path.c_str(), X_OK | R_OK) < 0) {
+                request->set_status_code("403");
+                send_response();
+                return;
+            }
+
+            //priority: 3 (index)
             string index_path;
-            // cout << "this is directory : " << path << "\n";
             for (size_t i = 0; i < request->get_server().get_locations()[x].get_indexes().size(); i++) {
                 string index = request->get_server().get_locations()[x].get_indexes()[i];
                 index_path = path + "/" + index;
-                if (stat(index_path.c_str(), &path_status) == 0) {
+                if (stat(index_path.c_str(), &path_status) == 0 && access(index_path.c_str(), R_OK) == 0) {
                     request->set_file_path(index_path);
                     send_response();
                     return ;
                 }
             }
 
-            // index_path = path + "/index.html";
-            // if (stat(index_path.c_str(), &path_status) == 0) {
-            //     request->set_file_path(index_path);
-            //     send_response();
-            //     return ;
-            // }
-
+            //priority: 4 (autoindex)
             if (request->get_server().get_locations()[x].get_auto_index()) {
+                cout << "priority: 4 (autoindex)\n";
                 serv_autoindex(path);
                 return ;
             }
-            request->set_status_code("404");
-            send_response();
-        } else if (S_ISREG(path_status.st_mode)) {
-            request->set_file_path(path);
-            send_response();
-            return ;
-        } else {
-            request->set_status_code("404");
-            send_response();
-            return ;
         }
-    }
-
-
-    // there is no location block
-    if (request->get_url().size() > 1) {
         request->set_status_code("404");
         send_response();
         return;
     }
 
+    // join url with global root
+    string path = request->get_server().get_global_root();
+    for (size_t i = 0; i < request->get_url().size(); i++) {
+        path += "/" + request->get_url()[i];
+    }
 
-    // if the request is a file
-    if (!request->get_url().empty()) {
-        struct stat file_stat;
-        string path = request->get_server().get_global_root() + "/" + request->get_url()[0];
-        cout << BOLD_GREEN << path << RESET << endl;
-        if (stat(path.c_str(), &file_stat) < 0) {
-            request->set_status_code("404");
-            send_response();
-        } else {
-            request->set_file_path(path);
-            send_response();
-        }
+    cout << "this is joined path : " << path << endl;
+
+    // check if exist
+    struct stat status;
+    if (stat(path.c_str(), &status) < 0) {
+        request->set_status_code("404");
+        send_response();
         return;
     }
-   
-    //priority: 3 (index)
-    if (!request->get_server().get_indexes().empty()) {
-        string path = request->get_server().get_global_root();
+
+    // check if file
+    if (S_ISREG(status.st_mode)) {
+        // check permission
+        if (access(path.c_str(), R_OK) < 0)
+            request->set_status_code("403");    
+        else
+            request->set_file_path(path);
+        send_response();
+        return ;
+    }
+
+    // check if dir
+    if (S_ISDIR(status.st_mode)) {
+        // check permission
+        if (access(path.c_str(), X_OK | R_OK) < 0) {
+            request->set_status_code("403");
+            send_response();
+            return;
+        }
+
+        //priority: 3 (index)
+        cout << "priority: 3 (index)\n"; 
         string index;
         struct stat file_stat;
+        cout << "size : " << request->get_server().get_indexes().size() << "\n";
         for (size_t i = 0; i < request->get_server().get_indexes().size(); i++) {
-            // cout << "hna\n";
             index = request->get_server().get_indexes()[i];
             index = path + "/" + index;
-            if (stat(index.c_str(), &file_stat) == 0) {
+            cout << index << "!!!\n";
+            if (stat(index.c_str(), &file_stat) == 0 && access(index.c_str(), R_OK) == 0) {
                 request->set_file_path(index);
                 send_response();
                 return ;
             }        
         }
-    }
-    //priority: 4 (autoindex)
-    if (request->get_server().get_autoindex()) {
-        serv_autoindex(request->get_server().get_global_root());
-        return;
+
+        cout << "priority: 4 (autoindex)\n";
+        //priority: 4 (autoindex)
+        if (request->get_server().get_autoindex()) {
+            serv_autoindex(path);
+            return;
+        }
+
     }
 
     request->set_status_code("404");

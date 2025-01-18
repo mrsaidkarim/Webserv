@@ -6,6 +6,7 @@
 HttpResponse::HttpResponse(HttpRequest *_request, WebServ *_webserv) {
     this->request = _request;
     this->webserv = _webserv;
+    index_location = -1;
 }
 
 HttpResponse::~HttpResponse() {

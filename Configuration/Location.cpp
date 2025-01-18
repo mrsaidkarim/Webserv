@@ -214,6 +214,10 @@ const string &Location::get_path_cgi(const string &key) const {
     return (cgi_extension.find(key)->second);
 }
 
+void Location::append_index(void){
+	indexes.push_back("index.html");
+}
+
 
 void Location::print_lacation_info() const {
     cout << BG_WHITE;

@@ -248,8 +248,10 @@ bool Server::check_attributes_server() {
 	// 		return (false);
 	// }
 	// check each location!
+	indexes.push_back("index.html");
 	for (size_t i = 0; i < locations.size(); i++)
 	{
+		locations[i].append_index();
 		if (!locations[i].get_root().empty()) {
 			// locations[i].set_location_upload_store(global_root + global_upload_store);
 			if(!locations[i].check_is_dir(locations[i].get_root(), order_server))
