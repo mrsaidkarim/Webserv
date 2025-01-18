@@ -67,15 +67,19 @@ string HttpResponse::get_content_type(const string &path) const {
 }
 
 //priority: 1 (redirection)
-void HttpResponse::serv_redirection() const{
-    
-    string httpResponse =
-    "HTTP/1.1 " + request->get_server().get_redirection().first + " Moved Permanently\r\n"
-    "Location:" + request->get_server().get_redirection().second + "\r\n"
-    "Content-Type: text/html; charset=UTF-8\r\n"
-    "Content-Length: 0\r\n"
-    "Connection: close\r\n"
-    "\r\n";
+void HttpResponse::serv_redirection(string redirect_code, string redirect_url)  const {
+
+    if (redirect_url.find("http://") != 0 && redirect_url.find("https://") != 0) {
+        redirect_url = "http://" + redirect_url;
+    }
+
+   string httpResponse =
+        "HTTP/1.1 " + redirect_code + " Moved Permanently\r\n"
+        "Location: " + redirect_url + "\r\n"
+        "Content-Type: text/html; charset=UTF-8\r\n"
+        "Content-Length: 0\r\n"
+        "Connection: close\r\n"
+        "\r\n";
 
     send(request->get_client_socket(), httpResponse.c_str(), httpResponse.size(), 0);
     request->set_is_complete(true);
@@ -321,7 +325,9 @@ void HttpResponse::get_method() {
 
     //priority: 1 (redirection)
     if (!request->get_server().get_redirection().first.empty()) {
-        serv_redirection();
+        string redirect_code = request->get_server().get_redirection().first;
+        string redirect_url = request->get_server().get_redirection().second;
+        serv_redirection(redirect_code, redirect_url);
         return;
     }
 
@@ -331,6 +337,14 @@ void HttpResponse::get_method() {
         index_location = longest.first;
         cout << "location should handle this shit\n";
         int x = longest.first;
+
+        // check redirection
+        if (!request->get_server().get_locations()[x].get_redirections().first.empty()) {
+            string redirect_code = request->get_server().get_locations()[x].get_redirections().first;
+            string redirect_url = request->get_server().get_locations()[x].get_redirections().second;
+            serv_redirection(redirect_code, redirect_url);
+            return;
+        }
 
         vector<string> route = request->get_url();
 

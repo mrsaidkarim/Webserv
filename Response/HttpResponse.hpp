@@ -32,7 +32,7 @@ class HttpResponse {
 
         string get_content_type(const string &) const;
         void send_response() const;
-        void serv_redirection() const;
+        void serv_redirection(string redirect_code, string redirect_url) const;
         void serv_autoindex(const string&) const;
 
         // get method help functions
