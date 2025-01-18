@@ -374,12 +374,12 @@ void HttpResponse::get_method() {
                 }
             }
 
-            index_path = path + "/index.html";
-            if (stat(index_path.c_str(), &path_status) == 0) {
-                request->set_file_path(index_path);
-                send_response();
-                return ;
-            }
+            // index_path = path + "/index.html";
+            // if (stat(index_path.c_str(), &path_status) == 0) {
+            //     request->set_file_path(index_path);
+            //     send_response();
+            //     return ;
+            // }
 
             if (request->get_server().get_locations()[x].get_auto_index()) {
                 serv_autoindex(path);
