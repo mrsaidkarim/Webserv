@@ -31,6 +31,7 @@ Server&	Server::operator=(const Server& _server) {
 	cout << BOLD_CYAN << "ASSIGNEMT server"<< RESET;
 	if (this != &_server) {
 		this->global_root = _server.global_root;
+		this->host_name = _server.host_name;
 		this->ports = _server.ports;
 		this->server_names = _server.server_names;
 		this->client_max_body_size = _server.client_max_body_size;
@@ -97,6 +98,10 @@ bool Server::get_autoindex(void) const
 const map<string, string> &Server::get_error_pages(void) const
 {
     return (error_pages);
+}
+
+const string& Server::get_host_name(void) const {
+	return (host_name);
 }
 
 // const string& Server::get_global_upload_store(void) const {
@@ -189,6 +194,17 @@ bool Server::set_client_max_body_size(const string& str_value) {
 	if (client_max_body_size < 0)
 		return (false);
 	return (true);
+}
+
+bool Server::set_host_name(const string& _host_name) {
+	if (!host_name.empty())
+		return false;
+	if (_host_name == "localhost")
+		this->host_name = "127.0.0.1";
+	else
+		this->host_name = _host_name;
+	// cout << BOLD_GREEN<< host_name << "\n" <<RESET;
+	return true;
 }
 
 bool Server::does_not_exist(const string& path) {
@@ -330,4 +346,6 @@ void Server::print_server_info(void) const {
         cout << BOLD_BLUE << left << setw(20) << "location "  << ": " << BOLD_WHITE << i + 1 << "\n";
         locations[i].print_lacation_info();
     }
+
+    cout << BOLD_BLUE << left << setw(20) << "host_name " << " :" << BOLD_WHITE << host_name << "\n";
 }

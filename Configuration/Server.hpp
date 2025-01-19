@@ -24,6 +24,7 @@ class Server
 		long long client_max_body_size;
 		vector<Location> locations;
 		string global_root;
+		string host_name;
 		pair<string, string> redirection;
 		vector<string> indexes;
 		bool autoindex;
@@ -50,9 +51,11 @@ class Server
 		bool  get_autoindex(void) const;
 		const string& get_global_upload_store(void) const;
 		const map<string, string> &get_error_pages(void) const;
+		const string&	get_host_name(void) const;
 
 		// SETTERS
 		void	set_locations(Location& location);
+		bool	set_host_name(const string& _host_name);
 		void	set_error_pages(const string& key, const string& value); // to handle!
 		void	set_ports(int port);
 		bool	set_global_root(const string& root);
