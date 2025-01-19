@@ -1,5 +1,6 @@
 #include "ParserConfig.hpp"
 #include <cstddef>
+#include <type_traits>
 
 ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 {
@@ -455,7 +456,7 @@ bool ParserConfig::set_directive_location(const vector<string>& vec, const vecto
 
 bool ParserConfig::check_listen(const vector<string>& vec) {
 	port = -1;
-	if (vec.size() > 3)
+	if (vec.size() < 2 || vec.size() > 3)
 		return (false);
 	if (vec.size() == 3) {
 		if (!check_host_name(vec[2]))
