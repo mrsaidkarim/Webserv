@@ -74,6 +74,7 @@ void ParserConfig::init_directive() {
 	// DIRCTIVE SERVER
 	directive_server.push_back("listen");
 	directive_server.push_back("server_name");
+	// directive_server.push_back("host_name");
 	directive_server.push_back("root");
 	directive_server.push_back("index");
 	directive_server.push_back("autoindex");
@@ -294,6 +295,7 @@ bool ParserConfig::check_line_server(string& line) {
 	return (true);
 }
 
+
 bool ParserConfig::handle_location(Server& server, const vector<string>& vec) {
 	Location					location;
 	string						line;
@@ -335,11 +337,54 @@ bool ParserConfig::handle_location(Server& server, const vector<string>& vec) {
 	return (true);
 }
 
+bool ParserConfig::check_value(const string& _value) {
+	stringStream str(_value);
+	int value;
+	str >> value;
+
+	if (str.fail() || !str.eof())
+		return false;
+	if (value < 0 || value > 255)
+        return false;
+	return true;
+}
+
+bool ParserConfig::is_valid_ipv4(const string& ip) {
+    stringStream stream(ip);
+    string segment;
+    int segments = 0;
+
+	if (ip[ip.length() -1 ] == '.')
+		return false;
+    while (getline(stream, segment, '.')) {
+        // Check if segment is numeric
+		// cout << BOLD_BLUE << segment + ":"  << segments  << endl << RESET;
+        if (segment.empty() || segment.size() > 3 || !isdigit(segment[0]))
+            return false;
+        // Convert to integer
+        if (!check_value(segment))
+			return false;
+        segments++;
+    }
+    // Valid IPv4 must have exactly 4 segments
+    return segments == 4;
+}
+
+bool ParserConfig::check_host_name(const string& _host_name) {
+	if (_host_name == "localhost")
+		return true;
+	if (!is_valid_ipv4(_host_name))
+		return (false);
+	return true;
+}
+
 bool ParserConfig::set_directive_server(const vector<string>& vec, const vector<string>::iterator& directive, Server& server) {
 	if (*directive == "listen") {
 		if (!check_listen(vec))
 			return (false);
 		server.set_ports(port);
+		if (vec.size() == 3)
+			server.set_host_name(vec[2]);
 	}
 	if (*directive == "server_name") {
 		if ((vec.size() < 2) || !server.set_server_names(vec))
@@ -365,8 +410,8 @@ bool ParserConfig::set_directive_server(const vector<string>& vec, const vector<
 		if ((vec.size() != 2) || !server.set_client_max_body_size(vec[1]))
 			return (false);
 	}
-	// if (*directive == "upload_store") {
-	// 	if ((vec.size() != 2) || !server.set_global_upload_store(vec[1]))
+	// if (*directive == "host_name") {
+	// 	if (!check_host_name(vec) || !server.set_host_name(vec[1]))
 	// 		return (false);
 	// }
 	if (*directive == "error_page") {
@@ -410,8 +455,12 @@ bool ParserConfig::set_directive_location(const vector<string>& vec, const vecto
 
 bool ParserConfig::check_listen(const vector<string>& vec) {
 	port = -1;
-	if (vec.size() != 2)
+	if (vec.size() > 3)
 		return (false);
+	if (vec.size() == 3) {
+		if (!check_host_name(vec[2]))
+			return false;
+	}
 	stringStream ss(vec[1]);
 	ss >> port;
 	if (ss.fail() || !ss.eof())
