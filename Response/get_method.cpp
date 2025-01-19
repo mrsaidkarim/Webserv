@@ -160,7 +160,7 @@ void HttpResponse::serv_autoindex(const string& path) const {
                         "Connection: Closed\r\n";
 
     cout << "here (!request->get_session_id().empty())1\n\n\n";
-    if (!request->get_session_id().empty()) {
+    if (!request->get_session_id().empty() && request->get_cookie() != 0) {
         response += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
         cout << "here (!request->get_session_id().empty())2\n\n\n";
         cout << request->get_session_id() << "\n\n\n";
@@ -211,7 +211,7 @@ void HttpResponse::send_response() const{
 
         http_response_header = status_line + http_response_header;
 
-        if (!request->get_session_id().empty()) {
+        if (!request->get_session_id().empty() && request->get_cookie() != 0) {
             http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
             cout << "here (!request->get_session_id().empty())\n\n\n";
             cout << request->get_session_id() << "\n\n\n";

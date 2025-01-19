@@ -219,16 +219,33 @@ HttpRequest::HttpRequest(const string& _request) {
 	request = _request;
 }
 
+static bool startsWithTmp(const string& path) {
+    const string prefix = "/tmp/";
+    return path.compare(0, prefix.size(), prefix) == 0;
+}
+
+static bool endsWithTxt(const string& path) {
+    const string suffix = ".txt";
+    // Ensure the path is at least as long as the suffix
+    if (path.length() >= suffix.length()) {
+        return path.compare(path.length() - suffix.length(), suffix.length(), suffix) == 0;
+    }
+    return false;
+}
+
 HttpRequest::~HttpRequest() {
-	if (file_stream) {
-		file_stream->close();
-		delete file_stream;
-	}
-	// if (was_cgi)
-	// 	remove(cgi_output_file.c_str());
-	// if (!cookie)
-	// 	remove(cgi_path_post.c_str());
-	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
+    if (file_stream) {
+        file_stream->close();
+        delete file_stream;
+    }
+    if (was_cgi && !cgi_output_file.empty() &&startsWithTmp(cgi_output_file))
+        remove(cgi_output_file.c_str());
+    // if (!cookie)
+    if (!cgi_path_post.empty() && startsWithTmp(cgi_path_post) && endsWithTxt(cgi_path_post))
+        remove(cgi_path_post.c_str());
+    cout << BOLD_BLUE << cgi_path_post << endl << RESET;
+    cout << BOLD_BLUE << file_path << endl << RESET;
+    cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
 // SETTERS:

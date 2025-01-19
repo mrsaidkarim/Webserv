@@ -424,12 +424,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 unordered_map<pid_t, pair<const HttpResponse*, int> >::const_iterator it = webserv->get_pid_childs().find(child_pid);
                 unordered_map<pid_t, string>::const_iterator it2 = webserv->get_file_paths().find(child_pid);
                 const HttpResponse *response = it->second.first;
-                // if (!response || !response->get_request()) { // 
-                //     close(fd);
-                //     continue;
-                // }
                 cerr << BG_GREEN << "this file return: " << it2->second << "\n" << RESET; 
-                // int status = event_list[i].data; // The exit status data
                 int status  = -1;
                 waitpid(child_pid, &status, WNOHANG);
                 cerr << status << "*******\n";
@@ -439,7 +434,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     cerr << "Child process " << child_pid << " exited with status: " << exit_status << "\n";
 
                     if (exit_status == 0 || exit_status == 10) {
-                        if (exit_status == 0 && response->get_request()->get_cookie() != 2) {
+                        if (exit_status == 0 && response->get_request()->get_cookie() == 1) {
                             ///  add condition when we should add session_id
                             response->get_request()->set_session_id(generate_session_id());
                             copy_file(it2->second, SESSION_MANAGEMENT + response->get_request()->get_session_id());
@@ -501,7 +496,6 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 // }
                 // Timeout event triggered (if CGI process takes too long)
                 cerr << "CGI process exceeded timeout\n";
-                kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
                 struct kevent change;
                 struct kevent timeout_event;
 
@@ -518,7 +512,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     perror("Error: Failed to re-register client socket for writing");
                     close(it->second.second);
-                    delete response->get_request(); /// check error
+                    // delete response->get_request(); /// check error
                     client_responses.erase(it->second.second);
                 }
 
@@ -532,6 +526,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove timeout event\n";
                 }
+                kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
             }
         }
     }
