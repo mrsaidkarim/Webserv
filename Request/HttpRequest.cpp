@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/16 21:40:36 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/19 12:23:12 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ void HttpRequest::http_request_init() {
 	file_stream = NULL;
 	index = request.find(CRLF_2);
 	is_binary_post = true;
+	chunked_post_offset = 0;
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
 	cout << BOLD_YELLOW << request << RESET << "\n";
     cout << BOLD_GREEN << "*************: <<<" <<this->get_is_binary_post() <<">>>>" << endl << RESET;
@@ -218,16 +219,33 @@ HttpRequest::HttpRequest(const string& _request) {
 	request = _request;
 }
 
+static bool startsWithTmp(const string& path) {
+    const string prefix = "/tmp/";
+    return path.compare(0, prefix.size(), prefix) == 0;
+}
+
+static bool endsWithTxt(const string& path) {
+    const string suffix = ".txt";
+    // Ensure the path is at least as long as the suffix
+    if (path.length() >= suffix.length()) {
+        return path.compare(path.length() - suffix.length(), suffix.length(), suffix) == 0;
+    }
+    return false;
+}
+
 HttpRequest::~HttpRequest() {
-	if (file_stream) {
-		file_stream->close();
-		delete file_stream;
-	}
-	// if (was_cgi)
-	// 	remove(cgi_output_file.c_str());
-	// if (!cookie)
-	// 	remove(cgi_path_post.c_str());
-	cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
+    if (file_stream) {
+        file_stream->close();
+        delete file_stream;
+    }
+    if (was_cgi && !cgi_output_file.empty() &&startsWithTmp(cgi_output_file))
+        remove(cgi_output_file.c_str());
+    // if (!cookie)
+    if (!cgi_path_post.empty() && startsWithTmp(cgi_path_post) && endsWithTxt(cgi_path_post))
+        remove(cgi_path_post.c_str());
+    cout << BOLD_BLUE << cgi_path_post << endl << RESET;
+    cout << BOLD_BLUE << file_path << endl << RESET;
+    cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
 // SETTERS:
@@ -881,4 +899,14 @@ string HttpRequest::get_status_line() {
 	else
 		set_file_path(INTERNAL_SERVER_ERROR);
     return "HTTP/1.1 500 Internal Server Error\r\n";
+}
+
+void HttpRequest::set_chunked_post_offset(size_t _chunked_post_offset)
+{
+	this->chunked_post_offset = _chunked_post_offset;
+}
+
+size_t HttpRequest::get_chunked_post_offset(void) const
+{
+	return (chunked_post_offset);
 }
