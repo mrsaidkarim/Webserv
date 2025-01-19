@@ -20,13 +20,17 @@ void HttpResponse::check_post_location() {
     // location not found
     if (index_location == -1) {
         request->set_is_complete_post(true);
-        request->set_status_code("404");
+        request->set_status_code("403");
+        request->set_is_cgi(false);
+        request->set_is_cgi_complete(true);
         return;
     }
     // method not allowed
     if (!is_allowed(index_location, "POST")) {
         request->set_is_complete_post(true);
         request->set_status_code("405");
+        request->set_is_cgi(false);
+        request->set_is_cgi_complete(true);
         return;
     }
     // request->get_server().get_locations()[index_location].print_lacation_info();
