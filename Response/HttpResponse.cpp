@@ -77,23 +77,37 @@ static string generate_session_id(void) {
 }
 
 void    HttpResponse::handle_cookie1() {
-    if ( request->get_url().size() >= 1 && request->get_url()[0] == "cookie") {
-        if (request->get_header().find("cookie") != request->get_header().end()) {
-            size_t pos = request->get_header().find("cookie")->second.find("session_id_1=");
-            if (pos != string::npos) {
-                string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 13);
-                session_path = session_path.substr(0, session_path.find(";"));
-                if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
-                    request->set_file_path(session_path);
-                    request->set_is_chunked(true);
-                    request->set_is_complete_post(true);
-                    request->set_is_cgi(false);
-                }
-                cout << BG_GREEN << "("  << session_path << ")" << "\n";
-            }
-        }
-        request->set_cookie(1);
+    // checl url for cookie1
+    if (request->get_url().size() > 2 || request->get_url().size() == 0)
+        return;
+    if (request->get_url().size() == 1 && request->get_url()[0] != "cookie")
+        return;
+    if (request->get_url().size() == 2 && request->get_url()[1] != "cookie.py")
+        return;
+    // // check location for cookie1
+    int idx = longest_common_location().first;
+    if (idx == -1) // /cookie location not found
+        return;
+    // // check cgi permission
+    const string path = request->get_server().get_locations()[idx].get_path_cgi("py");
+    if (path.empty()) {
+        return;
     }
+    if (request->get_header().find("cookie") != request->get_header().end()) {
+        size_t pos = request->get_header().find("cookie")->second.find("session_id_1=");
+        if (pos != string::npos) {
+            string session_path = SESSION_MANAGEMENT + request->get_header().find("cookie")->second.substr(pos + 13);
+            session_path = session_path.substr(0, session_path.find(";"));
+            if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
+                request->set_file_path(session_path);
+                request->set_is_chunked(true);
+                request->set_is_complete_post(true);
+                request->set_is_cgi(false);
+            }
+            cout << BG_GREEN << "("  << session_path << ")" << "\n";
+        }
+    }
+    request->set_cookie(1);
 }
 
 void    HttpResponse::handle_cookie2() {
