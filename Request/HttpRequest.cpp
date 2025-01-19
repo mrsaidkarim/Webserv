@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/16 21:40:36 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/19 12:23:12 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ void HttpRequest::http_request_init() {
 	file_stream = NULL;
 	index = request.find(CRLF_2);
 	is_binary_post = true;
+	chunked_post_offset = 0;
 	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
 	cout << BOLD_YELLOW << request << RESET << "\n";
     cout << BOLD_GREEN << "*************: <<<" <<this->get_is_binary_post() <<">>>>" << endl << RESET;
@@ -881,4 +882,14 @@ string HttpRequest::get_status_line() {
 	else
 		set_file_path(INTERNAL_SERVER_ERROR);
     return "HTTP/1.1 500 Internal Server Error\r\n";
+}
+
+void HttpRequest::set_chunked_post_offset(size_t _chunked_post_offset)
+{
+	this->chunked_post_offset = _chunked_post_offset;
+}
+
+size_t HttpRequest::get_chunked_post_offset(void) const
+{
+	return (chunked_post_offset);
 }

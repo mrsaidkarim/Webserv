@@ -40,6 +40,7 @@ class HttpResponse {
         HttpRequest *get_request() const;
         // post method help functions
         fstream *binary_post_case();
+        bool normalize_chunked_data(string &s);
         // delete method help functions
 		bool	is_allowed(int index_location) const;
         bool    is_allowed(int index_location, string method) const;

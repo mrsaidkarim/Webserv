@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:30 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/16 17:22:50 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/19 12:03:18 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,7 @@ class HttpRequest
 		string			    file_path; // request file path 
 		streampos			file_offset; // file offset
 		bool 				is_chunked; // is chunked response
+		size_t				chunked_post_offset; // position of serach for the chunk_size pattern;
 		bool 				is_complete; // if offset is at the end of the file
 		bool				is_complete_post;
 		bool				is_cgi;
@@ -104,7 +105,8 @@ class HttpRequest
 		void set_content_length(long content_length);
 		void set_path_info(string& _url);
 		void set_is_cgi_complete(bool _is_cgi_complete);
-	
+		void set_chunked_post_offset(size_t _chunked_post_offset);
+
 		
 		// GETTERS:
 		const string& get_status_code(void) const;
@@ -135,6 +137,7 @@ class HttpRequest
 		int get_cookie(void) const;
 		const string& get_path_info(void) const;
 		bool get_is_cgi_complete(void) const;
+		size_t get_chunked_post_offset(void) const;
 
 		// for post method
 
