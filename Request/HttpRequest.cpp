@@ -97,6 +97,7 @@ void HttpRequest::http_request_init() {
 	is_cgi = false;
 	cgi_in_process = false;
 	is_unlink_file_path = false;
+	is_cgi_complete = false;
 	file_stream = NULL;
 	index = request.find(CRLF_2);
 	is_binary_post = true;
@@ -799,6 +800,13 @@ const string& HttpRequest::get_path_info(void) const {
 	return (path_info);
 }
 
+void HttpRequest::set_is_cgi_complete(bool _is_cgi_complete) {
+	is_cgi_complete = _is_cgi_complete;
+}
+
+bool HttpRequest::get_is_cgi_complete(void) const {
+	return (is_cgi_complete);
+}
 
 string HttpRequest::get_status_line() {
     if (statusCode.empty()) {

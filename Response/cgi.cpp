@@ -85,9 +85,10 @@ char** HttpResponse::header_to_env() const {
 }
 
 bool HttpResponse::is_cgi() const{
-    // to remove
     if (request->get_is_cgi())
         return (true);
+    if (request->get_is_cgi_complete())
+        return (false);
     cerr << "cgi file path: " << request->get_file_path() << "\n";
     size_t pos = request->get_file_path().rfind(".");
     if (pos == string::npos)
@@ -269,18 +270,18 @@ void HttpResponse::cgi() const{
         // close(kq);
         char **env = header_to_env();
         if (!env) {
+            cerr << "new failed\n";
             exit(1);
         }
         print_env(env);
         // size_t pos = request->get_file_path().rfind(".");
         // string extension = request->get_file_path().substr(pos + 1);
-
         // int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         int fd_write = open(file_path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
         if (fd_write < 0) {
             cerr << "can't open file in child\n";
             delete [] env;
-            exit(1);
+            exit(2);
         }
         char *args[3];
         cerr << BOLD_YELLOW << request->get_method() << "\n" << RESET;
@@ -313,7 +314,7 @@ void HttpResponse::cgi() const{
                 cerr << "2) dup2 failed in child\n";
                 close(fd_write);
                 delete [] env;
-                _exit(2);
+                exit(3);
             }
         } else {
             size_t pos = request->get_file_path().rfind(".");
@@ -327,14 +328,13 @@ void HttpResponse::cgi() const{
             cerr << "1) dup2 failed in child\n";
             close(fd_write);
             delete [] env;
-            _exit(3);
+            exit(4);
         }
         execve(args[0], args, env);
         cerr << BOLD_RED << "execve failed\n" << RESET;
         close(fd_write);
-        // sleep(5);
         delete [] env;
-        _exit(4);
+        exit(5);
     
     } else {
         // int exit_ = -1 ;

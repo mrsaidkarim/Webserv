@@ -35,9 +35,10 @@ void HttpResponse::check_post_location() {
 const string& HttpResponse::get_script_path() const{
     vector<string> route = request->get_url();
     // check for root
-    request->set_cgi_input_file(request->get_server().get_locations()[index_location].get_root());
+    if (index_location != -1)
+        request->set_cgi_input_file(request->get_server().get_locations()[index_location].get_root());
     // if not root for this location use global root
-    if (request->get_cgi_input_file().empty())
+    if (index_location == -1 || request->get_cgi_input_file().empty())
         request->set_cgi_input_file(request->get_server().get_global_root());
     for (size_t i = 0; i < route.size(); i++) {
         if (i > 0)
@@ -45,7 +46,8 @@ const string& HttpResponse::get_script_path() const{
         request->set_cgi_input_file( request->get_cgi_input_file() + route[i]);
     }
     if (request->get_cookie() == 2) {
-        request->set_cgi_input_file(request->get_cgi_input_file() + "/" + COOKIE2_SCRIPT_NAME);
+        if (request->get_cgi_input_file().find(COOKIE2_SCRIPT_NAME) == string::npos)
+            request->set_cgi_input_file(request->get_cgi_input_file() + "/" + COOKIE2_SCRIPT_NAME);
     }
     return request->get_cgi_input_file();
 }

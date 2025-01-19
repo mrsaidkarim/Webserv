@@ -54,6 +54,7 @@ class HttpRequest
 		string              path_info;
 		long long			content_length;
 		string				request;
+		bool				is_cgi_complete;
 
 	protected:
 		vector<string>	split(const string& str, char delimiter);
@@ -102,6 +103,7 @@ class HttpRequest
 		void set_is_binary_post(bool is_binary_post);
 		void set_content_length(long content_length);
 		void set_path_info(string& _url);
+		void set_is_cgi_complete(bool _is_cgi_complete);
 	
 		
 		// GETTERS:
@@ -132,6 +134,7 @@ class HttpRequest
 		const string& get_cgi_input_file(void) const;
 		int get_cookie(void) const;
 		const string& get_path_info(void) const;
+		bool get_is_cgi_complete(void) const;
 
 		// for post method
 

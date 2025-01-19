@@ -466,6 +466,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 struct kevent timeout_event;
 
                 response->get_request()->set_is_cgi(false); // ok
+                response->get_request()->set_is_cgi_complete(true);
                 response->get_request()->set_method("GET");
                 response->get_request()->set_is_chunked(true);
                 response->send_response();
@@ -506,6 +507,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
 
                 response->get_request()->set_status_code("408");
                 response->get_request()->set_file_path(REQUEST_TIMEOUT);
+                response->get_request()->set_is_cgi_complete(true);
                 response->get_request()->set_is_cgi(false); // ok
                 response->get_request()->set_method("GET");
                 response->get_request()->set_is_chunked(true);

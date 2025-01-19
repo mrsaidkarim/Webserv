@@ -157,8 +157,15 @@ void HttpResponse::serv_autoindex(const string& path) const {
     string response =   "HTTP/1.1 200 OK\r\n"
                         "Content-Length: " + to_string(body_content.size()) + "\r\n"
                         "Content-Type: text/html\r\n"
-                        "Connection: Closed\r\n"
-                        "\r\n" + body_content;
+                        "Connection: Closed\r\n";
+
+    cout << "here (!request->get_session_id().empty())1\n\n\n";
+    if (!request->get_session_id().empty()) {
+        response += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
+        cout << "here (!request->get_session_id().empty())2\n\n\n";
+        cout << request->get_session_id() << "\n\n\n";
+    }
+    response += "\r\n" + body_content;
 
     send(request->get_client_socket(), response.c_str(), response.size(), 0);
     request->set_is_complete(true);
@@ -208,7 +215,7 @@ void HttpResponse::send_response() const{
             http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
             cout << "here (!request->get_session_id().empty())\n\n\n";
             cout << request->get_session_id() << "\n\n\n";
-        
+
         }
         http_response_header += "\r\n";
         if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0) < 0) {
