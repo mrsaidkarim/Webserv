@@ -310,6 +310,8 @@ bool HttpRequest::set_url(const string& _url) {
 	update_url = update_url.substr(0, path_end);
 	set_path_info(update_url);
 	this->url = split(update_url, '/');
+	if (this->url.empty())
+		url.push_back("/");
 	return (true);
 }
 

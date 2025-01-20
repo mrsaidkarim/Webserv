@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/20 14:34:46 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/20 22:43:47 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,8 +39,53 @@ WebServ::~WebServ()
     this->close_sockets();
 }
 
-void configure_socket(int &server_socket, int port)
+// bool configure_socket(int &server_socket, int port)
+// {
+//     server_socket = socket(AF_INET, SOCK_STREAM, 0);
+//     if (server_socket == -1)
+//     {
+//         cerr << "Error: Socket creation failed\n";
+//         return (false);
+//     }
+//     int optval = 1;
+//     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
+//     {
+//         cerr << "Error: Failed to set socket options\n";
+//         close(server_socket);
+//         return false;
+//     }
+
+//     sockaddr_in server_addr;
+//     memset(&server_addr, 0, sizeof(server_addr));
+//     server_addr.sin_family = AF_INET;
+//     server_addr.sin_port = htons(port);
+//     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+//     if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+//         cerr << "Error: failed to set server socket as non blocking\n";
+//         close(server_socket);
+//         return (false);
+//     }
+
+//     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
+//     {
+//         cerr << "Error: Failed to bind socket\n";
+//         close(server_socket);
+//         return (false);
+//     }
+//     if (listen(server_socket, SOMAXCONN) == -1)
+//     {
+//         cerr << "Error: Failed to listen on port " << port << "\n";
+//         close(server_socket);
+//         return (false);
+//     }
+//     return true;
+// }
+bool configure_socket(int &server_socket, pair<int, string> port_host)
 {
+    int port = port_host.first;
+    string host = port_host.second;
+
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1)
     {
@@ -61,9 +106,29 @@ void configure_socket(int &server_socket, int port)
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
     server_addr.sin_port = htons(port);
-    server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    if (host.empty())
+        server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+    else {
+        // server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
+        addrinfo helper, *res = NULL;
+        memset(&helper, 0, sizeof(helper));
+        helper.ai_family = AF_INET;
+        helper.ai_socktype = SOCK_STREAM;
 
-    if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
+        char port_str[6]; //port form int to string
+        sprintf(port_str, "%d", port);
+
+        if (getaddrinfo(host.c_str(), port_str, &helper, &res) != 0)
+        {
+            cerr << "Error: Failed to resolve host: " << host << "\n";
+            exit(EXIT_FAILURE);
+        }
+        sockaddr_in *resolved_addr = reinterpret_cast<sockaddr_in *>(res->ai_addr);
+        server_addr.sin_addr = resolved_addr->sin_addr;
+        freeaddrinfo(res);
+    }
+
+    if (fcntl(server_socket, F_SETFL, O_NONBLOCK) == -1) {
         cerr << "Error: failed to set server socket as non blocking\n";
         close(server_socket);
         // return (false);
@@ -549,20 +614,20 @@ void WebServ::run_servers()
 {
     // this map will store the server socket file descriptor as the key and the vector of servers that use that socket as the value
     // but i think you store some times key as port and some times as socket file descriptor
-    map<int, vector<Server>> sockets_created;
+    map<pair<int, string>, vector<Server> > sockets_created;
     
     for(Server server : this->servers)
     {
-        const vector<int> &ports = server.get_ports();
+        const vector<pair<int, string> > &ports_hosts = server.get_ports();
         // const vector<string> &server_names = server.get_server_names();
-        for(int port: ports)
+        for(pair<int, string> port_host: ports_hosts)
         {
-            sockets_created[port].push_back(server);
-            cout << "to create socket for port: " << port << "\n"; 
+            sockets_created[port_host].push_back(server);
+            cout << "to create socket for port: " << port_host.first << " host: " << port_host.second << "\n"; 
         }
     }
 
-    for(map<int, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
+    for(map<pair<int, string>, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
     {
         int server_socket;
         // if (!configure_socket(server_socket, it->first)) continue;that's mean socket creation failed
@@ -583,6 +648,43 @@ void WebServ::run_servers()
     register_server_sockets(kq, socket_servers);
     monitor_server_sockets(kq, socket_servers, this);
 }
+// void WebServ::run_servers()
+// {
+//     // this map will store the server socket file descriptor as the key and the vector of servers that use that socket as the value
+//     // but i think you store some times key as port and some times as socket file descriptor
+//     map<int, vector<Server>> sockets_created;
+    
+//     for(Server server : this->servers)
+//     {
+//         const vector<int> &ports = server.get_ports();
+//         // const vector<string> &server_names = server.get_server_names();
+//         for(int port: ports)
+//         {
+//             sockets_created[port].push_back(server);
+//             cout << "to create socket for port: " << port << "\n"; 
+//         }
+//     }
+
+//     for(map<int, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
+//     {
+//         int server_socket;
+//         // if (!configure_socket(server_socket, it->first)) that's mean socket creation failed
+//         if (!configure_socket(server_socket, it->first))
+//             continue; // should we exit the program.
+//         // i think you should erase the port
+//         socket_servers[server_socket] = it->second;
+//     }
+//     this->kq = kqueue();
+//     // kq = kqueue();
+//     if (kq == -1)
+//     {
+//         cerr << "Error: kqueue creation failed\n";
+//         return ; // should we exit the program.
+//     }
+//     if (!register_server_sockets(kq, socket_servers))
+//         return ; // should we exit the program.
+//     monitor_server_sockets(kq, socket_servers, this);
+// }
 
 void WebServ::close_sockets()
 {
