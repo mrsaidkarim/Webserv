@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 12:54:20 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/19 20:46:42 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/20 22:14:09 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,8 +44,15 @@ bool is_crlf_exist_more_than_five_times(const string &s) {
 //     return result;
 // }
 
+size_t convert_chunk_size(const string &s)
+{
+    char *end_ptr;
+    size_t result = strtoul(s.c_str(), &end_ptr, 16);
+    if (*end_ptr != '\0')
+        throw invalid_argument("Invalid hexa number: " + s);
+    return result;
+}
 
-// should be compatible with c++98
 bool HttpResponse::normalize_chunked_data(string &s) {
     const string crlf = "\r\n";
     size_t pos = request->get_chunked_post_offset(); // Current position in the string
@@ -83,8 +90,17 @@ bool HttpResponse::normalize_chunked_data(string &s) {
         if (i > chunk_start && i + 1 < s.size() && s[i] == '\r' && s[i + 1] == '\n') {
             // Extract the chunk size as a hexadecimal number
             string chunk_size_hex = s.substr(chunk_start, i - chunk_start);
-            size_t chunk_size = std::stoul(chunk_size_hex, nullptr, 16); // Convert hex to integer
-            // cout << chunk_size << "\n";
+            // size_t chunk_size = std::stoul(chunk_size_hex, nullptr, 16);
+            size_t chunk_size;
+            try
+            {
+                chunk_size = convert_chunk_size(chunk_size_hex);
+                // cout << chunk_size << "\n";
+            }
+            catch(const invalid_argument& e)
+            {
+                cerr << e.what() << '\n';
+            }
             // Check if the body contains the full chunk data
             size_t chunk_data_start = i + crlf.size(); // Start of the chunk data
             size_t chunk_data_end = chunk_data_start + chunk_size; // End of the chunk data
@@ -209,15 +225,6 @@ fstream *HttpResponse::binary_post_case()
     return file;
 }
 
-// static bool check(map<string, string> header)
-// {
-//     if (header.find("contnet-type") != header.end())
-//     {
-//         if(header["content-type"] != "application/x-www-form-urlencoded")
-//             return true;
-//     }
-//     return false;
-// }
 void HttpResponse::post_method() {
     string body = request->get_body();
     if (body.rfind("\r") != string::npos && body.rfind("\r") == body.size() - 1)
@@ -369,68 +376,29 @@ void HttpResponse::post_method() {
                     // file->flush();
                     // cout << "here\n";
                 }
-
                 request->set_body("");
                 request->set_is_complete_post(true);
-                // cerr << BOLD_RED << "###########   : 5\n" << RESET; // this task is done
-                // cout << BOLD_GREEN << "we read all 4\n\n";
                 break;
-            // } else {
-            //     *file << body;
-            //     request->set_body("");
-            //     break;
-            // }
             }
             else {
-                // if (body.rfind("\r") != string::npos && last != string::npos)
-                //     last = (last > body.rfind("\r")) ? last : body.rfind("\r");
-                // // if (last == string::npos && !body.empty()) {
-                //     *file << addPrefixBeforeCRLF(body); // Write remaining body
-                //     request->set_body("");
-                // }
-                
                 if (request->get_is_binary_post())
                 {
                     if (!file)
                     {
                         file = binary_post_case();
                         body = body.substr(2);
-                        // last += 2;
                     }
                     if (!file)
                         return ;
                     request->set_file_stream(file);
                 }
-                
                 if (request->get_is_binary_post())
                     request->set_content_length(request->get_content_length() - body.size());
-                // cout << BOLD_RED << "*************: " << request->get_content_length() << "$$$$$$" << body.size()<< endl << RESET;
-                // else
-                // {
-                    // if (header["content-type"] != "application/x-www-form-urlencoded")
-                    //     body = body.substr(0, request->get_content_length());
                     *file << body;
-                    // cout << BOLD_RED << "*************:>>>" << addPrefixBeforeCRLF(body) << "<<<" << endl << RESET;
-                    // file->flush();
                     request->set_body("");
                 // }
                 if (request->get_is_binary_post() && request->get_content_length() <= 0)
-                {
-                    // cout << BOLD_CYAN<< "*************: " << body << endl << RESET; 
                     request->set_is_complete_post(true);
-                    // cerr << BOLD_RED << "###########   : 6\n" << RESET;
-                    
-                }
-                // {
-                    // request->set_body(""); //not necessary just for some tests
-                    // cout << "set_is_complete(true)\n";
-                    // break ;
-                //     return ;
-                // }
-                // cout << BOLD_CYAN << "hedshi thal flfile: " << addPrefixBeforeCRLF(body.substr(0, pos_crlf)) << endl << RESET;
-                // body = body.substr(pos_crlf + 2);
-                
-                // cout << BOLD_RED << "hedshi wela how lbody: " << addPrefixBeforeCRLF(request->get_body()) << endl << RESET;
                 break;
             }
             cout << "ba9in fi loop\n";
@@ -438,9 +406,5 @@ void HttpResponse::post_method() {
         pos_crlf = body.find(CRLF);
     }
 
-
-    
-    //***********************************************************************here's 
-    
     // cout << BOLD_BLUE << "ghadi ikhroj men post\n" << RESET;
 }

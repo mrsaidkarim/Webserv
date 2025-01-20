@@ -6,7 +6,7 @@
 /*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/16 21:42:45 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/20 14:34:46 by skarim           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,20 +39,22 @@ WebServ::~WebServ()
     this->close_sockets();
 }
 
-bool configure_socket(int &server_socket, int port)
+void configure_socket(int &server_socket, int port)
 {
     server_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (server_socket == -1)
     {
         cerr << "Error: Socket creation failed\n";
-        return (false);
+        // return (false);
+        exit(EXIT_FAILURE);
     }
     int optval = 1;
     if (setsockopt(server_socket, SOL_SOCKET, SO_REUSEADDR, &optval, sizeof(optval)) == -1)
     {
         cerr << "Error: Failed to set socket options\n";
         close(server_socket);
-        return false;
+        // return false;
+        exit(EXIT_FAILURE);
     }
 
     sockaddr_in server_addr;
@@ -64,25 +66,27 @@ bool configure_socket(int &server_socket, int port)
     if (fcntl(server_socket, F_SETFL, O_NONBLOCK)) {
         cerr << "Error: failed to set server socket as non blocking\n";
         close(server_socket);
-        return (false);
+        // return (false);
+        exit(EXIT_FAILURE);
     }
 
     if (bind(server_socket, (sockaddr *)&server_addr, sizeof(server_addr)) == -1)
     {
         cerr << "Error: Failed to bind socket\n";
         close(server_socket);
-        return (false);
+        // return (false);
+        exit(EXIT_FAILURE);
     }
     if (listen(server_socket, SOMAXCONN) == -1)
     {
         cerr << "Error: Failed to listen on port " << port << "\n";
         close(server_socket);
-        return (false);
+        // return (false);
+        exit(EXIT_FAILURE);
     }
-    return true;
 }
 
-bool register_server_sockets(int kq, const map<int, vector<Server>> &servers)
+void register_server_sockets(int kq, const map<int, vector<Server>> &servers)
 {
     vector<struct kevent> change_list;
 
@@ -96,10 +100,10 @@ bool register_server_sockets(int kq, const map<int, vector<Server>> &servers)
 
     if (kevent(kq, change_list.data(), change_list.size(), nullptr, 0, nullptr) == -1)
     {
-        perror("Error: kevent registration failed\n");
-        return (false);
+        cerr << "Error: kevent registration failed\n";
+        // return (false);
+        exit(EXIT_FAILURE);
     }
-    return (true);
 }
 
 // search for right server
@@ -191,7 +195,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                         // response->get_request()->set_file_path(UPLOAD_SUCCESSFUL);
                         EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                         if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                            perror("Error: Failed to re-register client socket for writing");
+                            cerr << "Error: Failed to re-register client socket for writing";
                             // here we should delete all resources!
                             // close(fd);
                             request->set_is_complete(true);
@@ -201,7 +205,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 } else {
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                        perror("Error: Failed to re-register client socket for writing");
+                        cerr << "Error: Failed to re-register client socket for writing";
                         // here we should delete all resources!
                         // close(fd);
                         request->set_is_complete(true);
@@ -242,7 +246,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 } else {
                     EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                        perror("Error: Failed to re-register client socket for writing");
+                        cerr << "Error: Failed to re-register client socket for writing\n" ;
                         // here we should delete all resources!
                         // close(fd);
                         request->set_is_complete(true);
@@ -372,8 +376,9 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
     while (true) {
         int event_count = kevent(kq, nullptr, 0, event_list, MAX_EVENTS, nullptr);
         if (event_count == -1){
-            perror("Error: kevent monitoring failed\n");
-            continue;
+            cerr << "Error: kevent monitoring failed\n";
+            // continue;
+            exit(EXIT_FAILURE);
         }
         for (int i = 0; i < event_count; ++i) {
             int fd = event_list[i].ident;
@@ -383,17 +388,19 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 socklen_t client_len = sizeof(client_addr);
                 int client_socket = accept(fd, (sockaddr *)&client_addr, &client_len);
                 if (client_socket == -1){
-                    perror("Error: Failed to accept connection\n");
-                    continue;
+                    cerr << "Error: Failed to accept connection\n";
+                    // continue;
+                    exit(EXIT_FAILURE);
                 }
                 cout << "Accepted connection on server socket (fd: " << fd << "), client fd: " << client_socket << "\n";
                 fcntl(client_socket, F_SETFL, O_NONBLOCK); // need to know more about it
                 struct kevent change;
                 EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                    perror("Error: Failed to register client socket\n");
+                    cerr << "Error: Failed to register client socket\n";
                     close(client_socket);
-                    continue;
+                    exit(EXIT_FAILURE);
+                    // continue;
                 }
                 client_server[client_socket] = fd;
             } else if (event_list[i].filter == EVFILT_READ) { // read incoming request from client
@@ -402,7 +409,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 HttpResponse *response = client_responses[fd];
                 if (!response || !response->get_request()) {
                     close(fd);
-                    continue;
+                    // continue;
+                    exit(EXIT_FAILURE);
                 }
                 response->serv();
                 if (response->get_request()->get_is_complete()) {
@@ -469,21 +477,24 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 // check for errors
                 EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                    perror("Error: Failed to re-register client socket for writing!!!!!!!!");
+                    cerr << "Error: Failed to re-register client socket for writing!!!!!!!!\n";
                     close(it->second.second);
                     // delete response->get_request(); /// check error
                     client_responses.erase(it->second.second);
+                    exit(EXIT_FAILURE);
                 }
 
                 EV_SET(&change, child_pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove child process monitoring\n";
+                    exit(EXIT_FAILURE);
                 }
 
                 // Remove the timeout event
                 EV_SET(&timeout_event, child_pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove timeout event\n";
+                    exit(EXIT_FAILURE);
                 }
             } else if (event_list[i].filter == EVFILT_TIMER) {
                 cout << BOLD_RED << "CHILD exit timeout \n" << RESET;
@@ -510,7 +521,7 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 // check for errors
                 EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
-                    perror("Error: Failed to re-register client socket for writing");
+                    cerr << "Error: Failed to re-register client socket for writing\n";
                     close(it->second.second);
                     // delete response->get_request(); /// check error
                     client_responses.erase(it->second.second);
@@ -519,12 +530,14 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 EV_SET(&change, event_list[i].ident, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove child process monitoring\n";
+                    exit(EXIT_FAILURE);
                 }
 
                 // Remove the timeout event
                 EV_SET(&timeout_event, event_list[i].ident, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
                 if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
                     cerr << "Failed to remove timeout event\n";
+                    exit(EXIT_FAILURE);
                 }
                 kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
             }
@@ -552,9 +565,8 @@ void WebServ::run_servers()
     for(map<int, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
     {
         int server_socket;
-        // if (!configure_socket(server_socket, it->first)) that's mean socket creation failed
-        if (!configure_socket(server_socket, it->first))
-            continue; // should we exit the program.
+        // if (!configure_socket(server_socket, it->first)) continue;that's mean socket creation failed
+        configure_socket(server_socket, it->first);
         // i think you should erase the port
         socket_servers[server_socket] = it->second;
     }
@@ -563,10 +575,12 @@ void WebServ::run_servers()
     if (kq == -1)
     {
         cerr << "Error: kqueue creation failed\n";
-        return ; // should we exit the program.
+        exit(EXIT_FAILURE);
+        // return ; // should we exit the program.
     }
-    if (!register_server_sockets(kq, socket_servers))
-        return ; // should we exit the program.
+    // if (!register_server_sockets(kq, socket_servers))
+    //     return ; // should we exit the program.
+    register_server_sockets(kq, socket_servers);
     monitor_server_sockets(kq, socket_servers, this);
 }
 

@@ -55,8 +55,8 @@
 #define to_integer std::to_integer
 #define transform std::transform
 #define copy std::copy
-
-#define stol std::stol
+#define invalid_argument std::invalid_argument
+// #define stol std::stol
 
 // newline characters 
 #define CR "\r"
