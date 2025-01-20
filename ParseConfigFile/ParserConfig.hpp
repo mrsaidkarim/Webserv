@@ -39,8 +39,11 @@ class ParserConfig
 		// bool			check_upload_store(const vector<string>& vec);
 		bool			check_listen(const vector<string>& vec);
 		bool			check_return(const vector<string>& vec);
+		bool			check_host_name(const string& _host_name);
 		bool			check_error_pages_and_set(const vector<string>& vec, Server& server);
 		bool			is_path(const string& path);
+		bool			check_value(const string& _value);
+		bool			is_valid_ipv4(const string& ip);
 		// bool			does_not_exist(const string& path);
 		// bool			is_a_file(const string& path);
 		// bool			check_is_dir(const string& path);
