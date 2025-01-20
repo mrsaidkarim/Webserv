@@ -41,7 +41,7 @@ class Server
 		// 		const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
         
         // GETTERS
-		const vector<int> &get_ports(void) const;
+		vector<pair<int, string> > get_ports_hosts(void) const;
 		const vector<string> &get_server_names(void) const;
 		const long long &get_client_max_body_size(void) const;
 		const vector<Location> &get_locations(void) const;

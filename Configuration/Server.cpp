@@ -54,9 +54,15 @@ Server&	Server::operator=(const Server& _server) {
 // {
 // }
 
-const vector<int> &Server::get_ports(void) const
+vector<pair<int, string> > Server::get_ports_hosts(void) const
 {
-    return (ports);
+	vector<pair<int, string> > ports_hosts(ports.size());
+
+	for (size_t i = 0; i < ports.size(); i++) {
+		ports_hosts[i].first = ports[i];
+		ports_hosts[i].second = "127.0.0.1";
+	}
+    return (ports_hosts);
 }
 
 const vector<string> &Server::get_server_names(void) const
