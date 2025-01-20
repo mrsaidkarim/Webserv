@@ -31,7 +31,7 @@ Server&	Server::operator=(const Server& _server) {
 	cout << BOLD_CYAN << "ASSIGNEMT server"<< RESET;
 	if (this != &_server) {
 		this->global_root = _server.global_root;
-		this->host_name = _server.host_name;
+		// this->host_name = _server.host_name;
 		this->ports = _server.ports;
 		this->server_names = _server.server_names;
 		this->client_max_body_size = _server.client_max_body_size;
@@ -54,7 +54,7 @@ Server&	Server::operator=(const Server& _server) {
 // {
 // }
 
-const vector<int> &Server::get_ports(void) const
+const vector<pair<int, string> >& Server::get_ports(void) const
 {
     return (ports);
 }
@@ -100,9 +100,9 @@ const map<string, string> &Server::get_error_pages(void) const
     return (error_pages);
 }
 
-const string& Server::get_host_name(void) const {
-	return (host_name);
-}
+// const string& Server::get_host_name(void) const {
+// 	return (host_name);
+// }
 
 // const string& Server::get_global_upload_store(void) const {
 // 	return (global_upload_store);
@@ -114,9 +114,17 @@ void Server::set_locations(Location& location) {
 	locations.push_back(location);
 }
 
-void Server::set_ports(int port) {
-	if (port != -1)
-		this->ports.push_back(port);
+void Server::set_ports(int port,const string& _host) {
+	// if (port != -1)
+	// 	this->ports.push_back(port);
+	pair<int , string> port_host;
+
+	if (_host == "localhost")
+		port_host.second = "127.0.0.1";
+	else
+		port_host.second = _host;
+	port_host.first = port;
+	ports.push_back(port_host);
 }
 
 void Server::set_error_pages(const string& key,const string& value) {
@@ -196,16 +204,16 @@ bool Server::set_client_max_body_size(const string& str_value) {
 	return (true);
 }
 
-bool Server::set_host_name(const string& _host_name) {
-	if (!host_name.empty())
-		return false;
-	if (_host_name == "localhost")
-		this->host_name = "127.0.0.1";
-	else
-		this->host_name = _host_name;
-	// cout << BOLD_GREEN<< host_name << "\n" <<RESET;
-	return true;
-}
+// bool Server::set_host_name(const string& _host_name) {
+// 	if (!host_name.empty())
+// 		return false;
+// 	if (_host_name == "localhost")
+// 		this->host_name = "127.0.0.1";
+// 	else
+// 		this->host_name = _host_name;
+// 	// cout << BOLD_GREEN<< host_name << "\n" <<RESET;
+// 	return true;
+// }
 
 bool Server::does_not_exist(const string& path) {
 	struct stat statbuf;
@@ -300,7 +308,7 @@ void Server::print_server_info(void) const {
     for (size_t i = 0; i < ports.size(); i++) {
         if (i > 0)
             cout << ", ";
-        cout << ports[i];
+        cout << ports[i].first << ":_host:" << ports[i].second;
     }
     cout << "]" << endl;
 
@@ -347,5 +355,5 @@ void Server::print_server_info(void) const {
         locations[i].print_lacation_info();
     }
 
-    cout << BOLD_BLUE << left << setw(20) << "host_name " << " :" << BOLD_WHITE << host_name << "\n";
+    // cout << BOLD_BLUE << left << setw(20) << "host_name " << " :" << BOLD_WHITE << host_name << "\n";
 }
