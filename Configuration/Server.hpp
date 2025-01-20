@@ -19,12 +19,12 @@
 class Server
 {
     private:
-        vector<int> ports;
+        vector<pair<int, string> > ports;
 		vector<string> server_names;
 		long long client_max_body_size;
 		vector<Location> locations;
 		string global_root;
-		string host_name;
+		// string host_name;
 		pair<string, string> redirection;
 		vector<string> indexes;
 		bool autoindex;
@@ -41,7 +41,8 @@ class Server
 		// 		const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
         
         // GETTERS
-		vector<pair<int, string> > get_ports_hosts(void) const;
+		// const vector<int> &get_ports(void) const;
+		const  vector<pair<int, string> > &get_ports(void) const;
 		const vector<string> &get_server_names(void) const;
 		const long long &get_client_max_body_size(void) const;
 		const vector<Location> &get_locations(void) const;
@@ -51,13 +52,13 @@ class Server
 		bool  get_autoindex(void) const;
 		const string& get_global_upload_store(void) const;
 		const map<string, string> &get_error_pages(void) const;
-		const string&	get_host_name(void) const;
+		// const string&	get_host_name(void) const;
 
 		// SETTERS
 		void	set_locations(Location& location);
-		bool	set_host_name(const string& _host_name);
+		// bool	set_host_name(const string& _host_name);
 		void	set_error_pages(const string& key, const string& value); // to handle!
-		void	set_ports(int port);
+		void	set_ports(int port,const string& _host);
 		bool	set_global_root(const string& root);
 		bool	set_server_names(const vector<string> & vec);
 		bool	set_indexes(const vector<string>& vec);

@@ -1,6 +1,6 @@
 #include "ParserConfig.hpp"
 #include <cstddef>
-#include <type_traits>
+
 
 ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 {
@@ -383,9 +383,10 @@ bool ParserConfig::set_directive_server(const vector<string>& vec, const vector<
 	if (*directive == "listen") {
 		if (!check_listen(vec))
 			return (false);
-		server.set_ports(port);
 		if (vec.size() == 3)
-			server.set_host_name(vec[2]);
+			server.set_ports(port, vec[2]);
+		else
+			server.set_ports(port, "");
 	}
 	if (*directive == "server_name") {
 		if ((vec.size() < 2) || !server.set_server_names(vec))
