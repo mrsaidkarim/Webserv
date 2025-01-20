@@ -605,7 +605,7 @@ void WebServ::run_servers()
     
     for(Server server : this->servers)
     {
-        const vector<pair<int, string> > &ports_hosts = server.get_ports_hosts();
+        const vector<pair<int, string> > &ports_hosts = server.get_ports();
         // const vector<string> &server_names = server.get_server_names();
         for(pair<int, string> port_host: ports_hosts)
         {

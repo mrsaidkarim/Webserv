@@ -87,6 +87,8 @@ bool Location::set_route(const vector<string> &route)
 	{
 		this->route.push_back(route[i]);
 	}
+	if (this->route.empty())
+		this->route.push_back("/");
     // this->route = route;
     return (true);
 }
