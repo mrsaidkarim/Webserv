@@ -174,7 +174,7 @@ void HttpRequest::http_request_init() {
 			body = "\r\n" + body;
 		set_body(body);
 		set_boundary_key(); 
-		if (this->header.find("transfer-encoding") == this->header.end() && this->header.find("content-length") == this->header.end()) {
+		if (this->header.find("content-length") == this->header.end() || this->header.find("content-length")->second == "0") {
 			this->set_status_code("411");
 			goto error;
 		}
