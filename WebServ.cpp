@@ -6,7 +6,7 @@
 /*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 16:05:28 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/21 21:06:14 by zech-chi         ###   ########.fr       */
+/*   Updated: 2025/01/21 22:05:52 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -324,7 +324,7 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     // Monitor the child process exit event
     EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, NULL);
     if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
-        cerr << "Failed to monitor child process\n";
+        DEBUG_MODE && cerr << "Failed to monitor child process\n";
         kill(pid, SIGKILL);
         response->get_request()->set_status_code("500");
         response->send_response();
@@ -335,7 +335,7 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     struct kevent timeout_event;
     EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, NULL);  // Timeout in milliseconds
     if (kevent(kq, &timeout_event, 1, NULL, 0, NULL) == -1) {
-        cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
+        DEBUG_MODE && cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
         kill(pid, SIGKILL);
         response->get_request()->set_status_code("500");
         response->send_response();

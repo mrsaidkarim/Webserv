@@ -6,7 +6,7 @@
 /*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/01/21 19:58:29 by zech-chi          #+#    #+#             */
-/*   Updated: 2025/01/21 21:07:06 by zech-chi         ###   ########.fr       */
+/*   Updated: 2025/01/21 22:07:02 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ char** HttpResponse::header_to_env() const {
     try {
         env = new char*[env_vars.size() + 1];
     } catch (const std::bad_alloc& e) {
-        cerr  << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
+        DEBUG_MODE && cerr << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
         return NULL;
     }
 
@@ -60,7 +60,7 @@ char** HttpResponse::header_to_env() const {
         }
         env[env_vars.size()] = NULL;
     } catch (const std::exception& e) {
-        cerr  << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
+        DEBUG_MODE && cerr << BOLD_RED << "Memory allocation failed: " << e.what() << RESET <<endl;
         // Free already allocated memory
         for (size_t i = 0; i < env_vars.size(); ++i) {
             if (env[i])

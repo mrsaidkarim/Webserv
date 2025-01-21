@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HttpRequest.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/19 12:23:12 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/21 22:05:25 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,11 @@ void HttpRequest::http_request_init() {
 		goto error;
 		
 	if (this->get_method() == "POST") {
+		if (this->header.find("content-type") == this->header.end()) {
+			this->set_status_code("400");
+			goto error;
+		}
+			
 		if (this->header.find("content-type")->second == "application/x-www-form-urlencoded") {
 			this->is_cgi = true;
 			cgi_path_post = generate_file_name();

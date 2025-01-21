@@ -6,7 +6,7 @@
 /*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/15 12:54:20 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/21 20:44:56 by zech-chi         ###   ########.fr       */
+/*   Updated: 2025/01/21 22:07:21 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,7 +277,7 @@ void HttpResponse::post_method() {
                 file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
                  + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
             } catch (std::exception& e) {
-                cerr << BOLD_RED << "new failed " << e.what() << "\n" << RESET;
+                DEBUG_MODE && cerr << BOLD_RED << "new failed " << e.what() << "\n" << RESET;
                 request->set_is_complete_post(true);
                 request->set_is_cgi(false);
                 request->set_is_cgi_complete(true);
