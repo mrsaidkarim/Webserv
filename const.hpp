@@ -25,7 +25,6 @@
 #include <stack>
 #include <signal.h>
 
-// extern int kq;
 #define vector std::vector
 #define string std::string
 #define map std::map
@@ -56,21 +55,17 @@
 #define transform std::transform
 #define copy std::copy
 #define invalid_argument std::invalid_argument
-// #define stol std::stol
 
-// newline characters 
 #define CR "\r"
 #define LF "\n"
 #define CRLF "\r\n"
 #define	CRLF_2 "\r\n\r\n"
-#define POST_PATH "/Users/zech-chi/goinfre/upload_store/"
 #define CGI_PATH "/tmp/"
-#define CGI_POST_SCRIPT "/Volumes/TOSHIBA/www/cgi-tiriri/test2.py"
 #define COOKIE2_SCRIPT_NAME "cookie2.py"
-// #define POST_PATH "/Users/skarim/goinfre/"//"/Users/skarim/Desktop/uploads"
 
 // Reset Color
 #define RESET "\033[0m"
+#define DEBUG_MODE false
 
 // Text Colors
 #define BLACK "\033[30m"

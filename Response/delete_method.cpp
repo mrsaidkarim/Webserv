@@ -2,8 +2,6 @@
 #include <cstddef>
 #include <sys/stat.h>
 
-// start delete method!
-
 // check if the file exist
 bool HttpResponse::does_not_exist(const string& path) const{
 	struct stat statbuf;
@@ -20,12 +18,12 @@ bool HttpResponse::is_a_file(const string& path) const {
 
 bool HttpResponse::delete_file(const string& filepath) const {
 	if (unlink(filepath.c_str()) == 0) {
-		cout << "File deleted successfully: " << filepath << "\n"; // TO REMOVE
-		request->set_file_path(DEL_SUCCESS); // UPDTE THE path IN CONST.H
+		DEBUG_MODE && cout << "File deleted successfully: " << filepath << "\n"; 
+		request->set_file_path(DEL_SUCCESS);
 		send_response();
 		return (true);
 	} else {
-		cerr << "Error deleting file: " << "Permission denied!" << "\n";// TO REMOVE
+		DEBUG_MODE && cerr << "Error deleting file: " << "Permission denied!" << "\n";
 		return (false);
 	}
 }
@@ -34,28 +32,28 @@ bool HttpResponse::delete_file(const string& filepath) const {
 void HttpResponse::handle_file(const string& path) const {
 
 	if (does_not_exist(path)) {
-		cout << "error the file does not exist!\n"; // TO REMOVE
+		DEBUG_MODE && cout << "error the file does not exist!\n"; 
 		request->set_status_code("404");
 		send_response();
 		return ;
 	}
 	if (is_a_file(path)) {
 		if (access(path.c_str(), W_OK) != 0) {
-			cout << "You don't have the write permission for: " << path << "\n"; // TO REMOVE
+			DEBUG_MODE && cout << "You don't have the write permission for: " << path << "\n"; 
 			request->set_status_code("403");
 			send_response();
 			return ;
 		}
 		else {
 			if (!delete_file(path)) {
-				cout << "error : can't delete the file!\n"; // TO REMOVE
+				DEBUG_MODE && cout << "error : can't delete the file!\n"; 
 				request->set_status_code("403");
 				send_response();
 				return ;
 			}
 		}
 	} else {
-		cout << path << " is a directory\n"; // TO REMOVE
+		DEBUG_MODE && cout << path << " is a directory\n"; 
 		request->set_status_code("403");
 		send_response();
 		return ;
@@ -71,7 +69,6 @@ bool	HttpResponse::is_allowed(int index_location, string method) const {
 	return (false);
 }
 
-// zelabbas remove this
 bool	HttpResponse::is_allowed(int index_location) const {
 	map<string, bool> methods;
 	methods = request->get_server().get_locations()[index_location].get_methods();
@@ -85,8 +82,6 @@ void HttpResponse::delete_method() const {
 	pair<int , int>	longest;
 	int				x;
 	vector<string>	url;
-
-	cout << "here! start delete\n"; // to remove just for debuging 
 
 	 if (request->get_is_chunked()) {
 		send_response();
@@ -116,17 +111,12 @@ void HttpResponse::delete_method() const {
 		// join the url with the root location 
 		for (size_t i = 0; i < url.size(); i++)
 		{
-			// if (i > 0) // TO Discuss 
 			path += "/";
 			path += url[i];
 		}
-		cout << BOLD_GREEN << path << RESET << "\n"; // TO REMOVE
 		handle_file(path);
 	}
 	else {
-		cout << "here error!!!!!\n";
-		// longest.first == -1;
-		// if there's no longest_common_location should return not found ?
 		path = request->get_server().get_global_root();
 
 		// if the global root is empty so not found.
@@ -139,11 +129,9 @@ void HttpResponse::delete_method() const {
 		// join the url with the global root
 		for (size_t i = 0; i < url.size(); i++)
 		{
-			// if (i > 0) // TO Discuss 
 			path += "/";
 			path += url[i];
 		}
 		handle_file(path);
 	}	
 }
-// end delete method!

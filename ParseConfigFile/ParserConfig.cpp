@@ -1,10 +1,8 @@
 #include "ParserConfig.hpp"
-#include <cstddef>
 
 
 ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 {
-	cout << "Constructer Parser!\n";
 	string	line;
 	string	tmp_line;
 	good_config = true;
@@ -42,12 +40,7 @@ ParserConfig::ParserConfig(const string& path, WebServ& webserv)
 			goto bad_config;
 		}
 	}
-	// check if all {} are good
-	// if (!stack_brackets.empty()) {
-	// 	good_config = false;
-	// 	cerr << "unexpected brackets\n";
-	// 	goto bad_config;
-	// }
+
 	if (webserv.is_servers_empty()) {
 		cerr << BOLD_RED << "config file is empty!!!\n" << RESET;
 		good_config = false;
@@ -62,26 +55,18 @@ ParserConfig::~ParserConfig()
 {
 	if (config_file.is_open())
 		config_file.close();
-	cout << "Constructer Parser!\n";
 }
 
-// protected :
-
-// helps method
-// server === > "listen", "server_name", "error_page", "client_max_body_size", "root", "index", "autoindex", "return"
- // location =====> "autoindex", "allow_methods", "return", "php-cgi", "root", "index", "py-cgi", "upload_store"
 void ParserConfig::init_directive() {
 
 	// DIRCTIVE SERVER
 	directive_server.push_back("listen");
 	directive_server.push_back("server_name");
-	// directive_server.push_back("host_name");
 	directive_server.push_back("root");
 	directive_server.push_back("index");
 	directive_server.push_back("autoindex");
 	directive_server.push_back("error_page");
 	directive_server.push_back("client_max_body_size");
-	// directive_server.push_back("upload_store"); // need to remove no needed more!
 	directive_server.push_back("return");
 
 	// DIRCTIVE LOCATION
@@ -188,7 +173,7 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 	vector<string> split_line;
 
 	line = leftover_line;
-	cout << BOLD_RED << "start new server !>>\n" << RESET;
+	DEBUG_MODE && cout << BOLD_RED << "start new server !>>\n" << RESET;
 	while (true) {
 		tmp_line = line;
 		if (line.empty() || line[0] == '#') {
@@ -202,21 +187,12 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 			display_error(tmp_line);
 			return (false);
 		}
-		// if (!check_line_server(line)) {
-		// 	display_error(tmp_line);
-		// 	return (false);
-		// }
-		// cout << BOLD_GREEN << line << RESET << "\n";
 		split_line = split(line, ' ', '\t');
 		if (line.empty())
 			continue ;
 		it = find(directive_server.begin(), directive_server.end(), split_line[0]);
 		if (it == directive_server.end() && split_line[0] != "location" && split_line[0] != "}")
 		{
-			// if (split_line[0] == "cgi_extension") {
-			// 	display_error(tmp_line);
-			// 	return (false);
-			// }
 			if (find(directive_location.begin(), directive_location.end(), split_line[0]) != directive_location.end()) {
 				display_error(tmp_line);
 				return (false);
@@ -231,12 +207,11 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 					return (false);
 				}
 				// check the server beffor push it 
-				// ! activate after merge
 				if (!server.check_attributes_server())
 					return (false);
 				// push the server in webservers!
 				webserver.set_servers(server);
-				server.print_server_info();
+				if (DEBUG_MODE) server.print_server_info();
 				return (true);
 			}
 		}
@@ -246,7 +221,6 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 				return (false);
 			}
 			if (!handle_location(server, split_line)) {
-				// display_error(tmp_line);
 				return (false);
 			}
 		}
@@ -264,9 +238,9 @@ bool ParserConfig::handle_server(WebServ& webserver, const string& leftover_line
 		display_error(line);
 		return (false);
 	}
-	server.print_server_info();
+	
+	if (DEBUG_MODE) server.print_server_info();
 	// check the server beffor push it 
-	// ! activate after merge
 	if (!server.check_attributes_server())
 		return (false);
 	webserver.set_servers(server);
@@ -304,8 +278,6 @@ bool ParserConfig::handle_location(Server& server, const vector<string>& vec) {
 	vector<string>				split_line;
 	vector<string>::iterator	it;
 
-	// if (vec.size() != 3)
-	// 	return (false);
 	location.set_route(split(vec[1], '/', '/'));
 	while (getline(config_file, line))
 	{	tmp_line = line;
@@ -358,8 +330,6 @@ bool ParserConfig::is_valid_ipv4(const string& ip) {
 	if (ip[ip.length() -1 ] == '.')
 		return false;
     while (getline(stream, segment, '.')) {
-        // Check if segment is numeric
-		// cout << BOLD_BLUE << segment + ":"  << segments  << endl << RESET;
         if (segment.empty() || segment.size() > 3 || !isdigit(segment[0]))
             return false;
         // Convert to integer
@@ -412,10 +382,6 @@ bool ParserConfig::set_directive_server(const vector<string>& vec, const vector<
 		if ((vec.size() != 2) || !server.set_client_max_body_size(vec[1]))
 			return (false);
 	}
-	// if (*directive == "host_name") {
-	// 	if (!check_host_name(vec) || !server.set_host_name(vec[1]))
-	// 		return (false);
-	// }
 	if (*directive == "error_page") {
 		if ((vec.size() < 2) || !check_error_pages_and_set(vec, server))
 			return (false);
@@ -429,11 +395,11 @@ bool ParserConfig::set_directive_location(const vector<string>& vec, const vecto
 			return (false);
 	}
 	if (*directive == "root") {
-		if ((vec.size() != 2) || !loc.set_root(vec[1])) // check if the root is a dir and exist ! in set_root!
+		if ((vec.size() != 2) || !loc.set_root(vec[1]))
 			return (false);
 	}
 	if (*directive == "index") {
-		if ((vec.size() == 1) || !loc.set_indexes(vec)) // vector<string>(vec.begin() + 1, vec.end());
+		if ((vec.size() == 1) || !loc.set_indexes(vec))
 			return (false);
 	} 
 	if (*directive == "allow_methods") {
@@ -525,7 +491,6 @@ bool ParserConfig::is_path(const string& path) {
 }
 
 bool ParserConfig::check_error_pages_and_set(const vector<string>& vec, Server& server) {
-	// int	status_code;
 	int	value;
 	if ((vec.size() < 3) || !is_path(vec[vec.size() - 1]))
 		return (false);
@@ -542,15 +507,7 @@ bool ParserConfig::check_error_pages_and_set(const vector<string>& vec, Server& 
 	return (true);
 }
 
-// bool ParserConfig::check_upload_store(const vector<string>& vec) {
-
-// 	// should check if is a dir and exist ? 
-// 	return (true);
-// }
-
-
 bool ParserConfig::check_line_location(string& line) {
-	// int pos;
 	if (line.empty()  || line == "}")
 		return (true);
 	if (line[line.length() - 1] != ';')
@@ -595,37 +552,6 @@ vector<string> ParserConfig::split(const string& str, char delimiter1, char deli
 		words.push_back(word);
 	return words;
 }
-
-
-// bool ParserConfig::does_not_exist(const string& path) {
-// 	struct stat statbuf;
-// 	return (stat(path.c_str(), &statbuf) != 0); // Returns true if the file does not exist.
-// }
-
-// bool ParserConfig::is_a_file(const string& path) {
-// 	struct stat statbuf;
-// 	if (stat(path.c_str(), &statbuf) == 0)
-// 		return S_ISREG(statbuf.st_mode);
-// 	return false; // The path does not exist or is not a regular file.
-// }
-
-// bool ParserConfig::check_is_dir(const string& path) {
-
-// 	if (does_not_exist(path)) {
-// 		cerr << BOLD_RED << "Error: path => " << path << " does not exist!\n" << RESET;
-// 		return false;
-// 	}
-// 	if (is_a_file(path)) {
-// 		cerr << BOLD_RED << "Error: path => " << path << " should not be a file!\n" << RESET;
-// 		return (false);
-// 	} else {
-// 		if (access(path.c_str(), W_OK | X_OK) != 0) {
-// 			cerr << BOLD_RED << "Error: You don't have the write permission for: " << path << "\n" << RESET;
-// 			return (false);
-// 		}
-// 	}
-// 	return (true);
-// }
 
 void ParserConfig::display_error(const string& line) {
 

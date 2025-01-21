@@ -15,7 +15,6 @@
 
 #include "../const.hpp"
 #include "../Configuration/Server.hpp"
-#include <cstddef>
 
 class HttpRequest
 {
@@ -140,16 +139,12 @@ class HttpRequest
 		size_t get_chunked_post_offset(void) const;
 
 		// for post method
-
 		void	add_to_body(const string &, int );
 		bool get_is_binary_post(void) const;
 		long get_content_length(void) const;
-		// for post method
-
 		void check_chunked();
 		
-		void  display_request(); // TO REMOVE
-		// void append_to_body(const string &data);
+		void  display_request();
 		string get_status_line();
 };
 

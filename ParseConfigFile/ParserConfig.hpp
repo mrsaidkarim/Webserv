@@ -7,7 +7,6 @@
 class ParserConfig
 {
 	private:
-		/* data */
 	int					num_line;
 	vector<string>		directive_server;
 	vector<string>		directive_location;
@@ -36,7 +35,6 @@ class ParserConfig
 		bool			check_line_location(string& line);
 		bool			check_autoindex(const vector<string>& vec);
 		bool			check_allow_methods(const vector<string>& vec);
-		// bool			check_upload_store(const vector<string>& vec);
 		bool			check_listen(const vector<string>& vec);
 		bool			check_return(const vector<string>& vec);
 		bool			check_host_name(const string& _host_name);
@@ -44,15 +42,9 @@ class ParserConfig
 		bool			is_path(const string& path);
 		bool			check_value(const string& _value);
 		bool			is_valid_ipv4(const string& ip);
-		// bool			does_not_exist(const string& path);
-		// bool			is_a_file(const string& path);
-		// bool			check_is_dir(const string& path);
 
 		void			display_error(const string& line);
 
-		// // to implement!
-		// bool			check_attributes_server(Server& server); // to implement! to check the important element are not empty
-		// bool			check_attributes_location(Server& server); // to implement! to check the important element are not empty
 	public:
 		ParserConfig(const string& path, WebServ& webserv);
 		~ParserConfig();

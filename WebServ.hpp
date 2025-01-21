@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: skarim <skarim@student.42.fr>              +#+  +:+       +#+        */
+/*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/12/01 15:23:39 by skarim            #+#    #+#             */
-/*   Updated: 2025/01/16 19:19:50 by skarim           ###   ########.fr       */
+/*   Updated: 2025/01/21 21:04:03 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,16 +38,11 @@ class WebServ
         void close_sockets();
         void close_kq();
         void handle_timeout(pid_t pid, const string& file_path, const HttpResponse *response);
-
         const unordered_map<pid_t, pair<const HttpResponse*, int> >& get_pid_childs() const;
         const unordered_map<pid_t, string>& get_file_paths() const;
         const map<int, vector<Server> > &get_socket_servers() const;
         void	set_servers(Server& server);
-
         bool is_servers_empty() const;
-
-
-        // to remove 
         void print_all_servers();
 };
 

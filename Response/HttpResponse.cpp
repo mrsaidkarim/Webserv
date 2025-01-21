@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HttpResponse.cpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/21 20:22:49 by zech-chi          #+#    #+#             */
+/*   Updated: 2025/01/21 20:24:23 by zech-chi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "HttpResponse.hpp"
 #include <cstddef>
 #include <sys/unistd.h>
@@ -16,7 +28,6 @@ HttpResponse::~HttpResponse() {
 
 void HttpResponse::check_post_location() {
     index_location = longest_common_location().first;
-    cerr << BOLD_RED << index_location << "\n";
     // location not found
     if (index_location == -1) {
         request->set_is_complete_post(true);
@@ -33,7 +44,6 @@ void HttpResponse::check_post_location() {
         request->set_is_cgi_complete(true);
         return;
     }
-    // request->get_server().get_locations()[index_location].print_lacation_info();
 }
 
 const string& HttpResponse::get_script_path() const{
@@ -108,7 +118,7 @@ void    HttpResponse::handle_cookie1() {
                 request->set_is_complete_post(true);
                 request->set_is_cgi(false);
             }
-            cout << BG_GREEN << "("  << session_path << ")" << "\n";
+            DEBUG_MODE && cout << BG_GREEN << "("  << session_path << ")" << "\n";
         }
     }
     request->set_cookie(1);
@@ -126,9 +136,7 @@ void    HttpResponse::handle_cookie2() {
                 session_path = SESSION_MANAGEMENT + session_path;
                 if (is_a_file(session_path) && access(session_path.c_str(), R_OK) == 0) {
                     request->set_file_path(session_path);
-                    cout << "&&&&&&&&&     ###" << request->get_is_cgi() << endl;
                     request->set_cgi_path_post(session_path);
-                    cout << request->get_body() << "@@@@@@@@$$$$$\n";
                     if (request->get_method() == "POST") {
                         request->set_is_complete_post(true);
                         request->set_is_chunked(true);
@@ -141,12 +149,9 @@ void    HttpResponse::handle_cookie2() {
                     request->set_cookie(2);
                 }
             }
-            cout << "already cookie exist\n";
         }
         if (request->get_cookie() == 0 && !flag) {
             request->set_session_id(generate_session_id());
-            cout << "in request->get_cookie() == 0 && !flag\n\n\n";
-            cout << request->get_session_id() << "\n\n\n";
             request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
             fstream file(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
             file.write("mode=light&lang=ar", 18);
@@ -159,13 +164,9 @@ void    HttpResponse::handle_cookie2() {
 
 void    HttpResponse::serv() {
 
-    cout << "we are in serv\n";
-    // check if it is a cgi
-	// ! here we should check if the request is good or not by see the status_code attribut in the request if is empty the rquest is good! else something is bad
-    // handle cookie1
-    handle_cookie1();
-    // hangle cookie2
-    handle_cookie2();
+    DEBUG_MODE && cout << "we are in serv\n";
+    handle_cookie1(); // handle cookie1
+    handle_cookie2(); // hangle cookie2
      
     if (request->get_method() == "GET")
         get_method();

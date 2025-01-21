@@ -5,7 +5,7 @@ void HttpResponse::serv_404() const {
     "HTTP/1.1 404 Not Found\r\n"
     "Content-Type: text/html\r\n"
     "Connection: keep-alive\r\n"
-    "Content-Length: 389\r\n" // Updated length
+    "Content-Length: 389\r\n"
     "\r\n"
     "<html>\r\n"
     "<head>\r\n"

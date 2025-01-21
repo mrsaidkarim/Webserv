@@ -15,9 +15,6 @@
 #include <cstdio>
 #include <exception>
 
-// ! NOTES
-// ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
-
 static string generate_file_name(void) {
     struct timeval tv;
     gettimeofday(&tv, NULL);
@@ -43,43 +40,32 @@ static string generate_file_name(void) {
     return oss.str();
 }
 
-// static string generate_session_id(void) {
-//     struct timeval tv;
-//     gettimeofday(&tv, NULL);
+void display_first_line_request(const string &line) {
+	struct timeval tv;
+    gettimeofday(&tv, NULL);
     
-//     // Extract seconds and microseconds
-//     time_t rawTime = tv.tv_sec;
-//     int microseconds = tv.tv_usec;
+    // Extract seconds and microseconds
+    time_t rawTime = tv.tv_sec;
+    int microseconds = tv.tv_usec;
     
-//     // Convert to local time
-//     struct tm *timeInfo = localtime(&rawTime);
+    // Convert to local time
+    struct tm *timeInfo = localtime(&rawTime);
 
-//     // Create the formatted string
-//     ostringstream oss;
-//     oss << (timeInfo->tm_year + 1900) << "_"       // Full Year (e.g., 2025)
-//         << (timeInfo->tm_mon + 1) << "_"           // Month
-//         << timeInfo->tm_mday << "_"               // Day
-//         << timeInfo->tm_hour << "_"               // Hours
-//         << timeInfo->tm_min << "_"                // Minutes
-//         << timeInfo->tm_sec << "_"                // Seconds
-//         << microseconds;               // Microseconds
+    // Create the formatted string
+    ostringstream oss;
+    oss << timeInfo->tm_hour << "-"               // Hours
+        << timeInfo->tm_min << "-"                // Minutes
+        << timeInfo->tm_sec << "-"                // Seconds
+		<< microseconds;
 
-//     return oss.str();
-// }
 
-// static string addPrefixBeforeCRLF(const string &input) {
-//     const string word = "\r\n";
-//     const string prefix = "{$$$$}";
-//     string result = input;
-//     size_t pos = 0;
-
-//     while ((pos = result.find(word, pos)) != string::npos) {
-//         result.insert(pos, prefix);
-//         pos += prefix.size() + word.size(); // Move past the added prefix and word
-//     }
-
-//     return result;
-// }
+    string result = line;
+    size_t pos = result.find("HTTP/1.1");
+    if (pos != string::npos) {
+        result = result.substr(0, pos); // Extract the part before "HTTP/1.1"
+    }
+    cout << BOLD_CYAN << "[" << oss.str() << "]: " << result << endl;
+}
 
 void HttpRequest::http_request_init() {
 	string			first_line;
@@ -103,10 +89,8 @@ void HttpRequest::http_request_init() {
 	index = request.find(CRLF_2);
 	is_binary_post = true;
 	chunked_post_offset = 0;
-	cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
-	cout << BOLD_YELLOW << request << RESET << "\n";
-    cout << BOLD_GREEN << "*************: <<<" <<this->get_is_binary_post() <<">>>>" << endl << RESET;
-
+	DEBUG_MODE && cout << BOLD_YELLOW << "HttpRequest constructer" << RESET << "\n";
+	DEBUG_MODE && cout << BOLD_YELLOW << request << RESET << "\n";
 
 	if (index == string::npos) {
 		this->set_status_code("400");
@@ -139,33 +123,24 @@ void HttpRequest::http_request_init() {
 	if (!is_valid_header_request(header) || !check_header_elements())
 		goto error;
 		
-
-	// ? update in post method should check if at least there's content-lenght or transfer-encoding else  (status code 411 length requird)
 	if (this->get_method() == "POST") {
-		// set_boundary_key it looks for boundary key :) in header map
-		// if boundary key founded it return true , false otherwise
-		// life is good untile a problem happend
-		// cout << BOLD_CYAN << "Daz men hna%%%%%%%%%%%\n" << "\n";
-	
 		if (this->header.find("content-type")->second == "application/x-www-form-urlencoded") {
-			// set_is_complete_post(true);
 			this->is_cgi = true;
 			cgi_path_post = generate_file_name();
-			cout << BOLD_RED << cgi_path_post << "\n" << RESET;
+			DEBUG_MODE && cout << BOLD_RED << cgi_path_post << "\n" << RESET;
 			try {
 				file_stream = new fstream(cgi_path_post.c_str(), ios::out | ios::trunc | ios::binary);
 			} catch (std::exception& e) {
-				cerr << BOLD_RED << "new failed " << e.what() << "\n";
+				DEBUG_MODE && cerr << BOLD_RED << "new failed " << e.what() << "\n";
 				set_status_code("500");
 				goto error;
 			}
 			if (!file_stream || !file_stream->is_open()) {
-				cerr << "can't open the file\n";
+				DEBUG_MODE && cerr << "can't open the file\n";
+				set_status_code("500");
+				goto error;
 			}
-			// is_binary_post = false;
 		} else {
-			// I add crlf before body because it was removed before
-		 	// update body
 			body = "\r\n" + body;
 		}
 		check_chunked();
@@ -179,31 +154,9 @@ void HttpRequest::http_request_init() {
 			goto error;
 		}
 	}
-	// end parse header
-	// print the result
-	// cout << BOLD_GREEN << first_line << "\n" << RESET;
-	// cout << BOLD_YELLOW << header << "\n" << RESET;
-	// cout << BOLD_BLUE << body << RESET;
-	// print the result
 	content_length = 0;
-	// if (this->header.find("content-length") != this->header.end() )
-	// {
-	// 	stringStream ss(this->header["content-length"]);
-	// 	ss << content_length;
-	// 	if (!ss.fail()){// || (content_length > server.get_client_max_body_size() && server.get_client_max_body_size() > -1)) {
-	// 		this->set_is_complete_post(true);
-	// 		this->set_file_path(TOO_LARGE);
-	// 		this->set_status_code("411");
-	// 		goto error;
-			
-	// 	}
-	// 	// else
-			
-	// }
 	if (this->header.find("content-length") != this->header.end() )
 	{
-		cerr << "content length tooooo largeeeee111 \n";
-		cerr << this->header["content-length"] << " =? " << server.get_client_max_body_size() << "\n";
 		stringStream ss(this->header["content-length"]);
 		ss >> content_length;
 		if (ss.fail() || (server.get_client_max_body_size() > -1 && content_length > server.get_client_max_body_size()))
@@ -214,13 +167,14 @@ void HttpRequest::http_request_init() {
 	}
 	else
 		content_length = -1;
+
+	display_first_line_request(first_line);
 	return ;
 	error :
-		cout << RED << "Error: Malformed request detected\n" << RESET;
+		DEBUG_MODE && cout << RED << "Error: Malformed request detected\n" << RESET;
 		set_is_cgi(false);
 		set_is_cgi_complete(true);
 		set_is_complete_post(true);
-	cout << statusCode << "@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
 }
 
 HttpRequest::HttpRequest(const string& _request) {
@@ -234,7 +188,6 @@ static bool startsWithTmp(const string& path) {
 
 static bool endsWithTxt(const string& path) {
     const string suffix = ".txt";
-    // Ensure the path is at least as long as the suffix
     if (path.length() >= suffix.length()) {
         return path.compare(path.length() - suffix.length(), suffix.length(), suffix) == 0;
     }
@@ -248,15 +201,11 @@ HttpRequest::~HttpRequest() {
     }
     if (was_cgi && !cgi_output_file.empty() &&startsWithTmp(cgi_output_file))
         remove(cgi_output_file.c_str());
-    // if (!cookie)
     if (!cgi_path_post.empty() && startsWithTmp(cgi_path_post) && endsWithTxt(cgi_path_post))
         remove(cgi_path_post.c_str());
-    cout << BOLD_BLUE << cgi_path_post << endl << RESET;
-    cout << BOLD_BLUE << file_path << endl << RESET;
-    cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
+    DEBUG_MODE && cout << BOLD_YELLOW << "HttpRequest destructer" << RESET << endl;
 }
 
-// SETTERS:
 void	HttpRequest::set_status_code(const string& _status) {
 	if (this->statusCode.empty())
 		this->statusCode = _status;
@@ -395,7 +344,6 @@ void HttpRequest::set_query(const string& _query) {
 	this->query = _query;
 }
 
-// GETTERS
 const string& HttpRequest::get_status_code(void) const {
 	return (this->statusCode);
 }
@@ -428,7 +376,6 @@ const string& HttpRequest::get_fragment(void) const {
 	return (this->fragment);
 }
 
-// utils :
 bool HttpRequest::is_valid_header_request(const string& _header) {
 	stringStream	str(_header);
 	string			line;
@@ -498,7 +445,6 @@ void HttpRequest::upper_to_lower(string& str) {
 bool HttpRequest::is_valid_characters(const string& str) {
 	for (size_t i = 0; i < str.length(); i++)
 	{
-		// if (str[i] == '\t')
 		if (str[i] >= 9 && str[i] <= 13)
 			return (false);
 	}
@@ -539,8 +485,7 @@ bool HttpRequest::check_header_elements() {
 }
 
 
-/// to remove
-string add_dollars_before_CRLF(const string &input) {
+static string add_dollars_before_CRLF(const string &input) {
     string result;
     string word = "\r\n";
     size_t pos = 0;
@@ -578,29 +523,6 @@ void HttpRequest::display_request() {
 
 	cout << "Body: " << add_dollars_before_CRLF(get_body()) << "\n" << RESET;
 }
-
-//  if (it->second.find_first_not_of("!#$&'()*+,/:;=?@[]-_.~ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") != std::string::npos)
-// request-target longer than any URI it wishes to parse MUST respond
-//    with a 414 (URI Too Long)
-
-//  header-field   = field-name ":" OWS field-value OWS
-
-//      field-name     = token
-//      field-value    = *( field-content / obs-fold )
-//      field-content  = field-vchar [ 1*( SP / HTAB ) field-vchar ]
-//      field-vchar    = VCHAR / obs-text
-
-//      obs-fold       = CRLF 1*( SP / HTAB )
-//                     ; obsolete line folding
-//                     ; see Section 3.2.4
-
-//  transfer-coding    = "chunked" ; Section 4.1
-//                         / "compress" ; Section 4.2.1
-//                         / "deflate" ; Section 4.2.2
-//                         / "gzip" ; Section 4.2.3
-//                         / transfer-extension
-
-
 
 void HttpRequest::set_client_socket(int _client_socket) {
 	this->client_socket = _client_socket;
@@ -658,8 +580,6 @@ streampos HttpRequest::get_file_offset(void) const {
 	return (this->file_offset);
 }
 
-// for post method
-
 void HttpRequest::add_to_body(const string &slice, int byte_read) {
 	read_content_length += byte_read;
 	body += slice;	
@@ -668,32 +588,30 @@ void HttpRequest::add_to_body(const string &slice, int byte_read) {
 bool HttpRequest::set_boundary_key(void) {
 	map<string, string>::iterator it = header.find("content-type");
 	if (it == header.end()) {
-		// cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
+		DEBUG_MODE && cerr << BOLD_RED << "couldn't find content-type" << RESET << "\n";
 		return (false);
 	}
 	size_t pos = it->second.find("boundary=");
 	if (pos == string::npos) {
-		// cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
+		DEBUG_MODE && cerr << BOLD_RED << "couldn't find boundary key" << RESET << "\n";
 		return (false);
 	}
 	boundary_key = it->second.substr(pos + 9); // 9 is length("boundary=")
 
 	// set boundary key begin 
-
 	boundary_key_begin = CRLF;
 	boundary_key_begin += "--";
 	boundary_key_begin += boundary_key;
 	boundary_key_begin += CRLF;
 
 	// set boundary key end
-
 	boundary_key_end = CRLF;
 	boundary_key_end += "--";
 	boundary_key_end += boundary_key;
 	boundary_key_end += "--";
 	boundary_key_end += CRLF;
 
-	// cout << BOLD_GREEN << boundary_key << "\n" << RESET;
+	DEBUG_MODE && cout << BOLD_GREEN << boundary_key << "\n" << RESET;
 	return (true);
 }
 
@@ -789,20 +707,6 @@ void HttpRequest::set_cookie(int _cookie) {
 int HttpRequest::get_cookie(void) const {
 	return (cookie);
 }
-
-// void HttpRequest::append_to_body(const string &data)
-// {
-// 	std::istringstream iss(header["content-length"]);
-// 	size_t c_length;
-// 	iss >> c_length;
-// 	if (data.size() + body.size() >= c_length)
-// 	{
-// 		body.append(data, 0, c_length - body.size());
-// 		this->is_complete = true;
-// 	}
-// 	else
-// 		body.append(data);
-// }
 
 bool HttpRequest::get_is_binary_post(void) const
 {

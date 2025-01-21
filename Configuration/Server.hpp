@@ -35,12 +35,8 @@ class Server
 		Server(const Server& _server);
 
 		Server& operator=(const Server& _server);
-        // Server(const vector<int> &ports, const vector<string> &server_names, const long &client_max_body_size,
-		// 		const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
-		// 		const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
         
         // GETTERS
-		// const vector<int> &get_ports(void) const;
 		const  vector<pair<int, string> > &get_ports(void) const;
 		const vector<string> &get_server_names(void) const;
 		const long &get_client_max_body_size(void) const;
@@ -51,12 +47,10 @@ class Server
 		bool  get_autoindex(void) const;
 		const string& get_global_upload_store(void) const;
 		const map<string, string> &get_error_pages(void) const;
-		// const string&	get_host_name(void) const;
 
 		// SETTERS
 		void	set_locations(Location& location);
-		// bool	set_host_name(const string& _host_name);
-		void	set_error_pages(const string& key, const string& value); // to handle!
+		void	set_error_pages(const string& key, const string& value);
 		void	set_ports(int port,const string& _host);
 		bool	set_global_root(const string& root);
 		bool	set_server_names(const vector<string> & vec);
@@ -69,27 +63,9 @@ class Server
 		bool	does_not_exist(const string& path);
 		bool	is_a_file(const string& path);
 		bool	check_is_dir(const string& path, int num_server);
-		bool	check_attributes_server(); // to implement check the important attributes!
+		bool	check_attributes_server();
 
-		// to remove
 		void print_server_info(void) const;
-        // GETTERS
-        // const vector<int> &get_ports(void) const;
-        // const vector<string> &get_server_names(void) const;
-        // const long &get_client_max_body_size(void) const;
-        // const vector<Location> &get_locations(void) const;
-        // const string &get_global_root(void) const;
-        // const pair<string, string> &get_redirection(void) const;
-        // const vector<string> &get_indexes(void) const;
-        // bool get_autoindex(void) const;
-        // const vector<string> &get_error_pages(void) const;
-
-        // // SETTERS
-
-
-        // // to remove
-        // void print_server_info(void) const;
-        
 };
 
 #endif

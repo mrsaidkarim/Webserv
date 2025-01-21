@@ -7,7 +7,7 @@
 
 string to_hex(int number) {
     ostringstream oss;
-    oss << hex << number; // Convert to hex
+    oss << hex << number;
     return oss.str();
 }
 
@@ -160,11 +160,8 @@ void HttpResponse::serv_autoindex(const string& path) const {
                         "Content-Type: text/html\r\n"
                         "Connection: Closed\r\n";
 
-    cout << "here (!request->get_session_id().empty())1\n\n\n";
     if (!request->get_session_id().empty() && request->get_cookie() != 0) {
-        response += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
-        cout << "here (!request->get_session_id().empty())2\n\n\n";
-        cout << request->get_session_id() << "\n\n\n";
+        response += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + ";\r\n";
     }
     response += "\r\n" + body_content;
 
@@ -175,15 +172,13 @@ void HttpResponse::serv_autoindex(const string& path) const {
 
 
 void HttpResponse::send_response() const{
-    cout << BOLD_GREEN << "in send response\n" << RESET;
+    DEBUG_MODE && cout << BOLD_GREEN << "in send response\n" << RESET;
     if (is_cgi()) {
-        cout << BOLD_RED << "is cgi\n" << RESET;
         cgi();
         return;
     }
     if (request->get_file_offset() == 0) {
-        cout << "here >>>>>>> 1000\n";
-        cout << request->get_file_path() << "\n";
+        DEBUG_MODE && cout << request->get_file_path() << "\n";
         string status_line = request->get_status_line();
         string path = request->get_file_path();
         // if already file opened close it
@@ -197,7 +192,7 @@ void HttpResponse::send_response() const{
         try {
             file = new fstream(path.c_str(), ios::in);
         } catch (std::exception& e) {
-            cerr << "new failed " << e.what() << "\n";
+            DEBUG_MODE && cerr << "new failed " << e.what() << "\n";
             serv_500();
             return;
         }
@@ -219,14 +214,11 @@ void HttpResponse::send_response() const{
         http_response_header = status_line + http_response_header;
 
         if (!request->get_session_id().empty() && request->get_cookie() != 0) {
-            http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + "; Path=/; HttpOnly\r\n";
-            cout << "here (!request->get_session_id().empty())\n\n\n";
-            cout << request->get_session_id() << "\n\n\n";
-
+            http_response_header += "Set-Cookie: session_id_" + to_string(request->get_cookie()) + "=" + request->get_session_id() + ";\r\n";
         }
         http_response_header += "\r\n";
         if (send(request->get_client_socket(), http_response_header.c_str(), http_response_header.size(), 0) < 0) {
-            perror("1) send failed in send_response()");
+            DEBUG_MODE && cerr << BOLD_RED << "1) send failed in send_response()\n" << RESET;
             request->set_is_complete(true);
             if (file->is_open()) {
                 file->close();
@@ -244,17 +236,16 @@ void HttpResponse::send_response() const{
     fstream *file = request->get_file_stream();
 
     file->seekg(request->get_file_offset());
-    // // cout << BOLD_YELLOW << "prev offset: " << request->get_file_offset() << RESET << endl;
     char buffer[BUFFER_SIZE];
     // struct stat file_status;
     if (file->read(buffer, BUFFER_SIZE) || file->gcount() > 0) {
         size_t bytes_read = file->gcount();
-        string chunk_size = to_hex(bytes_read);  // Assuming to_hex is working fine
+        string chunk_size = to_hex(bytes_read);
         chunk_size += "\r\n";
 
-        // Write chunk size
+        // Send chunk size
         if (send(request->get_client_socket(), chunk_size.c_str(), chunk_size.size(), 0) < 0) {
-            perror("2) send failed in send_response()");
+            DEBUG_MODE && cerr << BOLD_RED << "2) send failed in send_response()\n" << RESET;
             request->set_is_complete(true);
             if (file && file->is_open()) {
                 file->close();
@@ -263,9 +254,9 @@ void HttpResponse::send_response() const{
             request->set_file_stream(NULL);
             return;
         }
-        // Write actual chunk data
+        // Send actual chunk data
         if (send(request->get_client_socket(), buffer, bytes_read, 0) < 0) {
-            perror("3) send failed in send_response()");
+            DEBUG_MODE && cerr << BOLD_RED << "3) send failed in send_response()\n" << RESET;
             request->set_is_complete(true);
             if (file->is_open()) {
                 file->close();
@@ -275,9 +266,8 @@ void HttpResponse::send_response() const{
             return ;
         }
         // End of chunk
-        // write(request->get_client_socket(), "\r\n", 2);
         if (send(request->get_client_socket(), "\r\n", 2, 0) < 0) {
-            perror("4) send failed in send_response()");
+            DEBUG_MODE && cerr << BOLD_RED << "4) send failed in send_response()\n" << RESET;
             request->set_is_complete(true);
             if (file->is_open()) {
                 file->close();
@@ -287,9 +277,7 @@ void HttpResponse::send_response() const{
             return ;
         }
     }
-    // cout << "hello >>>>>>2222000000\n";
     request->set_file_offset(file->tellg());
-    // cout << BOLD_YELLOW << "cur offset: " << request->get_file_offset() << RESET << endl;
     // Check if we have reached the end of the file
     if (file->eof()) {
         // Final chunk with 0 size
@@ -305,11 +293,6 @@ void HttpResponse::send_response() const{
 
 pair<int, int> HttpResponse::longest_common_location() const{
     vector<string> route = request->get_url();
-    cout << "splited_route -->";
-    for (size_t i = 0; i < route.size();i++) {
-        cout << " " << route[i];
-    }
-    cout << endl;
     int best_i = -1;
     int best_j;
 
@@ -353,7 +336,6 @@ void HttpResponse::get_method() {
     pair<int, int> longest = longest_common_location();
     if (longest.first != -1) {
         index_location = longest.first;
-        cout << "location should handle this shit\n";
         int x = longest.first;
 
         // check redirection
@@ -372,7 +354,6 @@ void HttpResponse::get_method() {
         if (path.empty())
             path = request->get_server().get_global_root();
         
-        cout << BOLD_GREEN << path << RESET << endl;
         // join the url with root
         for (size_t i = 0; i < route.size(); i++) {
             if (i > 0)
@@ -380,15 +361,12 @@ void HttpResponse::get_method() {
             path += route[i];
         }
 
-        cout << BOLD_GREEN << path << RESET << endl;
-        // cout << "this is path : " << path << "\n";
+        DEBUG_MODE && cout << BOLD_GREEN << path << RESET << endl;
         // check if path is file or directory
         struct stat path_status;
-
-        // cout << "path : " << path << "\n";
         if (stat(path.c_str(), &path_status) == -1) { // check file if exist
             // not found
-            cerr << "stat failed\n";
+            DEBUG_MODE && cerr << "stat failed\n";
             request->set_status_code("404");
             send_response();
             return ;
@@ -428,7 +406,6 @@ void HttpResponse::get_method() {
 
             //priority: 4 (autoindex)
             if (request->get_server().get_locations()[x].get_auto_index()) {
-                cout << "priority: 4 (autoindex)\n";
                 serv_autoindex(path);
                 return ;
             }
@@ -444,7 +421,7 @@ void HttpResponse::get_method() {
         path += "/" + request->get_url()[i];
     }
 
-    cout << "this is joined path : " << path << endl;
+    DEBUG_MODE && cout << "this is joined path : " << path << endl;
 
     // check if exist
     struct stat status;
@@ -475,14 +452,11 @@ void HttpResponse::get_method() {
         }
 
         //priority: 3 (index)
-        cout << "priority: 3 (index)\n"; 
         string index;
         struct stat file_stat;
-        cout << "size : " << request->get_server().get_indexes().size() << "\n";
         for (size_t i = 0; i < request->get_server().get_indexes().size(); i++) {
             index = request->get_server().get_indexes()[i];
             index = path + "/" + index;
-            cout << index << "!!!\n";
             if (stat(index.c_str(), &file_stat) == 0 && access(index.c_str(), R_OK) == 0) {
                 request->set_file_path(index);
                 send_response();
@@ -490,7 +464,6 @@ void HttpResponse::get_method() {
             }        
         }
 
-        cout << "priority: 4 (autoindex)\n";
         //priority: 4 (autoindex)
         if (request->get_server().get_autoindex()) {
             serv_autoindex(path);

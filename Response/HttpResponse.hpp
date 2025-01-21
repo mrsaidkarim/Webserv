@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   HttpResponse.hpp                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/01/21 20:25:54 by zech-chi          #+#    #+#             */
+/*   Updated: 2025/01/21 20:25:55 by zech-chi         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef HTTPRESPONSE_HPP
 #define HTTPRESPONSE_HPP
 
@@ -20,12 +32,10 @@ class HttpResponse {
         HttpResponse(HttpRequest *_request, WebServ *_webserv);
         ~HttpResponse();
 
+        void serv();
         void get_method();
         void post_method();
         void delete_method() const;
-
-        void    serv();
-
 
 
         void serv_404() const;

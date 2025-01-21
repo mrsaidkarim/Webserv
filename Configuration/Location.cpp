@@ -24,22 +24,8 @@ Location::Location()
 	cgi_extension["php"] = "";
 	cgi_extension["py"] = "";
 	cgi_extension["sh"] = "";
-	cout << "constructor location\n";
 }
 
-// Location::Location(const vector<string> &route, const vector<string> &indexes, bool _auto_index,
-//                 const string &root, const map<string, bool> &methods,
-//                 const pair<string, string> &redirections, const map<string, string> &cgi): route(route), indexes(indexes), auto_index(_auto_index), root(root), methods(methods), redirections(redirections), cgi_extension(cgi)
-// {
-//     auto_index = _auto_index;
-//     methods_set = false;
-//     auto_index_set = false;
-//     // cgi_extension["php"] = "";
-//     // cgi_extension["py"] = "/usr/bin/python3";
-//     // cgi_extension["js"] = "";
-//     cout << "constructor location\n";
-// }
-        // Location(string file_path); here do your shit alparser nigro o zid setters;
 Location::~Location()
 {
     
@@ -81,15 +67,12 @@ const pair<string, string> &Location::get_redirections(void) const
 
 bool Location::set_route(const vector<string> &route)
 {
-	// if (!this->route.empty())
-	// 	return (false);
 	for (size_t i = 0; i < route.size(); i++)
 	{
 		this->route.push_back(route[i]);
 	}
 	if (this->route.empty())
 		this->route.push_back("/");
-    // this->route = route;
     return (true);
 }
 
@@ -102,7 +85,6 @@ bool Location::set_indexes(const vector<string> &indexes)
 	{
 		this->indexes.push_back(indexes[i]);
 	}
-    // this->indexes = indexes;
     return (true);
 }
 
@@ -178,7 +160,7 @@ bool Location::check_is_dir(const string& path, int num_server) {
 		cerr << BOLD_RED << "Error server" << num_server << " in location: path => " << path << " should not be a file!\n" << RESET;
 		return (false);
 	} else {
-		if (access(path.c_str(), W_OK | X_OK) != 0) {
+		if (access(path.c_str(), R_OK | X_OK) != 0) {
 			cerr << BOLD_RED << "Error server" << num_server << " in location: You don't have the write permission for: " << path << "\n" << RESET;
 			return (false);
 		}
@@ -227,10 +209,7 @@ void Location::print_lacation_info() const {
     cout << BOLD_BLUE << "\t" << "route       : ";
     for (unsigned long i = 0; i < route.size(); i++) {
         cout << route[i] << " ";
-        // if (i < route.size() - 1)
-        //     cout << "/";
     }
-    // for(unsigned ) << BOLD_BLACK << route << " \n";
     cout << "\n";
 
     cout << BOLD_BLUE << "\t" << "index       : " << BOLD_BLACK << "[";
@@ -271,8 +250,6 @@ void Location::print_lacation_info() const {
     cout << BOLD_BLUE << "\t" <<  "redirection : " << BOLD_BLACK;
     cout << "[" << redirections.first << "]" << " [" << redirections.second << "] \n";
 
-    // cout << RESET;
-
 	cout << BOLD_BLUE << "\t" << "cgi_extension : \n" << BOLD_BLACK;
 	for (map<string, string>::const_iterator it = cgi_extension.begin(); it != cgi_extension.end() ; it++)
 	{
@@ -280,55 +257,3 @@ void Location::print_lacation_info() const {
 	}
 	cout << RESET;
 }
-// void Location::print_lacation_info() const {
-//     cout << BG_WHITE;
-
-//     cout << BOLD_BLUE << "\t" << "route       : ";
-//     for (unsigned long i = 0; i < route.size(); i++) {
-//         cout << route[i];
-//         if (i < route.size() - 1)
-//             cout << "/";
-//     }
-//     // for(unsigned ) << BOLD_BLACK << route << " \n";
-//     cout << "\n";
-
-//     cout << BOLD_BLUE << "\t" << "index       : " << BOLD_BLACK << "[";
-//     for (unsigned long i = 0; i < indexes.size(); i++) {
-//         if (i > 0)
-//             cout << ", ";
-//         cout << indexes[i];
-//     }
-//     cout << "] " << endl;
-
-//     cout << BOLD_BLUE << "\t" << "auto_index  : " << BOLD_BLACK;
-//     if (auto_index) cout << "on " << " \n";
-//     else cout << "off " << " \n";
-
-//     cout << BOLD_BLUE << "\t" << "root        : " << BOLD_BLACK << root << " \n";
-
-//     cout << BOLD_BLUE << "\t" <<  "methods     : \n" << BOLD_BLACK;
-//     cout << "\t      GET   : ";
-//     auto it = methods.find("GET");
-//     if (it == methods.end() || it->second == false)
-//         cout << "false \n";
-//     else
-//         cout << "true \n";
-//     cout << "\t      POST  : ";
-//     it = methods.find("POST");
-//     if (it == methods.end() || it->second == false)
-//         cout << "false \n";
-//     else
-//         cout << "true \n";
-//     cout << "\t      DELETE: ";
-//     it = methods.find("DELETE");
-//     if (it == methods.end() || it->second == false)
-//         cout << "false \n";
-//     else
-//         cout << "true \n";
-
-//     cout << BOLD_BLUE << "\t" <<  "redirection : " << BOLD_BLACK;
-//     cout << "[" << redirections.first << "]" << " [" << redirections.second << "] \n";
-
-//     cout << RESET;
-
-// }
