@@ -403,6 +403,8 @@ void HttpResponse::post_method() {
                 break;
             }
             else {
+                if (body.size() == 2)
+                    return;
                 if (request->get_is_binary_post())
                 {
                     if (!file)
