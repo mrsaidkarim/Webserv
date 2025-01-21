@@ -95,7 +95,7 @@ bool HttpResponse::is_cgi() const{
         return (false);
     string extension = request->get_file_path().substr(pos + 1);
     cerr << extension << "\n";
-    if (extension != "py" && extension != "php") //  && extension != "js"
+    if (extension != "py" && extension != "php" && extension != "sh")
         return (false);
     if (index_location == -1) {
         request->set_status_code("403");

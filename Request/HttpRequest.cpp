@@ -271,7 +271,7 @@ bool HttpRequest::set_method(const string& _method) {
 }
 
 void HttpRequest::set_path_info(string& _url) {
-    const char* extensions[] = {".py", ".php", ".js"};
+    const char* extensions[] = {".py", ".php", ".sh"};
     size_t num_extensions = sizeof(extensions) / sizeof(extensions[0]);
 
     for (size_t i = 0; i < num_extensions; ++i) {

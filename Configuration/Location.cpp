@@ -23,7 +23,7 @@ Location::Location()
 	auto_index_set = false;
 	cgi_extension["php"] = "";
 	cgi_extension["py"] = "";
-	cgi_extension["js"] = "";
+	cgi_extension["sh"] = "";
 	cout << "constructor location\n";
 }
 
@@ -202,7 +202,7 @@ bool Location::set_cgi_extension(const vector<string>& vec) {
 
 	if (vec.size() != 3)
 		return (false);
-	if (vec[1] != "php" && vec[1] != "py" && vec[1] != "js")
+	if (vec[1] != "php" && vec[1] != "py" && vec[1] != "sh")
 		return (false);
 	if (!cgi_extension[vec[1]].empty())
 		return (false);
