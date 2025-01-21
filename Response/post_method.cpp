@@ -74,7 +74,7 @@ bool HttpResponse::normalize_chunked_data(string &s) {
         // string chunk_size_hex = s.substr(chunk_start, i - chunk_start);
         // int chunk_size;
         // if (i > chunk_start)
-        //     chunk_size = std::stoul(chunk_size_hex, nullptr, 16);
+        //     chunk_size = std::stoul(chunk_size_hex, NULL, 16);
         // if (i + 2 > s.size() && chunk_size != 0)
         // {
         //     cout << "dkhal w9999999999, pos: " << pos << ", i: " << i << "chunk: "<< chunk_size_hex << "\n";
@@ -91,7 +91,7 @@ bool HttpResponse::normalize_chunked_data(string &s) {
         if (i > chunk_start && i + 1 < s.size() && s[i] == '\r' && s[i + 1] == '\n') {
             // Extract the chunk size as a hexadecimal number
             string chunk_size_hex = s.substr(chunk_start, i - chunk_start);
-            // size_t chunk_size = std::stoul(chunk_size_hex, nullptr, 16);
+            // size_t chunk_size = std::stoul(chunk_size_hex, NULL, 16);
             size_t chunk_size;
             try
             {
@@ -131,29 +131,29 @@ bool HttpResponse::normalize_chunked_data(string &s) {
 }
 
 static string get_file_extension(const string& content_type) {
-    const map<string, string> mime_to_ext = {
-        {"/html", ".html"},
-        {"/plain", ".txt"},
-        {"/css", ".css"},
-        {"/javascript", ".js"},
-        {"/json", ".json"},
-        {"/xml", ".xml"},
-        {"/pdf", ".pdf"},
-        {"/zip", ".zip"},
-        {"/gzip", ".gz"},
-        {"/x-tar", ".tar"},
-        {"/vnd.openxmlformats-officedocument.wordprocessingml.document", ".docx"},
-        {"/x-c", ".c"},
-        {"/x-cpp", ".cpp"},
-        {"/x-python", ".py"},
-        {"/octet-stream", ".bin"},
-        {"/png", ".png"},
-        {"/jpeg", ".jpg"},
-        {"/gif", ".gif"},
-        {"/svg+xml", ".svg"},
-        {"/mpeg", ".mp3"},
-        {"/mp4", ".mp4"},
-    };
+    map<string, string> mime_to_ext;
+
+    mime_to_ext["/html"] = ".html";
+    mime_to_ext["/plain"] = ".txt";
+    mime_to_ext["/css"] = ".css";
+    mime_to_ext["/javascript"] = ".js";
+    mime_to_ext["/json"] = ".json";
+    mime_to_ext["/xml"] = ".xml";
+    mime_to_ext["/pdf"] = ".pdf";
+    mime_to_ext["/zip"] = ".zip";
+    mime_to_ext["/gzip"] = ".gz";
+    mime_to_ext["/x-tar"] = ".tar";
+    mime_to_ext["/vnd.openxmlformats-officedocument.wordprocessingml.document"] = ".docx";
+    mime_to_ext["/x-c"] = ".c";
+    mime_to_ext["/x-cpp"] = ".cpp";
+    mime_to_ext["/x-python"] = ".py";
+    mime_to_ext["/octet-stream"] = ".bin";
+    mime_to_ext["/png"] = ".png";
+    mime_to_ext["/jpeg"] = ".jpg";
+    mime_to_ext["/gif"] = ".gif";
+    mime_to_ext["/svg+xml"] = ".svg";
+    mime_to_ext["/mpeg"] = ".mp3";
+    mime_to_ext["/mp4"] = ".mp4";
 
     if (mime_to_ext.find(content_type) != mime_to_ext.end()) {
         return mime_to_ext.at(content_type);
@@ -251,7 +251,7 @@ void HttpResponse::post_method() {
     //     request->set_is_complete(true);
     //     return ;
     // }
-    auto header = request->get_header();
+    map<string, string> header = request->get_header();
     // cout << BOLD_RED;
     // for(auto element = header.begin(); element != header.end(); element++)
     //     cout << element->first << ": " << element->second << "\n";

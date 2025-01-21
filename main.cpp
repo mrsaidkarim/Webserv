@@ -60,7 +60,7 @@
 
 //     vector<int> ports = {8080};
 //     vector<string> server_names = {"zechi.com", "www.nigro.com"};
-//     long long client_max_body_size = -1;
+//     long client_max_body_size = -1;
 //     vector<Location> locations = {loc1, loc2, loc3, loc4};
 //     string global_root = "/Volumes/TOSHIBA/www/";
 //     // pair<string, string> redirection = {"301", "https://auth.42.fr"};
@@ -132,7 +132,7 @@
 
 //     vector<int> ports = {8000, 8001};
 //     vector<string> server_names = {"zechi.com", "www.nigro.com"};
-//     long long client_max_body_size = -1;
+//     long client_max_body_size = -1;
 //     vector<Location> locations = {loc1, loc2, loc3, loc4};
 //     string global_root = "/Volumes/TOSHIBA/www";
 //     // pair<string, string> redirection = {"301", "https://auth.42.fr"};
@@ -203,7 +203,7 @@
 
 //     vector<int> ports = {8002, 8003, 8004};
 //     vector<string> server_names = {"zechi.com", "www.nigro.com"};
-//     long long client_max_body_size = -1;
+//     long client_max_body_size = -1;
 //     vector<Location> locations = {loc1, loc2, loc3, loc4};
 //     string global_root = "/Volumes/TOSHIBA/www";
 //     // pair<string, string> redirection = {"301", "https://auth.42.fr"};

@@ -145,22 +145,22 @@ bool configure_socket(int &server_socket, pair<int, string> port_host)
     return (true);
 }
 
-void register_server_sockets(int kq, const map<int, vector<Server>> &servers)
+void register_server_sockets(int kq, const map<int, vector<Server> > &servers)
 {
     vector<struct kevent> change_list;
 
-    for (map<int, vector<Server>>::const_iterator it = servers.begin(); it != servers.end(); it++)
+    for (map<int, vector<Server> >::const_iterator it = servers.begin(); it != servers.end(); it++)
     {
         int server_socket = it->first;
         struct kevent change;
-        EV_SET(&change, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
+        EV_SET(&change, server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
         change_list.push_back(change);
     }
 
-    if (kevent(kq, change_list.data(), change_list.size(), nullptr, 0, nullptr) == -1)
+    if (kevent(kq, change_list.data(), change_list.size(), NULL, 0, NULL) == -1)
     {
         cerr << "Error: kevent registration failed\n";
-        for(map<int, vector<Server>>::const_iterator it2 = servers.begin(); it2 != servers.end(); ++it2) {
+        for(map<int, vector<Server> >::const_iterator it2 = servers.begin(); it2 != servers.end(); ++it2) {
             close(it2->first);
         }
         close(kq);
@@ -169,8 +169,8 @@ void register_server_sockets(int kq, const map<int, vector<Server>> &servers)
 }
 
 // search for right server
-Server host_server_name(const map<int, vector<Server>> &servers, int server_socket, HttpRequest *request) {
-    map<int, vector<Server>>::const_iterator it = servers.find(server_socket);
+Server host_server_name(const map<int, vector<Server> > &servers, int server_socket, HttpRequest *request) {
+    map<int, vector<Server> >::const_iterator it = servers.find(server_socket);
     // I don't this this will happend but if it happend we should return some thing
     // if client connect to server so the server socket should be in the map
     Server server;
@@ -215,7 +215,7 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
 
 // }
 void process_request(unordered_map<int, HttpResponse*> &client_responses, map<int, int> &client_server,
-                        const map<int, vector<Server>> &servers, int &kq, int &fd, WebServ* webserv)
+                        const map<int, vector<Server> > &servers, int &kq, int &fd, WebServ* webserv)
 {
     string serv_request_buffer = string(BUFFER_SIZE2, 0);
     ssize_t bytes_read = recv(fd, &serv_request_buffer[0], BUFFER_SIZE2, 0);
@@ -263,31 +263,31 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                     if (response->get_request()->get_is_cgi()) {
                         response->serv();
                     } else {
-                        EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                        if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                        if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                             cerr << "Error: Failed to re-register client socket for writing";
                             delete response->get_request();
                             delete response;
                             close(fd);
                             client_responses.erase(fd);
                             struct kevent change;
-                            EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                            EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
                             cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
-                            kevent(kq, &change, 1, nullptr, 0, nullptr);
+                            kevent(kq, &change, 1, NULL, 0, NULL);
                         }
                     }
                 } else {
-                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                    if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                         cerr << "Error: Failed to re-register client socket for writing";
                         delete response->get_request();
                         delete response;
                         close(fd);
                         client_responses.erase(fd);
                         struct kevent change;
-                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
                         cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
-                        kevent(kq, &change, 1, nullptr, 0, nullptr);
+                        kevent(kq, &change, 1, NULL, 0, NULL);
                     }
                 }
                 return ;
@@ -314,17 +314,17 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 if (response->get_request()->get_is_cgi()) {
                     response->serv();
                 } else {
-                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                    if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                         cerr << "Error: Failed to re-register client socket for writing\n" ;
                         delete response->get_request();
                         delete response;
                         close(fd);
                         client_responses.erase(fd);
                         struct kevent change;
-                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                        EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
                         cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
-                        kevent(kq, &change, 1, nullptr, 0, nullptr);
+                        kevent(kq, &change, 1, NULL, 0, NULL);
                     }
                 }  
             }
@@ -345,8 +345,8 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             delete response->get_request();
             delete response;
             struct kevent change;
-            EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
-            kevent(kq, &change, 1, nullptr, 0, nullptr);
+            EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+            kevent(kq, &change, 1, NULL, 0, NULL);
             client_responses.erase(fd);
             client_server.erase(fd);
             close(fd);
@@ -385,8 +385,8 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
     struct kevent change;
 
     // Monitor the child process exit event
-    EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, nullptr);
-    if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+    EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, NULL);
+    if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
         cerr << "Failed to monitor child process\n";
         kill(pid, SIGKILL);
         response->get_request()->set_status_code("500");
@@ -396,8 +396,8 @@ void WebServ::handle_timeout(pid_t pid, const string& file_path, const HttpRespo
 
     // Add timeout monitoring (this is a timer that triggers if the child takes too long)
     struct kevent timeout_event;
-    EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, nullptr);  // Timeout in milliseconds
-    if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+    EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, NULL);  // Timeout in milliseconds
+    if (kevent(kq, &timeout_event, 1, NULL, 0, NULL) == -1) {
         cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
         kill(pid, SIGKILL);
         response->get_request()->set_status_code("500");
@@ -435,14 +435,14 @@ bool copy_file(const string& sourcePath, const string& destinationPath) {
     return true;
 }
 
-void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, WebServ* webserv)
+void monitor_server_sockets(int kq, const map<int, vector<Server> > &servers, WebServ* webserv)
 {
     unordered_map<int, HttpResponse*> client_responses;
     const int MAX_EVENTS = 128; // may we change itif wa after sn't perfect for memory usage
     struct kevent event_list[MAX_EVENTS];
     map<int, int> client_server;
     while (true) {
-        int event_count = kevent(kq, nullptr, 0, event_list, MAX_EVENTS, nullptr);
+        int event_count = kevent(kq, NULL, 0, event_list, MAX_EVENTS, NULL);
         if (event_count == -1){
             cerr << "Error: kevent monitoring failed\n";
             continue;
@@ -465,8 +465,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     continue;
                 }
                 struct kevent change;
-                EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                EV_SET(&change, client_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                     cerr << "Error: Failed to register client socket\n";
                     close(client_socket);
                     continue;
@@ -487,9 +487,9 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                     close(fd);
                     client_responses.erase(fd);
                     struct kevent change;
-                    EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                    EV_SET(&change, fd, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
                     cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
-                    kevent(kq, &change, 1, nullptr, 0, nullptr);
+                    kevent(kq, &change, 1, NULL, 0, NULL);
                 }
             } else if (event_list[i].filter == EVFILT_PROC) {
                 cout << BOLD_RED <<  "CHILD exit\n" << RESET;
@@ -535,17 +535,17 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
 
                 // update client socket to write mode
                 // check for errors
-                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                     cerr << "Error: Failed to re-register client socket for writing!!!!!!!!\n";
                     delete response->get_request();
                     delete response;
                     close(it->second.second);
                     client_responses.erase(it->second.second);
                     struct kevent change;
-                    EV_SET(&change, it->second.second, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
+                    EV_SET(&change, it->second.second, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
                     cerr << BOLD_RED << "DELETE SOCKET  >> :" << fd << "\n" << RESET;
-                    kevent(kq, &change, 1, nullptr, 0, nullptr);
+                    kevent(kq, &change, 1, NULL, 0, NULL);
                     continue;
                 }
 
@@ -556,8 +556,8 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 response->send_response();
 
                 // Remove the timeout event
-                EV_SET(&timeout_event, child_pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
-                kevent(kq, &timeout_event, 1, nullptr, 0, nullptr);
+                EV_SET(&timeout_event, child_pid, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+                kevent(kq, &timeout_event, 1, NULL, 0, NULL);
             } else if (event_list[i].filter == EVFILT_TIMER) {
                 cout << BOLD_RED << "CHILD exit timeout \n" << RESET;
                 pid_t child_pid = event_list[i].ident; // The pid of the child that triggered the event
@@ -580,25 +580,25 @@ void monitor_server_sockets(int kq, const map<int, vector<Server>> &servers, Web
                 // response->send_response();
                 // update client socket to write mode
                 // check for errors
-                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-                if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+                EV_SET(&change, it->second.second, EVFILT_WRITE, EV_ADD | EV_ENABLE, 0, 0, NULL);
+                if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
                     cerr << "Error: Failed to re-register client socket for writing\n";
                     delete response->get_request();
                     delete response;
                     close(it->second.second);
                     client_responses.erase(it->second.second);
                     struct kevent change;
-                    EV_SET(&change, it->second.second, EVFILT_WRITE, EV_DELETE, 0, 0, nullptr);
-                    kevent(kq, &change, 1, nullptr, 0, nullptr);
+                    EV_SET(&change, it->second.second, EVFILT_WRITE, EV_DELETE, 0, 0, NULL);
+                    kevent(kq, &change, 1, NULL, 0, NULL);
                     continue;
                 }
 
-                EV_SET(&change, event_list[i].ident, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
-                kevent(kq, &change, 1, nullptr, 0, nullptr);
+                EV_SET(&change, event_list[i].ident, EVFILT_PROC, EV_DELETE, 0, 0, NULL);
+                kevent(kq, &change, 1, NULL, 0, NULL);
                 kill(event_list[i].ident, SIGKILL);  // Kill the child process if it's still running
                 // Remove the timeout event
-                EV_SET(&timeout_event, event_list[i].ident, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
-                kevent(kq, &timeout_event, 1, nullptr, 0, nullptr);
+                EV_SET(&timeout_event, event_list[i].ident, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+                kevent(kq, &timeout_event, 1, NULL, 0, NULL);
             }
         }
     }
@@ -610,25 +610,29 @@ void WebServ::run_servers()
     // but i think you store some times key as port and some times as socket file descriptor
     map<pair<int, string>, vector<Server> > sockets_created;
     
-    for(Server server : this->servers)
+    // for(Server server : this->servers)
+    for (size_t j = 0; j < this->servers.size(); j++) 
     {
-        const vector<pair<int, string> > &ports_hosts = server.get_ports();
+        // Server server = this->servers[i];
+        // server.print_server_info();
+        const vector<pair<int, string> > &ports_hosts = this->servers[j].get_ports();
         // const vector<string> &server_names = server.get_server_names();
-        for(pair<int, string> port_host: ports_hosts)
+        for (size_t i = 0; i < ports_hosts.size(); i++)
         {
-            sockets_created[port_host].push_back(server);
-            cout << "to create socket for port: " << port_host.first << " host: " << port_host.second << "\n"; 
+            pair<int, string> port_host = ports_hosts[i];
+            sockets_created[port_host].push_back(this->servers[j]);
+            cout << "create socket for port: " << port_host.first << " host: " << port_host.second << "\n"; 
         }
     }
 
-    for(map<pair<int, string>, vector<Server>>::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
+    for(map<pair<int, string>, vector<Server> >::iterator it = sockets_created.begin(); it != sockets_created.end(); ++it)
     {
         int server_socket;
         if (!configure_socket(server_socket, it->first)) {
             //that's mean socket creation failed
             close(server_socket);
             // close all sockets already created
-            for(map<int, vector<Server>>::iterator it2 = socket_servers.begin(); it2 != socket_servers.end(); ++it2) {
+            for(map<int, vector<Server> >::iterator it2 = socket_servers.begin(); it2 != socket_servers.end(); ++it2) {
                 close(it2->first);
             }
             cerr << BOLD_RED << "failed to init servers\n" << RESET;
@@ -643,7 +647,7 @@ void WebServ::run_servers()
     {
         cerr << "Error: kqueue creation failed\n";
         // close all sockets already created
-        for(map<int, vector<Server>>::iterator it2 = socket_servers.begin(); it2 != socket_servers.end(); ++it2) {
+        for(map<int, vector<Server> >::iterator it2 = socket_servers.begin(); it2 != socket_servers.end(); ++it2) {
             close(it2->first);
         }
         exit(EXIT_FAILURE);
@@ -694,7 +698,7 @@ void WebServ::run_servers()
 
 void WebServ::close_sockets()
 {
-    for(map<int, vector<Server>>::iterator it = socket_servers.begin(); it != socket_servers.end(); ++it)
+    for(map<int, vector<Server> >::iterator it = socket_servers.begin(); it != socket_servers.end(); ++it)
     {
         close(it->first);
     }
@@ -706,7 +710,7 @@ void WebServ::close_kq()
 }
 
 
-const map<int, vector<Server>> &WebServ::get_socket_servers() const
+const map<int, vector<Server> > &WebServ::get_socket_servers() const
 {
     return socket_servers;
 }

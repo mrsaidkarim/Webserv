@@ -133,7 +133,7 @@ void    HttpResponse::handle_cookie2() {
                         request->set_is_complete_post(true);
                         request->set_is_chunked(true);
                         // request->set_cgi_path_post(session_path); // here we shoul remove input_file.txt was created before
-                        fstream file = fstream(request->get_file_path(), ios::out | ios::trunc);
+                        fstream file(request->get_file_path(), ios::out | ios::trunc);
                         file.write(request->get_body().c_str(), request->get_body().size());
                         file.close();
                         flag = true;
@@ -148,7 +148,7 @@ void    HttpResponse::handle_cookie2() {
             cout << "in request->get_cookie() == 0 && !flag\n\n\n";
             cout << request->get_session_id() << "\n\n\n";
             request->set_cgi_path_post(SESSION_MANAGEMENT + request->get_session_id());
-            fstream file = fstream(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
+            fstream file(SESSION_MANAGEMENT + request->get_session_id(), ios::out);
             file.write("mode=light&lang=ar", 18);
             file.close();
             request->set_cookie(2);

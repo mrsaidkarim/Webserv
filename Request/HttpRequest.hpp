@@ -53,7 +53,7 @@ class HttpRequest
 		string 				cgi_input_file;
 		int					cookie;
 		string              path_info;
-		long long			content_length;
+		long			content_length;
 		string				request;
 		bool				is_cgi_complete;
 

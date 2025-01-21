@@ -21,10 +21,9 @@ class Server
     private:
         vector<pair<int, string> > ports;
 		vector<string> server_names;
-		long long client_max_body_size;
+		long client_max_body_size;
 		vector<Location> locations;
 		string global_root;
-		// string host_name;
 		pair<string, string> redirection;
 		vector<string> indexes;
 		bool autoindex;
@@ -36,7 +35,7 @@ class Server
 		Server(const Server& _server);
 
 		Server& operator=(const Server& _server);
-        // Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
+        // Server(const vector<int> &ports, const vector<string> &server_names, const long &client_max_body_size,
 		// 		const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
 		// 		const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages);
         
@@ -44,7 +43,7 @@ class Server
 		// const vector<int> &get_ports(void) const;
 		const  vector<pair<int, string> > &get_ports(void) const;
 		const vector<string> &get_server_names(void) const;
-		const long long &get_client_max_body_size(void) const;
+		const long &get_client_max_body_size(void) const;
 		const vector<Location> &get_locations(void) const;
 		const string &get_global_root(void) const;
 		const pair<string, string> &get_redirection(void) const;
@@ -77,7 +76,7 @@ class Server
         // GETTERS
         // const vector<int> &get_ports(void) const;
         // const vector<string> &get_server_names(void) const;
-        // const long long &get_client_max_body_size(void) const;
+        // const long &get_client_max_body_size(void) const;
         // const vector<Location> &get_locations(void) const;
         // const string &get_global_root(void) const;
         // const pair<string, string> &get_redirection(void) const;

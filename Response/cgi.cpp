@@ -128,8 +128,8 @@ void HttpResponse::print_env(char **env) const {
 //     struct kevent change;
 
 //     // Monitor the child process exit event
-//     EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, nullptr);
-//     if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+//     EV_SET(&change, pid, EVFILT_PROC, EV_ADD | EV_ENABLE, NOTE_EXIT, 0, NULL);
+//     if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
 //         cerr << "Failed to monitor child process\n";
 //         kill(pid, SIGKILL);
 //         request->set_file_path(INTERNAL_SERVER_ERROR);
@@ -139,8 +139,8 @@ void HttpResponse::print_env(char **env) const {
 
 //     // Add timeout monitoring (this is a timer that triggers if the child takes too long)
 //     struct kevent timeout_event;
-//     EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, nullptr);  // Timeout in milliseconds
-//     if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+//     EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_ADD | EV_ENABLE, 0, CGI_TIMEOUT, NULL);  // Timeout in milliseconds
+//     if (kevent(kq, &timeout_event, 1, NULL, 0, NULL) == -1) {
 //         cerr << BOLD_RED << "Failed to add timeout event\n" << RESET;
 //         kill(pid, SIGKILL);
 //         request->set_file_path(INTERNAL_SERVER_ERROR);
@@ -150,7 +150,7 @@ void HttpResponse::print_env(char **env) const {
 
 //     // Now handle events asynchronously
 //     struct kevent event;
-//     int num_events = kevent(kq, nullptr, 0, &event, 1, nullptr);
+//     int num_events = kevent(kq, NULL, 0, &event, 1, NULL);
 //     while (num_events > 0) {
 //         if (event.filter == EVFILT_PROC) {
 //             // Child process exit event
@@ -180,14 +180,14 @@ void HttpResponse::print_env(char **env) const {
 //             // request->set_is_complete(true);
 //             request->set_is_cgi(false);
 //             send_response();
-//             EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
-//             if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+//             EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, NULL);
+//             if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
 //                 cerr << "Failed to remove child process monitoring\n";
 //             }
 
 //             // Remove the timeout event
-//             EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
-//             if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+//             EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+//             if (kevent(kq, &timeout_event, 1, NULL, 0, NULL) == -1) {
 //                 cerr << "Failed to remove timeout event\n";
 //             }
 //             return;  // Exit since we've handled the exit event
@@ -198,21 +198,21 @@ void HttpResponse::print_env(char **env) const {
 //             request->set_file_path(REQUEST_TIMEOUT);
 //             // request->set_is_complete(true);
 //             send_response();
-//             EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, nullptr);
-//             if (kevent(kq, &change, 1, nullptr, 0, nullptr) == -1) {
+//             EV_SET(&change, pid, EVFILT_PROC, EV_DELETE, 0, 0, NULL);
+//             if (kevent(kq, &change, 1, NULL, 0, NULL) == -1) {
 //                 cerr << "Failed to remove child process monitoring\n";
 //             }
 
 //             // Remove the timeout event
-//             EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, nullptr);
-//             if (kevent(kq, &timeout_event, 1, nullptr, 0, nullptr) == -1) {
+//             EV_SET(&timeout_event, pid, EVFILT_TIMER, EV_DELETE, 0, 0, NULL);
+//             if (kevent(kq, &timeout_event, 1, NULL, 0, NULL) == -1) {
 //                 cerr << "Failed to remove timeout event\n";
 //             }
 //             return;  // Exit after handling the timeout
 //         }
 
 //         // Re-check the kevent queue for other events
-//         num_events = kevent(kq, nullptr, 0, &event, 1, nullptr);
+//         num_events = kevent(kq, NULL, 0, &event, 1, NULL);
 //     }
 //     // int exit_status = -1;
 //     // int rr;

@@ -517,7 +517,7 @@ bool HttpRequest::check_url_characters(const string& _url) {
 
 bool HttpRequest::is_valid_value(const string& _value) {
 	stringStream	str(_value);
-	long long 			value;
+	long 			value;
 	if (_value.empty())
 		return (this->set_status_code("400"), false);
 	str >> value;

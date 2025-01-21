@@ -31,7 +31,6 @@ Server&	Server::operator=(const Server& _server) {
 	cout << BOLD_CYAN << "ASSIGNEMT server"<< RESET;
 	if (this != &_server) {
 		this->global_root = _server.global_root;
-		// this->host_name = _server.host_name;
 		this->ports = _server.ports;
 		this->server_names = _server.server_names;
 		this->client_max_body_size = _server.client_max_body_size;
@@ -45,7 +44,7 @@ Server&	Server::operator=(const Server& _server) {
 	return (*this);
 }
 
-// Server::Server(const vector<int> &ports, const vector<string> &server_names, const long long &client_max_body_size,
+// Server::Server(const vector<int> &ports, const vector<string> &server_names, const long &client_max_body_size,
 //                 const vector<Location> &locations, const string &global_root, const pair<string, string> &redirection,
 //                 const vector<string> &indexes, bool autoindex, const map<string, string> &error_pages) :
 //                 ports(ports), server_names(server_names), client_max_body_size(client_max_body_size),
@@ -64,7 +63,7 @@ const vector<string> &Server::get_server_names(void) const
     return (server_names);
 }
 
-const long long &Server::get_client_max_body_size(void) const
+const long &Server::get_client_max_body_size(void) const
 {
 	cout << "here from get method!!! >>>>> " << client_max_body_size;
     return (client_max_body_size);
@@ -330,7 +329,7 @@ void Server::print_server_info(void) const {
 
     cout << BOLD_BLUE << left << setw(20) << "error_pages " << ": " << BOLD_WHITE << "[";
 	int i = 0;
-    for (auto it = error_pages.begin() ; it != error_pages.end(); it++) {
+    for (map<string, string>::const_iterator it = error_pages.begin() ; it != error_pages.end(); it++) {
         if (i > 0)
             cout << ", ";
         cout << it->first << ": " << it->second;

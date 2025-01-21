@@ -250,7 +250,7 @@ void Location::print_lacation_info() const {
 
     cout << BOLD_BLUE << "\t" <<  "methods     : \n" << BOLD_BLACK;
     cout << "\t      GET   : ";
-    auto it = methods.find("GET");
+    map<string, bool>::const_iterator it = methods.find("GET");
     if (it == methods.end() || it->second == false)
         cout << "false \n";
     else
@@ -274,7 +274,7 @@ void Location::print_lacation_info() const {
     // cout << RESET;
 
 	cout << BOLD_BLUE << "\t" << "cgi_extension : \n" << BOLD_BLACK;
-	for (auto it = cgi_extension.begin(); it != cgi_extension.end() ; it++)
+	for (map<string, string>::const_iterator it = cgi_extension.begin(); it != cgi_extension.end() ; it++)
 	{
 		cout << "\t\t" <<it->first << " : " << it->second << "\n";
 	}

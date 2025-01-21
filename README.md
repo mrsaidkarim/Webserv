@@ -99,8 +99,8 @@ The *kevent* function is the core mechanism of the *kqueue* event notification i
 
 Use the changelist to specify which events to monitor.
 ```
-    EV_SET(&change_list[0], server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, nullptr);
-    kevent(kq, change_list, change_count, nullptr, 0, nullptr);
+    EV_SET(&change_list[0], server_socket, EVFILT_READ, EV_ADD | EV_ENABLE, 0, 0, NULL);
+    kevent(kq, change_list, change_count, NULL, 0, NULL);
 ```
 
 2. Monitor Events
@@ -108,7 +108,7 @@ Use the changelist to specify which events to monitor.
 Call kevent() to wait for events.
 ```
     struct kevent event_list[128];
-    int event_count = kevent(kq, change_list, 0, event_list, 128, nullptr);
+    int event_count = kevent(kq, change_list, 0, event_list, 128, NULL);
 ```
 The returned event_list will contain details about events that are ready.
 
