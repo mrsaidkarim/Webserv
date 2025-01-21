@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "HttpResponse.hpp"
+#include <exception>
 
 
 /*
@@ -210,8 +211,18 @@ fstream *HttpResponse::binary_post_case()
     string generated_binary_file = generate_file_with_ext(get_file_extension(extention));
     // cout << BOLD_MAGENTA << "content-type:" << content_type << " ==> the extension: " << get_file_extension(extention) << endl << RESET;
     // fstream *file = new fstream((POST_PATH + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
-    fstream *file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
-     + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
+    fstream *file;
+    try {
+        file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
+        + generated_binary_file).c_str(), ios::out | ios::trunc | ios::binary);
+    } catch (std::exception& e) {
+        cerr << BOLD_RED << "new failed " << e.what() << "\n" << RESET;
+        request->set_is_complete_post(true);
+        request->set_is_cgi(false);
+        request->set_is_cgi_complete(true);
+        request->set_status_code("500");
+        return (NULL);
+    }
     if (!file->is_open()) {
         cerr << "Couldn't create the new file\n";
         perror("why?");
@@ -330,12 +341,23 @@ void HttpResponse::post_method() {
             }
             // fill new information;
             // file = new fstream((POST_PATH + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
-            file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
-             + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
+
+            try {
+                file = new fstream((request->get_server().get_locations()[index_location].get_location_upload_store()\
+                 + new_file_name).c_str(), ios::out | ios::trunc | ios::binary);
+            } catch (std::exception& e) {
+                cerr << BOLD_RED << "new failed " << e.what() << "\n" << RESET;
+                request->set_is_complete_post(true);
+                request->set_is_cgi(false);
+                request->set_is_cgi_complete(true);
+                request->set_status_code("500");
+                return ;
+            }
             if (!file->is_open()) {
                 // cerr << "Couldn't create the new file\n";
                 perror("why?");
                 request->set_is_complete_post(true);
+                request->set_status_code("400");
                 request->set_file_path(BAD_REQUEST);
                 // cerr << BOLD_RED << "###########   : 3\n" << RESET;
                 // cout << BOLD_GREEN << "we read all 2\n\n";

@@ -29,6 +29,7 @@ class HttpResponse {
 
 
         void serv_404() const;
+        void serv_500() const;
 
         string get_content_type(const string &) const;
         void send_response() const;

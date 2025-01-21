@@ -1,5 +1,6 @@
 #include "HttpResponse.hpp"
 #include <cstddef>
+#include <exception>
 #include <sys/stat.h>
 #include <sys/unistd.h>
 #include <unistd.h>
@@ -192,8 +193,14 @@ void HttpResponse::send_response() const{
             request->set_file_stream(NULL);
         }
 
-        
-        fstream *file = new fstream(path.c_str(), ios::in);
+        fstream *file;
+        try {
+            file = new fstream(path.c_str(), ios::in);
+        } catch (std::exception& e) {
+            cerr << "new failed " << e.what() << "\n";
+            serv_500();
+            return;
+        }
         if (!file->is_open()) {
             delete file;
             request->set_file_stream(NULL);

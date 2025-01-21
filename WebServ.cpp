@@ -173,10 +173,6 @@ Server host_server_name(const map<int, vector<Server>> &servers, int server_sock
     map<int, vector<Server>>::const_iterator it = servers.find(server_socket);
     // I don't this this will happend but if it happend we should return some thing
     // if client connect to server so the server socket should be in the map
-    if (it != servers.end()) {
-        vector<Server> servers = it->second;
-        return servers[0];
-    }
     Server server;
     // if host header is not found in the request
     // we return the first server in the vector
@@ -239,9 +235,7 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
             }
             // HttpRequest *request = new HttpRequest(serv_request_buffer);
             int server_socket = client_server[fd];
-            Server server = host_server_name(servers , server_socket, request);
             request->set_client_socket(fd);
-            request->set_server(server);
             HttpResponse *response;
             try {
                 response = new HttpResponse(request, webserv);
@@ -251,6 +245,8 @@ void process_request(unordered_map<int, HttpResponse*> &client_responses, map<in
                 return ;
             }
             request->http_request_init();
+            Server server = host_server_name(servers , server_socket, request);
+            request->set_server(server);
             client_responses[fd] = response;
             map<string, string>	header = request->get_header();
             if (request->get_method() == "POST" ) {

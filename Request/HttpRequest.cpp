@@ -13,6 +13,7 @@
 #include "HttpRequest.hpp"
 #include <cstddef>
 #include <cstdio>
+#include <exception>
 
 // ! NOTES
 // ? also should check in the httpresponse class  if content-length > max-body-size in a location! (status code 413 content too large)
@@ -151,7 +152,13 @@ void HttpRequest::http_request_init() {
 			this->is_cgi = true;
 			cgi_path_post = generate_file_name();
 			cout << BOLD_RED << cgi_path_post << "\n" << RESET;
-			file_stream = new fstream(cgi_path_post.c_str(), ios::out | ios::trunc | ios::binary);
+			try {
+				file_stream = new fstream(cgi_path_post.c_str(), ios::out | ios::trunc | ios::binary);
+			} catch (std::exception& e) {
+				cerr << BOLD_RED << "new failed " << e.what() << "\n";
+				set_status_code("500");
+				goto error;
+			}
 			if (!file_stream || !file_stream->is_open()) {
 				cerr << "can't open the file\n";
 			}
@@ -211,6 +218,7 @@ void HttpRequest::http_request_init() {
 	error :
 		cout << RED << "Error: Malformed request detected\n" << RESET;
 		set_is_cgi(false);
+		set_is_cgi_complete(true);
 		set_is_complete_post(true);
 	cout << statusCode << "@@@@@@@@@@@@@@@@@@@@@@@@@@\n";
 }
