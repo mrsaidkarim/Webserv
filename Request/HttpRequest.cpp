@@ -6,7 +6,7 @@
 /*   By: zech-chi <zech-chi@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/30 16:00:33 by zelabbas          #+#    #+#             */
-/*   Updated: 2025/01/21 22:05:25 by zech-chi         ###   ########.fr       */
+/*   Updated: 2025/01/21 23:12:21 by zech-chi         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ void HttpRequest::http_request_init() {
 		this->set_status_code("400");
 		goto error;
 	}
+	display_first_line_request(first_line);
 	start_line = split(first_line, ' ');
 	if (start_line.size() != 3) {
 		this->set_status_code("400");
@@ -173,10 +174,9 @@ void HttpRequest::http_request_init() {
 	else
 		content_length = -1;
 
-	display_first_line_request(first_line);
 	return ;
 	error :
-		DEBUG_MODE && cout << RED << "Error: Malformed request detected\n" << RESET;
+		cout << RED << "Error: Malformed request detected\n" << RESET;
 		set_is_cgi(false);
 		set_is_cgi_complete(true);
 		set_is_complete_post(true);
@@ -239,8 +239,10 @@ void HttpRequest::set_path_info(string& _url) {
     for (size_t i = 0; i < num_extensions; ++i) {
         size_t pos = _url.find(extensions[i]);
         if (pos != string::npos) {
-            path_info = _url.substr(pos + strlen(extensions[i]));
-            _url = _url.substr(0, pos + strlen(extensions[i]));
+            if ((pos + strlen(extensions[i])) < _url.size() && _url[pos + strlen(extensions[i])] == '/') {
+                path_info = _url.substr(pos + strlen(extensions[i]));
+                _url = _url.substr(0, pos + strlen(extensions[i]));
+            }
             return;
         }
     }
